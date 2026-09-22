@@ -1,0 +1,172 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'super-admin' ||
+        request.auth.token.role == 'admin' ||
+        request.auth.token.role == 'content-manager' ||
+        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+      );
+    }
+    
+    function isSuperAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'super-admin' ||
+        get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == 'super-admin'
+      );
+    }
+
+    // Public school profile and settings - Read public, Write Admin only
+    match /schoolSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /homepageContent/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /aboutContent/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /academicsContent/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /admissionsContent/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /themeSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /websiteSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Hero banners - Read published public, Write Admin
+    match /heroBanners/{bannerId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Faculty, Facilities, Announcements, Events, Gallery, Achievements, Testimonials
+    match /faculty/{facultyId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /facilities/{facilityId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /gallery/{imageId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /achievements/{achievementId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /testimonials/{testimonialId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Research records - Read approved published public, Write Admin
+    match /researchRecords/{recordId} {
+      allow read: if (resource.data.published == true && resource.data.adminApproval == true) || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Admission Enquiries:
+    // Anyone can create (submit enquiry form) with required validation fields
+    // Only authenticated admin can read, update, or delete
+    match /enquiries/{enquiryId} {
+      allow create: if request.resource.data.parentName is string
+                    && request.resource.data.phone is string
+                    && request.resource.data.parentName.size() > 1
+                    && request.resource.data.phone.size() >= 10;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Contact Messages:
+    // Anyone can create (submit contact form) with validation
+    // Only authenticated admin can read or delete
+    match /contactMessages/{messageId} {
+      allow create: if request.resource.data.name is string
+                    && request.resource.data.email is string
+                    && request.resource.data.message is string
+                    && request.resource.data.name.size() > 1
+                    && request.resource.data.message.size() > 2;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Timeline Entries (School History)
+    match /timelineEntries/{entryId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Alumni Members:
+    // Public can view verified published alumni or submit a registration with pending status
+    // Administrators approve, update, or delete profiles
+    match /alumni/{alumniId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create: if request.resource.data.name is string
+                    && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
+    // Transport Routes & Bus Stops:
+    // Public can view published routes and bus timings
+    // Administrators manage routes, stops, and fleet details
+    match /transportRoutes/{routeId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Student Examination Results:
+    // Public can retrieve published results by roll/registration lookup
+    // Administrators upload, update, and manage marks
+    match /studentResults/{resultId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Admin Users collection - Strictly managed by Super Admin
+    match /adminUsers/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+  }
+}
+

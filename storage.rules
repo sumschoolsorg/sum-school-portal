@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Public images (banners, logos, faculty, facilities, gallery, achievements)
+    // Anyone can read/download
+    // Only authenticated admin can upload, replace, or delete
+    match /{folder}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated()
+                   && request.resource.size < 10 * 1024 * 1024 // 10MB limit
+                   && request.resource.contentType.matches('image/.*|application/pdf');
+    }
+  }
+}

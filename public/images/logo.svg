@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" fill="none">
+  <!-- Crest Icon -->
+  <g transform="translate(10, 6)">
+    <path d="M24 2C13 2 4 8 4 20C4 34 24 46 24 46C24 46 44 34 44 20C44 8 35 2 24 2Z" fill="#1e3a8a"/>
+    <path d="M24 6C15 6 8 11 8 20C8 31 24 41 24 41C24 41 40 31 40 20C40 11 33 6 24 6Z" fill="#3366ff"/>
+    <!-- Book symbol -->
+    <path d="M16 26C18 24 21 24 24 26C27 24 30 24 32 26V34C30 32 27 32 24 34C21 32 18 32 16 34V26Z" fill="#ffffff"/>
+    <!-- Torch / Star -->
+    <circle cx="24" cy="16" r="3.5" fill="#d4a843"/>
+    <path d="M24 11L25.5 14H22.5L24 11Z" fill="#facc15"/>
+  </g>
+  <!-- Typography -->
+  <text x="68" y="26" font-family="'Outfit', 'Inter', system-ui, sans-serif" font-size="18" font-weight="800" fill="#1e3a8a" letter-spacing="0.5">S.U.M. SCHOOL</text>
+  <text x="68" y="42" font-family="'Inter', system-ui, sans-serif" font-size="9" font-weight="600" fill="#64748b" letter-spacing="1.2">HIGHER SECONDARY &amp; PRIMARY</text>
+</svg>

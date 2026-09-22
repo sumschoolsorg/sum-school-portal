@@ -1,0 +1,332 @@
+// ============================================================
+// Data Access Repository Architecture
+// Provides a unified data abstraction over Local Storage (IndexedDB)
+// and Google Cloud Firestore.
+// ============================================================
+
+import {
+  STORES,
+  StoreName,
+  getLocalAll,
+  getLocalById,
+  putLocal,
+  deleteLocal,
+  exportAllLocalData,
+  importAllLocalData,
+} from '@/lib/db/indexedDB';
+
+import {
+  getDocument,
+  getDocuments,
+  setDocument,
+  deleteDocument,
+} from '@/lib/firestore';
+
+import {
+  SchoolSettings,
+  HomepageContent,
+  AboutContent,
+  AcademicsContent,
+  AdmissionsContent,
+  Facility,
+  Faculty,
+  Announcement,
+  SchoolEvent,
+  GalleryImage,
+  Achievement,
+  TimelineEntry,
+  Testimonial,
+  Enquiry,
+  ContactMessage,
+  WebsiteSettings,
+  HeroBanner,
+  ResearchRecord,
+  ThemeSettings,
+  AdminUser,
+  AlumniMember,
+  TransportRoute,
+  StudentResult,
+} from '@/types';
+
+export type DataMode = 'local' | 'firebase';
+
+export function isFirebaseConfigured(): boolean {
+  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  return Boolean(
+    apiKey &&
+    apiKey !== 'your-api-key' &&
+    apiKey !== 'dummy-api-key' &&
+    !apiKey.includes('your-')
+  );
+}
+
+export function getCurrentDataMode(): DataMode {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('sum_data_mode') as DataMode | null;
+    if (saved === 'local') return 'local';
+    if (saved === 'firebase' && isFirebaseConfigured()) return 'firebase';
+  }
+  return isFirebaseConfigured() ? 'firebase' : 'local';
+}
+
+export function setDataMode(mode: DataMode): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('sum_data_mode', mode);
+  }
+}
+
+// Generic Single Document Repository (e.g. School Settings, Homepage, About)
+export class SingleDocRepository<T extends { id?: string }> {
+  constructor(
+    private storeName: StoreName,
+    private firestoreCollection: string,
+    private defaultDocId: string = 'default'
+  ) {}
+
+  async get(): Promise<T> {
+    const mode = getCurrentDataMode();
+    if (mode === 'firebase' && isFirebaseConfigured()) {
+      try {
+        const doc = await getDocument<T>(this.firestoreCollection, this.defaultDocId);
+        if (doc) return doc;
+      } catch (err) {
+        console.warn(`Firestore get failed for ${this.firestoreCollection}, falling back to local:`, err);
+      }
+    }
+
+    const localDoc = await getLocalById<T>(this.storeName, this.defaultDocId);
+    if (localDoc) return localDoc;
+
+    const all = await getLocalAll<T>(this.storeName);
+    if (all.length > 0) return all[0];
+
+    throw new Error(`Document not found in ${this.storeName}`);
+  }
+
+  async save(data: Partial<T>): Promise<T> {
+    const mode = getCurrentDataMode();
+    const itemToSave = { ...data, id: this.defaultDocId } as T;
+
+    if (mode === 'firebase' && isFirebaseConfigured()) {
+      try {
+        await setDocument(this.firestoreCollection, this.defaultDocId, itemToSave);
+      } catch (err) {
+        console.warn(`Firestore save failed for ${this.firestoreCollection}:`, err);
+      }
+    }
+
+    return putLocal<T>(this.storeName, itemToSave);
+  }
+}
+
+// Generic Collection Repository (e.g. Faculty, Announcements, Events, Banners)
+export class CollectionRepository<T extends { id?: string; status?: string; order?: number }> {
+  constructor(
+    private storeName: StoreName,
+    private firestoreCollection: string
+  ) {}
+
+  async getAll(): Promise<T[]> {
+    const mode = getCurrentDataMode();
+    if (mode === 'firebase' && isFirebaseConfigured()) {
+      try {
+        const docs = await getDocuments<T>(this.firestoreCollection);
+        if (docs && docs.length > 0) return docs;
+      } catch (err) {
+        console.warn(`Firestore getDocuments failed for ${this.firestoreCollection}, falling back to local:`, err);
+      }
+    }
+
+    return getLocalAll<T>(this.storeName);
+  }
+
+  async getPublished(): Promise<T[]> {
+    const all = await this.getAll();
+    return all.filter((item) => !item.status || item.status === 'published');
+  }
+
+  async getById(id: string): Promise<T | null> {
+    const mode = getCurrentDataMode();
+    if (mode === 'firebase' && isFirebaseConfigured()) {
+      try {
+        const doc = await getDocument<T>(this.firestoreCollection, id);
+        if (doc) return doc;
+      } catch (err) {
+        console.warn(`Firestore getDocument failed for ${this.firestoreCollection}/${id}:`, err);
+      }
+    }
+
+    return getLocalById<T>(this.storeName, id);
+  }
+
+  async save(data: T): Promise<T> {
+    const mode = getCurrentDataMode();
+    const savedLocal = await putLocal<T>(this.storeName, data);
+
+    if (mode === 'firebase' && isFirebaseConfigured()) {
+      try {
+        if (savedLocal.id) {
+          await setDocument(this.firestoreCollection, savedLocal.id, savedLocal);
+        }
+      } catch (err) {
+        console.warn(`Firestore save failed for ${this.firestoreCollection}:`, err);
+      }
+    }
+
+    return savedLocal;
+  }
+
+  async create(data: Partial<T>): Promise<T> {
+    const itemToSave = {
+      ...data,
+      id: data.id || `${this.storeName}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      createdAt: (data as { createdAt?: Date }).createdAt || new Date(),
+      updatedAt: new Date(),
+    } as unknown as T;
+    return this.save(itemToSave);
+  }
+
+  async update(id: string, data: Partial<T>): Promise<T> {
+    const existing = await this.getById(id);
+    const itemToSave = {
+      ...(existing || {}),
+      ...data,
+      id,
+      updatedAt: new Date(),
+    } as unknown as T;
+    return this.save(itemToSave);
+  }
+
+  async delete(id: string): Promise<void> {
+    const mode = getCurrentDataMode();
+    await deleteLocal(this.storeName, id);
+
+    if (mode === 'firebase' && isFirebaseConfigured()) {
+      try {
+        await deleteDocument(this.firestoreCollection, id);
+      } catch (err) {
+        console.warn(`Firestore delete failed for ${this.firestoreCollection}/${id}:`, err);
+      }
+    }
+  }
+}
+
+// Instantiate specific repositories
+export const schoolRepository = new SingleDocRepository<SchoolSettings>(
+  STORES.SCHOOL_SETTINGS,
+  'schoolSettings'
+);
+
+export const homepageRepository = new SingleDocRepository<HomepageContent>(
+  STORES.HOMEPAGE_CONTENT,
+  'homepageContent'
+);
+
+export const aboutRepository = new SingleDocRepository<AboutContent>(
+  STORES.ABOUT_CONTENT,
+  'aboutContent'
+);
+
+export const academicsRepository = new SingleDocRepository<AcademicsContent>(
+  STORES.ACADEMICS_CONTENT,
+  'academicsContent'
+);
+
+export const admissionsRepository = new SingleDocRepository<AdmissionsContent>(
+  STORES.ADMISSIONS_CONTENT,
+  'admissionsContent'
+);
+
+export const themeRepository = new SingleDocRepository<ThemeSettings>(
+  STORES.THEME_SETTINGS,
+  'themeSettings'
+);
+
+export const websiteSettingsRepository = new SingleDocRepository<WebsiteSettings>(
+  STORES.WEBSITE_SETTINGS,
+  'websiteSettings'
+);
+
+// Collections
+export const heroBannerRepository = new CollectionRepository<HeroBanner>(
+  STORES.HERO_BANNERS,
+  'heroBanners'
+);
+
+export const researchRepository = new CollectionRepository<ResearchRecord>(
+  STORES.RESEARCH_RECORDS,
+  'researchRecords'
+);
+
+export const facultyRepository = new CollectionRepository<Faculty>(
+  STORES.FACULTY,
+  'faculty'
+);
+
+export const facilityRepository = new CollectionRepository<Facility>(
+  STORES.FACILITIES,
+  'facilities'
+);
+
+export const announcementRepository = new CollectionRepository<Announcement>(
+  STORES.ANNOUNCEMENTS,
+  'announcements'
+);
+
+export const eventRepository = new CollectionRepository<SchoolEvent>(
+  STORES.EVENTS,
+  'events'
+);
+
+export const galleryRepository = new CollectionRepository<GalleryImage>(
+  STORES.GALLERY,
+  'gallery'
+);
+
+export const achievementRepository = new CollectionRepository<Achievement>(
+  STORES.ACHIEVEMENTS,
+  'achievements'
+);
+
+export const timelineRepository = new CollectionRepository<TimelineEntry>(
+  STORES.TIMELINE,
+  'timelineEntries'
+);
+
+export const testimonialRepository = new CollectionRepository<Testimonial>(
+  STORES.TESTIMONIALS,
+  'testimonials'
+);
+
+export const enquiryRepository = new CollectionRepository<Enquiry>(
+  STORES.ENQUIRIES,
+  'enquiries'
+);
+
+export const contactMessageRepository = new CollectionRepository<ContactMessage>(
+  STORES.CONTACT_MESSAGES,
+  'contactMessages'
+);
+
+export const adminUserRepository = new CollectionRepository<AdminUser>(
+  STORES.ADMIN_USERS,
+  'adminUsers'
+);
+
+export const alumniRepository = new CollectionRepository<AlumniMember>(
+  STORES.ALUMNI,
+  'alumni'
+);
+
+export const transportRepository = new CollectionRepository<TransportRoute>(
+  STORES.TRANSPORT_ROUTES,
+  'transportRoutes'
+);
+
+export const studentResultRepository = new CollectionRepository<StudentResult>(
+  STORES.STUDENT_RESULTS,
+  'studentResults'
+);
+
+// Data backup and migration helpers
+export { exportAllLocalData, importAllLocalData };
