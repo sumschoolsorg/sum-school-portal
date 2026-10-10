@@ -1,18 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import {
   X,
   ZoomIn,
   Calendar,
-  Filter,
   Search,
   ChevronLeft,
   ChevronRight,
   Share2,
-  Sparkles,
   Image as ImageIcon,
   FolderOpen,
 } from 'lucide-react';
@@ -23,7 +21,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
 
 export default function GalleryPage() {
-  const { t, getLocalized, language } = useLanguage();
+  const { getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
   const [images, setImages] = useState<GalleryImage[]>(defaultGalleryImages);
@@ -42,7 +40,7 @@ export default function GalleryPage() {
     const loadImages = async () => {
       try {
         setIsLoading(true);
-        const data = await galleryRepository.getAll();
+        const data = await galleryRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
           setImages(published.length > 0 ? published : defaultGalleryImages);
@@ -135,21 +133,17 @@ export default function GalleryPage() {
     setLightboxIndex(index);
   };
 
-  const handleCloseLightbox = () => {
+  const handleCloseLightbox = useCallback(() => {
     setLightboxIndex(null);
-  };
+  }, []);
 
-  const handlePrevLightbox = () => {
-    if (lightboxIndex !== null) {
-      setLightboxIndex((prev) => (prev! - 1 + filteredImages.length) % filteredImages.length);
-    }
-  };
+  const handlePrevLightbox = useCallback(() => {
+    setLightboxIndex((prev) => (prev !== null ? (prev - 1 + filteredImages.length) % filteredImages.length : null));
+  }, [filteredImages.length]);
 
-  const handleNextLightbox = () => {
-    if (lightboxIndex !== null) {
-      setLightboxIndex((prev) => (prev! + 1) % filteredImages.length);
-    }
-  };
+  const handleNextLightbox = useCallback(() => {
+    setLightboxIndex((prev) => (prev !== null ? (prev + 1) % filteredImages.length : null));
+  }, [filteredImages.length]);
 
   const handleSharePhoto = (img: GalleryImage) => {
     if (typeof window !== 'undefined' && navigator.share) {
@@ -173,7 +167,7 @@ export default function GalleryPage() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [lightboxIndex, filteredImages.length]);
+  }, [lightboxIndex, handleCloseLightbox, handlePrevLightbox, handleNextLightbox]);
 
   const currentLightboxImage = lightboxIndex !== null ? filteredImages[lightboxIndex] : null;
 

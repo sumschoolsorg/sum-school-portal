@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { defaultSchoolSettings } from '@/lib/defaultData';
-import { addDocument } from '@/lib/firestore';
+import { contactMessageRepository } from '@/lib/repositories';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -38,9 +38,14 @@ export function ContactSection() {
 
     setIsSubmitting(true);
     try {
-      await addDocument('contactMessages', {
-        ...formData,
+      await contactMessageRepository.create({
+        name: formData.name.trim(),
+        email: formData.email.trim() || undefined,
+        phone: formData.phone.trim(),
+        subject: formData.subject.trim() || undefined,
+        message: formData.message.trim(),
         status: 'new',
+        createdAt: new Date(),
       });
       setSubmitted(true);
       toast.success(
@@ -48,9 +53,12 @@ export function ContactSection() {
       );
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (error) {
-      console.warn('Firestore write failed, recording submission locally in offline mode:', error);
-      setSubmitted(true);
-      toast.info(t('forms.toasts.successSubmit', 'Message submitted successfully (Recorded).'));
+      console.error('Contact message submission failed:', error);
+      toast.error(
+        isTa
+          ? 'செய்தியை அனுப்புவதில் பிழை ஏற்பட்டது. தயவுசெய்து மீண்டும் முயற்சிக்கவும் அல்லது தொலைபேசியில் தொடர்பு கொள்ளவும்.'
+          : 'Failed to deliver message. Please try again or call the school office directly.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -234,7 +242,7 @@ export function ContactSection() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <Input
-                    label={t('contact.emailLabel', 'Email Address *')}
+                    label={t('contact.emailLabel', 'Email Address (Optional)')}
                     name="email"
                     type="email"
                     placeholder={t('contact.emailPlaceholder', 'name@example.com')}
@@ -243,7 +251,7 @@ export function ContactSection() {
                   />
 
                   <Input
-                    label={t('contact.subjectLabel', 'Subject / Topic *')}
+                    label={t('contact.subjectLabel', 'Subject / Topic (Optional)')}
                     name="subject"
                     placeholder={t('contact.subjectPlaceholder', 'e.g. Admission Query, Fee Details')}
                     value={formData.subject}

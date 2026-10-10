@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Image as ImageIcon, ArrowRight, Eye } from 'lucide-react';
+import { ArrowRight, Eye } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Button } from '@/components/ui/Button';
 import { useLanguage } from '@/contexts/LanguageContext';

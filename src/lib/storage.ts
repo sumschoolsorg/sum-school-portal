@@ -17,6 +17,14 @@ export async function uploadImage(
   file: File,
   path: string
 ): Promise<string> {
+  if (!file) throw new Error('No file provided for upload.');
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error('File size exceeds the 10MB limit allowed by school storage policy.');
+  }
+  if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+    throw new Error('Only image files (JPEG, PNG, WebP) and PDF documents are allowed.');
+  }
+
   try {
     const storageRef: StorageReference = ref(storage, path);
     const snapshot = await uploadBytes(storageRef, file, {
@@ -35,15 +43,17 @@ export async function uploadImageWithUniqueId(
   file: File,
   folder: string
 ): Promise<{ url: string; path: string }> {
+  const cleanFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '') || 'uploads';
   const timestamp = Date.now();
   const sanitizedName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-  const path = `${folder}/${timestamp}_${sanitizedName}`;
+  const path = `${cleanFolder}/${timestamp}_${sanitizedName}`;
   const url = await uploadImage(file, path);
   return { url, path };
 }
 
 // --- Delete an image by path ---
 export async function deleteImage(path: string): Promise<void> {
+  if (!path || typeof path !== 'string') return;
   try {
     const storageRef = ref(storage, path);
     await deleteObject(storageRef);
@@ -61,6 +71,11 @@ export async function deleteImage(path: string): Promise<void> {
 
 // --- Delete an image by its download URL ---
 export async function deleteImageByUrl(url: string): Promise<void> {
+  if (!url || typeof url !== 'string') return;
+  // If this is a local relative asset or not a Firebase Storage URL, skip without error
+  if (!url.startsWith('gs://') && !url.includes('firebasestorage.googleapis.com')) {
+    return;
+  }
   try {
     const storageRef = ref(storage, url);
     await deleteObject(storageRef);
@@ -69,8 +84,7 @@ export async function deleteImageByUrl(url: string): Promise<void> {
     if (err.code === 'storage/object-not-found') {
       return;
     }
-    console.error(`Error deleting image by URL:`, error);
-    throw error;
+    console.warn(`Safe delete warning for ${url}:`, error);
   }
 }
 
@@ -79,9 +93,10 @@ export async function uploadDocument(
   file: File,
   folder: string
 ): Promise<{ url: string; path: string; name: string }> {
+  const cleanFolder = folder.replace(/[^a-zA-Z0-9_-]/g, '') || 'uploads';
   const timestamp = Date.now();
   const sanitizedName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-  const path = `${folder}/${timestamp}_${sanitizedName}`;
+  const path = `${cleanFolder}/${timestamp}_${sanitizedName}`;
   const url = await uploadImage(file, path);
   return { url, path, name: file.name };
 }

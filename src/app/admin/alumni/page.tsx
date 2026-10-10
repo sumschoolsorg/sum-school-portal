@@ -11,8 +11,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
-import { alumniRepository } from '@/lib/repositories';
-import { defaultAlumni } from '@/lib/defaultData';
+import { alumniRepository, alumniPrivateRepository } from '@/lib/repositories';
 import { AlumniMember } from '@/types';
 import {
   Plus,
@@ -23,8 +22,6 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
-  MapPin,
-  Briefcase,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -56,11 +53,7 @@ export default function AdminAlumniPage() {
     try {
       setIsLoading(true);
       const data = await alumniRepository.getAll();
-      if (data && data.length > 0) {
-        setAlumni(data);
-      } else {
-        setAlumni(defaultAlumni);
-      }
+      setAlumni(data || []);
     } catch (err) {
       console.error('Error loading alumni:', err);
       toast.error('Failed to load alumni records.');
@@ -72,16 +65,16 @@ export default function AdminAlumniPage() {
   useEffect(() => {
     let isMounted = true;
     alumniRepository.getAll().then((data) => {
-      if (!isMounted) return;
-      if (data && data.length > 0) {
-        setAlumni(data);
-      } else {
-        setAlumni(defaultAlumni);
+      if (isMounted) {
+        setAlumni(data || []);
+        setIsLoading(false);
       }
     }).catch((err) => {
-      console.error('Error loading alumni:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading alumni:', err);
+        toast.error('Failed to load alumni records.');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;
@@ -108,9 +101,22 @@ export default function AdminAlumniPage() {
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (alumnus: AlumniMember) => {
+  const handleOpenEdit = async (alumnus: AlumniMember) => {
     setEditingAlumnus(alumnus);
-    setFormData({ ...alumnus });
+    let email = alumnus.email || '';
+    let phone = alumnus.phone || '';
+    if (alumnus.id && (!email || !phone)) {
+      try {
+        const priv = await alumniPrivateRepository.getById(alumnus.id);
+        if (priv) {
+          email = priv.email || email;
+          phone = priv.phone || phone;
+        }
+      } catch {
+        // Ignored if no private contact record exists
+      }
+    }
+    setFormData({ ...alumnus, email, phone });
     setIsModalOpen(true);
   };
 
@@ -122,15 +128,46 @@ export default function AdminAlumniPage() {
     }
 
     try {
+      const contactEmail = formData.email?.trim() || '';
+      const contactPhone = formData.phone?.trim() || '';
+
+      // Public profile data must never contain email or phone
+      const publicProfile = { ...formData };
+      delete publicProfile.email;
+      delete publicProfile.phone;
+
       if (editingAlumnus && editingAlumnus.id) {
         await alumniRepository.update(editingAlumnus.id, {
-          ...formData,
+          ...publicProfile,
           batchYear: Number(formData.batchYear),
         });
+
+        if (contactEmail || contactPhone) {
+          try {
+            const existingPriv = await alumniPrivateRepository.getById(editingAlumnus.id);
+            if (existingPriv) {
+              await alumniPrivateRepository.update(editingAlumnus.id, {
+                email: contactEmail,
+                phone: contactPhone,
+                name: formData.name?.trim() || '',
+              });
+            } else {
+              await alumniPrivateRepository.create({
+                id: editingAlumnus.id,
+                alumniId: editingAlumnus.id,
+                name: formData.name?.trim() || '',
+                email: contactEmail,
+                phone: contactPhone,
+              });
+            }
+          } catch (privErr) {
+            console.warn('Could not update private contact record:', privErr);
+          }
+        }
         toast.success('Alumni profile updated successfully.');
       } else {
-        await alumniRepository.create({
-          ...formData,
+        const created = await alumniRepository.create({
+          ...publicProfile,
           name: formData.name || '',
           batchYear: Number(formData.batchYear),
           qualification: formData.qualification || 'Alumnus',
@@ -141,6 +178,20 @@ export default function AdminAlumniPage() {
           isDistinguished: Boolean(formData.isDistinguished),
           status: formData.status || 'published',
         } as Omit<AlumniMember, 'id'>);
+
+        if (created?.id && (contactEmail || contactPhone)) {
+          try {
+            await alumniPrivateRepository.create({
+              id: created.id,
+              alumniId: created.id,
+              name: formData.name?.trim() || '',
+              email: contactEmail,
+              phone: contactPhone,
+            });
+          } catch (privErr) {
+            console.warn('Could not save private contact record:', privErr);
+          }
+        }
         toast.success('Alumni profile added successfully.');
       }
       setIsModalOpen(false);
@@ -183,6 +234,11 @@ export default function AdminAlumniPage() {
     if (!deleteTargetId) return;
     try {
       await alumniRepository.delete(deleteTargetId);
+      try {
+        await alumniPrivateRepository.delete(deleteTargetId);
+      } catch {
+        // Best effort deletion of private contact record
+      }
       toast.success('Alumni record deleted.');
       setDeleteTargetId(null);
       loadData();
@@ -401,8 +457,11 @@ export default function AdminAlumniPage() {
               label="Batch Year"
               type="number"
               required
-              value={formData.batchYear?.toString() || '2010'}
-              onChange={(e) => setFormData({ ...formData, batchYear: parseInt(e.target.value, 10) })}
+              value={formData.batchYear?.toString() || ''}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                setFormData({ ...formData, batchYear: isNaN(val) ? undefined : val });
+              }}
             />
             <Input
               label="Qualification"

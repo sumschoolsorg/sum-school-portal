@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { RealImagePickerModal } from '@/components/ui/RealImagePickerModal';
-import { defaultSchoolSettings, defaultResearchRecords } from '@/lib/defaultData';
-import { schoolRepository, researchRepository } from '@/lib/repositories';
-import { SchoolSettings, ResearchRecord } from '@/types';
+import { defaultSchoolSettings } from '@/lib/defaultData';
+import { schoolRepository } from '@/lib/repositories';
+import { SchoolSettings } from '@/types';
 import {
   Save,
   School,
@@ -18,15 +18,10 @@ import {
   Search,
   ExternalLink,
   Edit3,
-  RefreshCw,
   Building,
-  Users,
-  BookOpen,
-  Phone,
   MapPin,
   Camera,
   Layers,
-  Sparkles,
   Award,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -602,8 +597,8 @@ export default function SchoolInfoAdminPage() {
               <Input
                 label="Designation &amp; Qualification Title"
                 name="principalDesignation"
-                value="Headmaster & Correspondent, S.U.M. School"
-                onChange={() => {}}
+                value={formData.principalDesignation || 'Headmaster & Correspondent, S.U.M. School'}
+                onChange={handleChange}
                 helperText="Official administrative role"
               />
             </div>

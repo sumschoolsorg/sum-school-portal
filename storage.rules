@@ -6,13 +6,38 @@ service firebase.storage {
     function isAuthenticated() {
       return request.auth != null;
     }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        (firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
+          && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.status == 'active'
+          && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.role in ['super-admin', 'admin', 'content-manager'])
+        || (!firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
+          && request.auth.token.role in ['super-admin', 'admin', 'content-manager'])
+      );
+    }
+
+    function isSchoolAdmin() {
+      return isAuthenticated() && (
+        (firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
+          && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.status == 'active'
+          && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.role in ['super-admin', 'admin'])
+        || (!firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
+          && request.auth.token.role in ['super-admin', 'admin'])
+      );
+    }
+
+    function canManageContentFolder(folder) {
+      return isAdmin() && folder in ['announcements', 'events', 'gallery', 'uploads'];
+    }
 
     // Public images (banners, logos, faculty, facilities, gallery, achievements)
     // Anyone can read/download
     // Only authenticated admin can upload, replace, or delete
     match /{folder}/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthenticated()
+      allow delete: if isSchoolAdmin() || canManageContentFolder(folder);
+      allow create, update: if (isSchoolAdmin() || canManageContentFolder(folder))
                    && request.resource.size < 10 * 1024 * 1024 // 10MB limit
                    && request.resource.contentType.matches('image/.*|application/pdf');
     }

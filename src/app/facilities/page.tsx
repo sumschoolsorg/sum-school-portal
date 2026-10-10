@@ -1,9 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { defaultFacilities } from '@/lib/defaultData';
+import { facilityRepository } from '@/lib/repositories';
+import { Facility } from '@/types';
 import {
   MonitorPlay,
   FlaskConical,
@@ -21,6 +23,22 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export default function FacilitiesPage() {
   const { t, getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
+
+  const [facilities, setFacilities] = useState<Facility[]>(defaultFacilities);
+
+  useEffect(() => {
+    let isMounted = true;
+    facilityRepository.getPublished().then((items) => {
+      if (isMounted && items && items.length > 0) {
+        setFacilities(items);
+      }
+    }).catch((err) => {
+      console.warn('Failed to load facilities from repository:', err);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -66,7 +84,7 @@ export default function FacilitiesPage() {
         <section className="section-padding bg-white dark:bg-slate-950">
           <div className="container-main">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {defaultFacilities.map((fac) => {
+              {facilities.map((fac) => {
                 const title = getLocalized(fac, 'title');
                 const description = getLocalized(fac, 'description');
 

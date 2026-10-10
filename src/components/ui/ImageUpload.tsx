@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Upload, X, Loader2, Camera, ShieldCheck, Search } from 'lucide-react';
+import { X, Loader2, Camera, ShieldCheck, Search } from 'lucide-react';
 import { uploadImageWithUniqueId } from '@/lib/storage';
 import { RealImagePickerModal } from './RealImagePickerModal';
 import { toast } from 'sonner';
@@ -70,13 +70,17 @@ export function ImageUpload({
     setIsUploading(true);
     try {
       const { url } = await uploadImageWithUniqueId(file, folder);
+      URL.revokeObjectURL(objectUrl);
       setPreview(url);
       notifyChange(url);
       toast.success('Real photograph uploaded successfully!');
     } catch (error) {
-      console.warn('Firebase Storage upload failed or not configured, using local object preview for dev:', error);
-      notifyChange(objectUrl);
-      toast.info('Real photograph selected (Local preview mode). Real Firebase upload will activate once Storage is connected.');
+      console.warn('Firebase Storage upload failed:', error);
+      URL.revokeObjectURL(objectUrl);
+      setPreview(initialUrl);
+      toast.error(
+        (error as Error)?.message || 'Upload to Firebase Storage failed. Please check storage permissions or try again.'
+      );
     } finally {
       setIsUploading(false);
     }

@@ -10,7 +10,7 @@
   /* Typography */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-heading: 'Outfit', 'Inter', system-ui, sans-serif;
-  --font-tamil: var(--font-tamil), 'Noto Sans Tamil', system-ui, sans-serif;
+  --font-tamil: 'Noto Sans Tamil', 'Latha', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   /* Primary palette — Navy & Gold (academic) */
@@ -107,6 +107,7 @@
 html[lang="ta"],
 body[lang="ta"] {
   font-family: var(--font-tamil), var(--font-sans), system-ui, sans-serif;
+  line-height: 1.75;
 }
 
 html[lang="ta"] h1,
@@ -116,7 +117,20 @@ html[lang="ta"] h4,
 html[lang="ta"] h5,
 html[lang="ta"] h6 {
   font-family: var(--font-tamil), var(--font-heading), system-ui, sans-serif;
-  line-height: 1.35;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+html[lang="ta"] p,
+html[lang="ta"] span,
+html[lang="ta"] label {
+  word-break: break-word;
+}
+
+html[lang="ta"] button,
+html[lang="ta"] .badge {
+  line-height: 1.4;
+  letter-spacing: normal;
 }
 
 /* --- Keyframes --- */

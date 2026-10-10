@@ -1,24 +1,39 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { defaultAcademicsContent } from '@/lib/defaultData';
-import { setDocument } from '@/lib/firestore';
-import { Save, GraduationCap } from 'lucide-react';
+import { academicsRepository } from '@/lib/repositories';
+import { Save, GraduationCap, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AcademicsAdminPage() {
   const [formData, setFormData] = useState(defaultAcademicsContent);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await academicsRepository.get();
+        setFormData(data);
+      } catch (error) {
+        console.warn('Failed to load academics data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await setDocument('academics', 'curriculum', formData);
+      await academicsRepository.save(formData);
       toast.success('Academics content and curriculum saved to Firestore!');
     } catch (error) {
       console.warn('Saved in offline mode:', error);
@@ -27,6 +42,14 @@ export default function AcademicsAdminPage() {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl space-y-6">

@@ -32,6 +32,7 @@ export interface SchoolSettings extends FirestoreDoc {
   faviconUrl: string;
   heroImageUrl?: string;
   principalName?: string;
+  principalDesignation?: string;
   primaryUdiseCode?: string;
   secondaryUdiseCode?: string;
   researchVerifiedDate?: string;
@@ -596,6 +597,13 @@ export interface AlumniMember extends FirestoreDoc {
   distinctionSummary?: string;
   status: 'published' | 'pending' | 'draft';
   order?: number;
+}
+
+export interface AlumniPrivateContact extends FirestoreDoc {
+  alumniId: string;
+  name: string;
+  email?: string;
+  phone?: string;
 }
 
 // --- School Bus & Transport Routes (multiple docs) ---

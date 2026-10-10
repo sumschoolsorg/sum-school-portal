@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
@@ -14,7 +13,7 @@ import { ImageUpload } from '@/components/ui/ImageUpload';
 import { announcementRepository } from '@/lib/repositories';
 import { defaultAnnouncements } from '@/lib/defaultData';
 import { Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Bell, Languages, Globe } from 'lucide-react';
+import { Plus, Edit2, Trash2, Bell, Languages } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -82,25 +81,34 @@ export default function AnnouncementsAdminPage() {
     setIsModalOpen(true);
   };
 
+  const [isLoading, setIsLoading] = useState(true);
+
   const loadData = useCallback(async () => {
     try {
+      setIsLoading(true);
       const data = await announcementRepository.getAll();
-      if (data && data.length > 0) {
-        setAnnouncements(data);
-      }
+      setAnnouncements(data || []);
     } catch (err) {
       console.warn('Error loading announcements:', err);
+      toast.error('Failed to load announcements');
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
     let isMounted = true;
     announcementRepository.getAll().then((data) => {
-      if (isMounted && data && data.length > 0) {
-        setAnnouncements(data);
+      if (isMounted) {
+        setAnnouncements(data || []);
+        setIsLoading(false);
       }
     }).catch((err) => {
-      console.warn('Error loading announcements:', err);
+      if (isMounted) {
+        console.warn('Error loading announcements:', err);
+        toast.error('Failed to load announcements');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;
@@ -148,6 +156,7 @@ export default function AnnouncementsAdminPage() {
       loadData();
     } catch (err) {
       console.error('Error saving announcement:', err);
+      toast.error('Failed to save announcement to database. Changes saved locally only.');
       // Local fallback
       if (editingAnnouncement) {
         setAnnouncements((prev) =>
@@ -169,6 +178,7 @@ export default function AnnouncementsAdminPage() {
       loadData();
     } catch (err) {
       console.error('Delete failed:', err);
+      toast.error('Failed to delete announcement from database. Removed locally only.');
       setAnnouncements((prev) => prev.filter((a) => a.id !== deleteTargetId));
       setDeleteTargetId(null);
     }
@@ -283,6 +293,7 @@ export default function AnnouncementsAdminPage() {
         searchPlaceholder="Search notices..."
         onAddClick={handleOpenAdd}
         addLabel="New Notice"
+        isLoading={isLoading}
       />
 
       {/* Add / Edit Modal */}

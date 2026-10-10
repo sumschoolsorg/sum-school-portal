@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { GraduationCap, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { signIn } from '@/lib/auth';
@@ -29,29 +29,13 @@ export default function AdminLoginPage() {
     } catch (err: unknown) {
       const error = err as { message?: string } | undefined;
       console.warn('Firebase login attempt:', error?.message);
-      // If Firebase Auth is not configured or in development mode, provide clear feedback
-      if (
-        error?.message?.includes('API key') ||
-        error?.message?.includes('project') ||
-        error?.message?.includes('Firebase') ||
-        !process.env.NEXT_PUBLIC_FIREBASE_API_KEY
-      ) {
-        toast.info('Development / Demo Mode: Logged in as School Administrator.');
-        localStorage.setItem('sum_admin_authenticated', 'true');
-        router.push('/admin');
-      } else {
-        toast.error(error?.message || 'Login failed. Check your credentials.');
-      }
+      toast.error(error?.message || 'Login failed. Check your credentials.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDevBypass = () => {
-    localStorage.setItem('sum_admin_authenticated', 'true');
-    toast.success('Admin access granted (Development Mode).');
-    router.push('/admin');
-  };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-12 relative overflow-hidden">
@@ -121,16 +105,7 @@ export default function AdminLoginPage() {
             </Button>
           </form>
 
-          {/* Quick Admin Access helper for local evaluation */}
-          <div className="mt-6 pt-6 border-t border-slate-800 text-center">
-            <button
-              onClick={handleDevBypass}
-              type="button"
-              className="text-xs text-slate-400 hover:text-amber-400 underline transition cursor-pointer"
-            >
-              Enter Admin Portal (Development Quick Access)
-            </button>
-          </div>
+
         </div>
 
         <div className="text-center mt-6 text-xs text-slate-500">

@@ -54,10 +54,39 @@ const STORE_DISPLAY_NAMES: Record<StoreName, string> = {
   [STORES.ADMIN_USERS]: 'Admin Users (RBAC)',
   [STORES.TIMELINE]: 'School Journey Timeline Entries',
   [STORES.ALUMNI]: 'Alumni Directory & Profiles',
+  [STORES.ALUMNI_PRIVATE]: 'Private Alumni Contact Records',
   [STORES.TRANSPORT_ROUTES]: 'School Bus & Transport Routes',
   [STORES.STUDENT_RESULTS]: 'Student Examination Results & Marksheets',
   [STORES.ENQUIRIES]: 'Admission Enquiries',
   [STORES.CONTACT_MESSAGES]: 'Contact Messages',
+};
+
+// IndexedDB uses snake_case names while Firestore uses these collection names.
+const FIRESTORE_COLLECTIONS: Partial<Record<StoreName, string>> = {
+  [STORES.SCHOOL_SETTINGS]: 'schoolSettings',
+  [STORES.HOMEPAGE_CONTENT]: 'homepageContent',
+  [STORES.HERO_BANNERS]: 'heroBanners',
+  [STORES.ABOUT_CONTENT]: 'aboutContent',
+  [STORES.ACADEMICS_CONTENT]: 'academicsContent',
+  [STORES.ADMISSIONS_CONTENT]: 'admissionsContent',
+  [STORES.FACULTY]: 'faculty',
+  [STORES.FACILITIES]: 'facilities',
+  [STORES.ANNOUNCEMENTS]: 'announcements',
+  [STORES.EVENTS]: 'events',
+  [STORES.GALLERY]: 'gallery',
+  [STORES.ACHIEVEMENTS]: 'achievements',
+  [STORES.TIMELINE]: 'timelineEntries',
+  [STORES.TESTIMONIALS]: 'testimonials',
+  [STORES.ENQUIRIES]: 'enquiries',
+  [STORES.CONTACT_MESSAGES]: 'contactMessages',
+  [STORES.RESEARCH_RECORDS]: 'researchRecords',
+  [STORES.THEME_SETTINGS]: 'themeSettings',
+  [STORES.WEBSITE_SETTINGS]: 'websiteSettings',
+  [STORES.ADMIN_USERS]: 'adminUsers',
+  [STORES.ALUMNI]: 'alumni',
+  [STORES.ALUMNI_PRIVATE]: 'alumniPrivate',
+  [STORES.TRANSPORT_ROUTES]: 'transportRoutes',
+  [STORES.STUDENT_RESULTS]: 'studentResults',
 };
 
 export default function MigrationAdminPage() {
@@ -195,19 +224,92 @@ export default function MigrationAdminPage() {
 
     log('Starting migration to Firebase Cloud Firestore...');
     if (!isFirebaseConfigured()) {
-      log('WARNING: Firebase environment variables not fully set. Mocking migration verification step...');
+      log('ERROR: Firebase environment variables are not configured. Cannot migrate to cloud.');
+      log('Please set NEXT_PUBLIC_FIREBASE_* variables in .env.local and restart.');
+      toast.error('Firebase is not configured. Migration aborted.');
+      setIsMigrating(false);
+      return;
     }
 
     try {
+      const { setDocument } = await import('@/lib/firestore');
       const data = await exportAllLocalData();
+      let totalMigrated = 0;
+      let totalFailed = 0;
+
       for (const [store, items] of Object.entries(data)) {
-        log(`Migrating ${items.length} records from collection: ${store}...`);
-        await new Promise((res) => setTimeout(res, 80));
+        if (store === STORES.ADMIN_USERS) {
+          log('Skipping admin user profiles. Provision Firebase Auth accounts and UID-keyed roles through the secure administrator setup process.');
+          continue;
+        }
+        const collectionName = FIRESTORE_COLLECTIONS[store as StoreName];
+        if (!collectionName) {
+          log(`Skipping unrecognized local store: ${store}`);
+          continue;
+        }
+        if (!items || items.length === 0) {
+          log(`Skipping empty collection: ${store}`);
+          continue;
+        }
+        if (store === STORES.ALUMNI) {
+          log(`Migrating ${items.length} records from collection: alumni (sanitizing private contact fields)...`);
+          for (const item of items as Record<string, unknown>[]) {
+            try {
+              const docId = (item.id as string) || `migrated-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+              const email = item.email as string | undefined;
+              const phone = item.phone as string | undefined;
+              const publicData = { ...item };
+              delete publicData.id;
+              delete publicData.email;
+              delete publicData.phone;
+              await setDocument(collectionName, docId, publicData);
+              totalMigrated++;
+
+              if (email || phone) {
+                try {
+                  await setDocument('alumniPrivate', docId, {
+                    alumniId: docId,
+                    name: (publicData.name as string) || '',
+                    email: email || '',
+                    phone: phone || '',
+                  });
+                } catch (privErr) {
+                  log(`  Notice: Private contact info write for ${docId} skipped or failed: ${(privErr as Error)?.message || 'Unknown'}`);
+                }
+              }
+            } catch (writeErr) {
+              totalFailed++;
+              log(`  WARNING: Failed to write alumni record: ${(writeErr as Error)?.message || 'Unknown error'}`);
+            }
+          }
+          log(`  ✓ ${store} — migration complete`);
+          continue;
+        }
+
+        for (const item of items as Record<string, unknown>[]) {
+          try {
+            const docId = (item.id as string) || `migrated-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+            const docData = { ...item };
+            delete docData.id;
+            await setDocument(collectionName, docId, docData);
+            totalMigrated++;
+          } catch (writeErr) {
+            totalFailed++;
+            log(`  WARNING: Failed to write document in ${store}: ${(writeErr as Error)?.message || 'Unknown error'}`);
+          }
+        }
+        log(`  ✓ ${store} — migration complete`);
       }
-      log('Validation checks: ALL records validated without data conflicts.');
+
+      log(`Migration summary: ${totalMigrated} records written, ${totalFailed} failed.`);
       log('Preserving all local copies (Never deleted).');
-      log('MIGRATION COMPLETED SUCCESSFULLY!');
-      toast.success('Firebase migration routine finished!');
+      if (totalFailed === 0) {
+        log('MIGRATION COMPLETED SUCCESSFULLY!');
+        toast.success(`Firebase migration completed! ${totalMigrated} records migrated.`);
+      } else {
+        log(`MIGRATION COMPLETED WITH ${totalFailed} ERRORS.`);
+        toast.warning(`Migration completed with ${totalFailed} errors. Check log for details.`);
+      }
     } catch (err: unknown) {
       const error = err as { message?: string } | undefined;
       log(`ERROR: Migration interrupted: ${error?.message || 'Unknown error'}`);

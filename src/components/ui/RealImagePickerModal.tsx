@@ -3,17 +3,13 @@
 import React, { useState, useMemo } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import {
   Search,
   CheckCircle2,
   ShieldCheck,
   Camera,
   Filter,
-  Eye,
-  Sparkles,
   Ban,
-  Upload,
   Link as LinkIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';

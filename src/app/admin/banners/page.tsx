@@ -80,13 +80,17 @@ export default function BannersAdminPage() {
   useEffect(() => {
     let isMounted = true;
     heroBannerRepository.getAll().then((data) => {
-      if (!isMounted) return;
-      data.sort((a, b) => (a.order || 0) - (b.order || 0));
-      setBanners(data);
+      if (isMounted) {
+        data.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setBanners(data);
+        setIsLoading(false);
+      }
     }).catch((err) => {
-      console.error('Error loading banners:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading banners:', err);
+        toast.error('Failed to load hero banners.');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;
@@ -212,8 +216,12 @@ export default function BannersAdminPage() {
     if (!deleteTargetId) return;
     try {
       await heroBannerRepository.delete(deleteTargetId);
-      setBanners((prev) => prev.filter((b) => b.id !== deleteTargetId));
-      toast.success('Banner deleted.');
+      const remaining = banners
+        .filter((b) => b.id !== deleteTargetId)
+        .map((b, i) => ({ ...b, order: i + 1 }));
+      setBanners(remaining);
+      await Promise.all(remaining.map((b) => heroBannerRepository.save(b)));
+      toast.success('Banner deleted and order updated.');
       setDeleteTargetId(null);
     } catch (err) {
       console.error('Error deleting banner:', err);
@@ -225,7 +233,7 @@ export default function BannersAdminPage() {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= banners.length) return;
 
-    const newBanners = [...banners];
+    const newBanners = banners.map((b) => ({ ...b }));
     const temp = newBanners[index];
     newBanners[index] = newBanners[targetIndex];
     newBanners[targetIndex] = temp;
@@ -237,10 +245,7 @@ export default function BannersAdminPage() {
     setBanners(newBanners);
 
     try {
-      await Promise.all([
-        heroBannerRepository.save(newBanners[index]),
-        heroBannerRepository.save(newBanners[targetIndex]),
-      ]);
+      await Promise.all(newBanners.map((b) => heroBannerRepository.save(b)));
       toast.success('Banner order updated.');
     } catch (err) {
       console.error('Error updating banner order:', err);

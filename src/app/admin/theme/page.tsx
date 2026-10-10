@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { themeRepository } from '@/lib/repositories';
 import { ThemeSettings } from '@/types';
 import { defaultThemeSettings } from '@/lib/defaultData';
@@ -85,7 +84,7 @@ export default function ThemeAdminPage() {
             <RotateCcw className="w-3.5 h-3.5" />
             Reset Defaults
           </Button>
-          <Button onClick={handleSave} disabled={isSaving} className="flex items-center gap-1.5">
+          <Button onClick={handleSave} disabled={isSaving || isLoading} className="flex items-center gap-1.5">
             <Check className="w-4 h-4" />
             {isSaving ? 'Saving...' : 'Save Theme'}
           </Button>

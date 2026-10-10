@@ -1,18 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { defaultAdmissionsContent } from '@/lib/defaultData';
-import { setDocument } from '@/lib/firestore';
-import { Save, FileCheck } from 'lucide-react';
+import { admissionsRepository } from '@/lib/repositories';
+import { Save, FileCheck, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdmissionsAdminPage() {
   const [formData, setFormData] = useState(defaultAdmissionsContent);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await admissionsRepository.get();
+        setFormData(data);
+      } catch (error) {
+        console.warn('Failed to load admissions data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,7 +37,7 @@ export default function AdmissionsAdminPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await setDocument('admissions', 'overview', formData);
+      await admissionsRepository.save(formData);
       toast.success('Admissions announcements and criteria saved to Firestore!');
     } catch (error) {
       console.warn('Saved in offline mode:', error);
@@ -31,6 +46,14 @@ export default function AdmissionsAdminPage() {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl space-y-6">

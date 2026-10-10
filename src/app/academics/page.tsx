@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Card } from '@/components/ui/Card';
 import { defaultAcademicsContent } from '@/lib/defaultData';
+import { academicsRepository } from '@/lib/repositories';
+import { AcademicsContent } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import Link from 'next/link';
 import {
@@ -21,7 +23,21 @@ import {
 
 export default function AcademicsPage() {
   const { t, language, getLocalized } = useLanguage();
-  const content = defaultAcademicsContent;
+  const [content, setContent] = useState<AcademicsContent>(defaultAcademicsContent);
+
+  useEffect(() => {
+    let isMounted = true;
+    academicsRepository.get().then((data) => {
+      if (isMounted && data) {
+        setContent(data);
+      }
+    }).catch((err) => {
+      console.warn('Failed to load academics content from repository:', err);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const primarySubjects =
     language === 'ta' && content.primarySection.subjects_ta

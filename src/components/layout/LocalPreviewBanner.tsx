@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Database, ArrowRight, X, Cloud } from 'lucide-react';
-import { isFirebaseConfigured, getCurrentDataMode } from '@/lib/repositories';
+import { getCurrentDataMode } from '@/lib/repositories';
 
 export function LocalPreviewBanner() {
   const [isVisible, setIsVisible] = useState(() => {

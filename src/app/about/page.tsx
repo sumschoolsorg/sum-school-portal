@@ -1,18 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Card } from '@/components/ui/Card';
 import { defaultAboutContent } from '@/lib/defaultData';
+import { aboutRepository } from '@/lib/repositories';
+import { AboutContent } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Target, Eye, Heart } from 'lucide-react';
 import { SchoolTimelineSection } from '@/components/about/SchoolTimelineSection';
 
 export default function AboutPage() {
   const { t, language, getLocalized } = useLanguage();
-  const content = defaultAboutContent;
+  const [content, setContent] = useState<AboutContent>(defaultAboutContent);
+
+  useEffect(() => {
+    let isMounted = true;
+    aboutRepository.get().then((data) => {
+      if (isMounted && data) {
+        setContent(data);
+      }
+    }).catch((err) => {
+      console.warn('Failed to load about content from repository:', err);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const coreValues =
     language === 'ta' && content.coreValues_ta && content.coreValues_ta.length > 0

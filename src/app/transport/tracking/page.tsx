@@ -15,24 +15,17 @@ import {
   Clock,
   Phone,
   ShieldCheck,
-  AlertCircle,
   CheckCircle2,
-  Radio,
   Gauge,
-  Compass,
   Calendar,
   Users,
   Bell,
   Play,
   Pause,
   RotateCcw,
-  Sparkles,
-  ChevronRight,
   Wifi,
-  Smartphone,
   Check,
   X,
-  ExternalLink,
 } from 'lucide-react';
 
 export default function BusTrackingPage() {
@@ -61,7 +54,7 @@ export default function BusTrackingPage() {
   useEffect(() => {
     const loadRoutes = async () => {
       try {
-        const data = await transportRepository.getAll();
+        const data = await transportRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((r) => r.status === 'published');
           if (published.length > 0) {

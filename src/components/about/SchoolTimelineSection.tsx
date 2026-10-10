@@ -6,19 +6,18 @@ import { defaultTimelineEntries } from '@/lib/defaultData';
 import { TimelineEntry } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SectionHeading } from '@/components/ui/SectionHeading';
-import { Calendar, Award, Sparkles, Building, Landmark, GraduationCap, ChevronRight } from 'lucide-react';
+import { Award, Sparkles, Building, Landmark, GraduationCap } from 'lucide-react';
 
 export function SchoolTimelineSection() {
-  const { t, getLocalized, language } = useLanguage();
+  const { getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
   const [timeline, setTimeline] = useState<TimelineEntry[]>(defaultTimelineEntries);
-  const [selectedEntry, setSelectedEntry] = useState<TimelineEntry | null>(null);
 
   useEffect(() => {
     const loadTimeline = async () => {
       try {
-        const data = await timelineRepository.getAll();
+        const data = await timelineRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
           setTimeline(published.length > 0 ? published : defaultTimelineEntries);

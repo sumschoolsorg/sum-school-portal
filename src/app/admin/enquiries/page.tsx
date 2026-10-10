@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -9,17 +8,10 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import {
   Inbox,
   Phone,
-  Mail,
-  Clock,
   CheckCircle2,
   XCircle,
   Download,
-  Calendar,
-  MapPin,
-  FileText,
-  UserCheck,
   RefreshCw,
-  Search,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { enquiryRepository } from '@/lib/repositories';
@@ -48,11 +40,16 @@ export default function EnquiriesAdminPage() {
   useEffect(() => {
     let isMounted = true;
     enquiryRepository.getAll().then((data) => {
-      if (isMounted) setEnquiries(data);
+      if (isMounted) {
+        setEnquiries(data);
+        setLoading(false);
+      }
     }).catch((err) => {
-      console.error('Failed to load enquiries:', err);
-    }).finally(() => {
-      if (isMounted) setLoading(false);
+      if (isMounted) {
+        console.error('Failed to load enquiries:', err);
+        toast.error('Failed to load admission applications');
+        setLoading(false);
+      }
     });
     return () => {
       isMounted = false;
@@ -126,21 +123,29 @@ export default function EnquiriesAdminPage() {
       'Admin Notes',
     ];
 
+    const sanitizeCSV = (val: unknown): string => {
+      const s = String(val ?? '').replace(/"/g, '""');
+      if (/^[=+\-@\t\r]/.test(s)) {
+        return `"'${s}"`;
+      }
+      return `"${s}"`;
+    };
+
     const rows = enquiries.map((e) => [
-      `"${e.applicationNumber || ''}"`,
-      `"${e.studentName || ''}"`,
-      `"${e.dob || ''}"`,
-      `"${e.gender || ''}"`,
-      `"${e.classApplyingFor || ''}"`,
-      `"${e.parentName || ''}"`,
-      `"${e.phone || ''}"`,
-      `"${e.email || ''}"`,
-      `"${(e.address || '').replace(/"/g, '""')}"`,
-      `"${(e.previousSchool || '').replace(/"/g, '""')}"`,
-      `"${e.status || ''}"`,
-      `"${e.applicationDate || ''}"`,
-      `"${(e.message || '').replace(/"/g, '""')}"`,
-      `"${(e.notes || '').replace(/"/g, '""')}"`,
+      sanitizeCSV(e.applicationNumber),
+      sanitizeCSV(e.studentName),
+      sanitizeCSV(e.dob),
+      sanitizeCSV(e.gender),
+      sanitizeCSV(e.classApplyingFor),
+      sanitizeCSV(e.parentName),
+      sanitizeCSV(e.phone),
+      sanitizeCSV(e.email),
+      sanitizeCSV(e.address),
+      sanitizeCSV(e.previousSchool),
+      sanitizeCSV(e.status),
+      sanitizeCSV(e.applicationDate),
+      sanitizeCSV(e.message),
+      sanitizeCSV(e.notes),
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -340,6 +345,7 @@ export default function EnquiriesAdminPage() {
         columns={columns}
         searchKey="studentName"
         searchPlaceholder="Search by student name..."
+        isLoading={loading}
       />
 
       {/* Detail Review Modal */}

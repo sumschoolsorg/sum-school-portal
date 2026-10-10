@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -21,7 +21,6 @@ import {
   ExternalLink,
   ShieldCheck,
   CheckCircle,
-  AlertTriangle,
   XCircle,
   Clock,
   BookOpen,
@@ -50,19 +49,6 @@ export default function ResearchAdminPage() {
     published: true,
   });
 
-  const loadData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const data = await researchRepository.getAll();
-      setRecords(data);
-    } catch (err) {
-      console.error('Error loading research records:', err);
-      toast.error('Failed to load research records.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   const handleSyncVerifiedFindings = async () => {
     try {
       setIsLoading(true);
@@ -83,11 +69,15 @@ export default function ResearchAdminPage() {
   useEffect(() => {
     let isMounted = true;
     researchRepository.getAll().then((data) => {
-      if (isMounted) setRecords(data);
+      if (isMounted) {
+        setRecords(data);
+        setIsLoading(false);
+      }
     }).catch((err) => {
-      console.error('Error loading research records:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading research records:', err);
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;
@@ -187,7 +177,7 @@ export default function ResearchAdminPage() {
           ? 'Record marked as Admin Approved!'
           : 'Record unapproved and hidden from public display.'
       );
-    } catch (err) {
+    } catch {
       toast.error('Failed to update approval status.');
     }
   };
@@ -377,7 +367,9 @@ export default function ResearchAdminPage() {
         <DataTable
           data={records}
           columns={columns}
+          searchKey="title"
           searchPlaceholder="Search research records by title, value, or source..."
+          isLoading={isLoading}
         />
       </Card>
 

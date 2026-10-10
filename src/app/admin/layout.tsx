@@ -6,34 +6,49 @@ import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { toast } from 'sonner';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { isAdmin, isSchoolAdmin, isSuperAdmin, loading } = useAuth();
   // If on login page, don't show admin sidebar/topbar
   const isLoginPage = pathname === '/admin/login';
+  const isSuperAdminOnly = pathname === '/admin/users' || pathname.startsWith('/admin/users/') ||
+                           pathname === '/admin/migration' || pathname.startsWith('/admin/migration/');
+  const isSchoolAdminOnly = pathname === '/admin/results' || pathname.startsWith('/admin/results/') ||
+                            pathname === '/admin/enquiries' || pathname.startsWith('/admin/enquiries/') ||
+                            pathname === '/admin/settings' || pathname.startsWith('/admin/settings/') ||
+                            pathname === '/admin/admissions' || pathname.startsWith('/admin/admissions/') ||
+                            pathname === '/admin/school-info' || pathname.startsWith('/admin/school-info/');
 
-  const hasLocalAuth = typeof window !== 'undefined' && localStorage.getItem('sum_admin_authenticated') === 'true';
-  const isAuthorized = Boolean(user || hasLocalAuth);
+  const isAuthorized = isAdmin && (!isSuperAdminOnly || isSuperAdmin) && (!isSchoolAdminOnly || isSchoolAdmin);
 
   useEffect(() => {
     if (isLoginPage) return;
 
     if (!loading && !isAuthorized) {
-      router.push('/admin/login');
+      if (isAdmin) {
+        toast.error('Access restricted: Your administrator role lacks permission for this section.');
+        router.replace('/admin');
+      } else {
+        router.replace('/admin/login');
+      }
     }
-  }, [loading, isAuthorized, isLoginPage, router]);
+  }, [loading, isAuthorized, isAdmin, isLoginPage, router]);
 
   if (isLoginPage) {
     return <>{children}</>;
   }
 
-  if (loading && !isAuthorized) {
+  if (loading || !isAuthorized) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <LoadingSpinner size="lg" label="Verifying Administrator Access..." />
+        <LoadingSpinner
+          size="lg"
+          label={loading ? 'Verifying Administrator Access...' : 'Access denied. Returning to sign in...'}
+        />
       </div>
     );
   }

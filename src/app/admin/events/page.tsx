@@ -12,7 +12,6 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { eventRepository, announcementRepository } from '@/lib/repositories';
-import { defaultEvents } from '@/lib/defaultData';
 import { SchoolEvent, Announcement } from '@/types';
 import { Plus, Edit2, Trash2, Calendar, Star, Bell, MapPin, Clock, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
@@ -52,11 +51,7 @@ export default function EventsAdminPage() {
     try {
       setIsLoading(true);
       const data = await eventRepository.getAll();
-      if (data && data.length > 0) {
-        setEvents(data);
-      } else {
-        setEvents(defaultEvents);
-      }
+      setEvents(data || []);
     } catch (err) {
       console.error('Error loading events:', err);
       toast.error('Failed to load events.');
@@ -68,16 +63,16 @@ export default function EventsAdminPage() {
   useEffect(() => {
     let isMounted = true;
     eventRepository.getAll().then((data) => {
-      if (!isMounted) return;
-      if (data && data.length > 0) {
-        setEvents(data);
-      } else {
-        setEvents(defaultEvents);
+      if (isMounted) {
+        setEvents(data || []);
+        setIsLoading(false);
       }
     }).catch((err) => {
-      console.error('Error loading events:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading events:', err);
+        toast.error('Failed to load events.');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;
@@ -341,6 +336,7 @@ export default function EventsAdminPage() {
               value={formData.time || ''}
               onChange={(e) => setFormData({ ...formData, time: e.target.value })}
               placeholder="e.g. 9:30 AM – 3:30 PM"
+              leftIcon={<Clock className="w-4 h-4" />}
             />
             <Select
               label="Academic Year"
@@ -389,15 +385,8 @@ export default function EventsAdminPage() {
             />
           </div>
 
-          {/* Time & Venue */}
+          {/* Venue & Chief Guest */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Event Timings"
-              value={formData.time || ''}
-              onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-              placeholder="e.g. 9:00 AM – 3:30 PM"
-              leftIcon={<Clock className="w-4 h-4" />}
-            />
             <Input
               label="Venue (English)"
               value={formData.venue || ''}
@@ -405,23 +394,21 @@ export default function EventsAdminPage() {
               placeholder="e.g. School Auditorium"
               leftIcon={<MapPin className="w-4 h-4" />}
             />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
               label="Venue (Tamil)"
               value={formData.venue_ta || ''}
               onChange={(e) => setFormData({ ...formData, venue_ta: e.target.value })}
               placeholder="e.g. பள்ளி அரங்கம்"
             />
-            <Input
-              label="Chief Guest / Dignitary"
-              value={formData.chiefGuest || ''}
-              onChange={(e) => setFormData({ ...formData, chiefGuest: e.target.value })}
-              placeholder="e.g. District Collector, Theni"
-              leftIcon={<UserCheck className="w-4 h-4" />}
-            />
           </div>
+
+          <Input
+            label="Chief Guest / Dignitary"
+            value={formData.chiefGuest || ''}
+            onChange={(e) => setFormData({ ...formData, chiefGuest: e.target.value })}
+            placeholder="e.g. District Collector, Theni"
+            leftIcon={<UserCheck className="w-4 h-4" />}
+          />
 
           {/* Image */}
           <ImageUpload

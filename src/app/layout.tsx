@@ -1,27 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Outfit, Noto_Sans_Tamil } from "next/font/google";
 import "./globals.css";
 import { ClientProviders } from "@/components/providers/ClientProviders";
 import { LocalPreviewBanner } from "@/components/layout/LocalPreviewBanner";
-
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const outfit = Outfit({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const notoSansTamil = Noto_Sans_Tamil({
-  variable: "--font-tamil",
-  subsets: ["tamil"],
-  weight: ["400", "500", "600", "700", "800"],
-  display: "swap",
-});
 
 export const viewport: Viewport = {
   themeColor: "#1e3a8a",
@@ -60,10 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${outfit.variable} ${notoSansTamil.variable} h-full antialiased scroll-smooth`}
-    >
+    <html lang="en" className="h-full antialiased scroll-smooth">
       <body className="min-h-full flex flex-col font-sans bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white dark:bg-slate-950 dark:text-slate-100">
         <a href="#main-content" className="skip-to-content">
           Skip to main content

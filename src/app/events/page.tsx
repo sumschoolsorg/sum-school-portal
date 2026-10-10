@@ -10,24 +10,20 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Sparkles,
   UserCheck,
   Search,
-  Filter,
   X,
   Share2,
   CalendarCheck,
   History,
-  Tag,
 } from 'lucide-react';
-import { format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
 import { toast } from 'sonner';
 
 export default function EventsPage() {
-  const { t, getLocalized, language } = useLanguage();
+  const { getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
   const [events, setEvents] = useState<SchoolEvent[]>(defaultEvents);
@@ -36,7 +32,6 @@ export default function EventsPage() {
   // Tabs: upcoming vs archive
   const [activeTab, setActiveTab] = useState<'upcoming' | 'archive'>('upcoming');
   const [selectedYear, setSelectedYear] = useState<string>('all');
-  const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModalEvent, setActiveModalEvent] = useState<SchoolEvent | null>(null);
@@ -47,7 +42,7 @@ export default function EventsPage() {
     const loadEvents = async (showLoading = false) => {
       try {
         if (showLoading) setIsLoading(true);
-        const data = await eventRepository.getAll();
+        const data = await eventRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
           setEvents(published.length > 0 ? published : defaultEvents);
@@ -351,7 +346,6 @@ export default function EventsPage() {
                   const dateObj = formatEventDate(ev.date);
                   const title = getLocalized(ev, 'title');
                   const desc = getLocalized(ev, 'description');
-                  const content = getLocalized(ev, 'content');
                   const venue = getLocalized(ev, 'venue');
 
                   return (

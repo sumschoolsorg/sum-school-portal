@@ -4,20 +4,22 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { alumniRepository } from '@/lib/repositories';
+import { alumniRepository, alumniPrivateRepository } from '@/lib/repositories';
 import { defaultAlumni } from '@/lib/defaultData';
 import { AlumniMember } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Modal } from '@/components/ui/Modal';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Button } from '@/components/ui/Button';
 import {
   GraduationCap,
   Award,
   Briefcase,
   MapPin,
-  HeartHandshake,
   Search,
   Quote,
   PlusCircle,
-  X,
   Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -49,9 +51,17 @@ export default function AlumniPage() {
   useEffect(() => {
     const loadAlumni = async () => {
       try {
-        const data = await alumniRepository.getAll();
+        const data = await alumniRepository.getPublished();
         if (data && data.length > 0) {
-          setAlumniList(data.filter((item) => item.status === 'published'));
+          const publicProfiles = data
+            .filter((item) => item.status === 'published')
+            .map((item) => {
+              const copy = { ...item };
+              delete copy.email;
+              delete copy.phone;
+              return copy;
+            });
+          setAlumniList(publicProfiles);
         }
       } catch (err) {
         console.warn('Error loading alumni:', err);
@@ -90,20 +100,37 @@ export default function AlumniPage() {
 
     setIsSubmitting(true);
     try {
+      const generatedId = `alumni-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      // Public profile document - strictly non-sensitive fields only
       await alumniRepository.create({
-        ...formData,
-        name: formData.name,
+        id: generatedId,
+        name: formData.name.trim(),
         batchYear: Number(formData.batchYear),
         qualification: formData.qualification || 'Alumnus',
-        currentDesignation: formData.currentDesignation,
-        companyOrOrg: formData.companyOrOrg || 'Organization',
-        location: formData.location || 'Tamil Nadu',
+        currentDesignation: formData.currentDesignation.trim(),
+        companyOrOrg: formData.companyOrOrg?.trim() || 'Organization',
+        location: formData.location?.trim() || 'Tamil Nadu',
         photoUrl: formData.photoUrl || '/images/faculty-1.jpg',
-        message: formData.message || 'Proud alumnus of S.U.M. School, Royappanpatti.',
+        message: formData.message?.trim() || 'Proud alumnus of S.U.M. School, Royappanpatti.',
         isDistinguished: false,
         status: 'pending', // Awaiting admin approval
         order: alumniList.length + 1,
-      } as Omit<AlumniMember, 'id'>);
+      });
+
+      // Private contact info is securely stored in admin-only alumniPrivate collection
+      if (formData.email || formData.phone) {
+        try {
+          await alumniPrivateRepository.create({
+            id: generatedId,
+            alumniId: generatedId,
+            name: formData.name.trim(),
+            email: formData.email?.trim() || '',
+            phone: formData.phone?.trim() || '',
+          });
+        } catch (contactErr) {
+          console.warn('Could not save private contact info:', contactErr);
+        }
+      }
 
       toast.success(
         isTa
@@ -395,175 +422,107 @@ export default function AlumniPage() {
         </section>
 
         {/* Registration Modal */}
-        {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl relative my-8">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="absolute top-5 right-5 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title={isTa ? 'முன்னாள் மாணவர் பதிவு' : 'Alumni Registration'}
+          description={isTa ? 'எஸ்.யு.எம். குடும்பத்துடன் இணைந்திருங்கள் — உங்கள் விவரங்கள் பள்ளி நிர்வாக ஒப்புதலுக்குப் பிறகு வெளியிடப்படும்.' : 'Reunite with your alma mater. Your profile will be published after school verification.'}
+          size="lg"
+        >
+          <form onSubmit={handleRegisterSubmit} className="space-y-4">
+            <Input
+              label={isTa ? 'முழுப்பெயர் *' : 'Full Name *'}
+              required
+              value={formData.name || ''}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g. S. Mariappan"
+            />
 
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                  <HeartHandshake className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold font-heading text-slate-900 dark:text-white">
-                    {isTa ? 'முன்னாள் மாணவர் பதிவு' : 'Alumni Registration'}
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    {isTa ? 'எஸ்.யு.எம். குடும்பத்துடன் இணைந்திருங்கள்.' : 'Reunite with your alma mater.'}
-                  </p>
-                </div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label={isTa ? 'படித்த ஆண்டு (Batch Year) *' : 'Graduating Batch Year *'}
+                type="number"
+                required
+                min={1963}
+                max={2030}
+                value={formData.batchYear || 2015}
+                onChange={(e) => setFormData({ ...formData, batchYear: parseInt(e.target.value, 10) })}
+              />
 
-              <form onSubmit={handleRegisterSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    {isTa ? 'முழுப்பெயர் *' : 'Full Name *'}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name || ''}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. S. Mariappan"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      {isTa ? 'படித்த ஆண்டு (Batch Year) *' : 'Graduating Batch Year *'}
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min={1963}
-                      max={2030}
-                      value={formData.batchYear || 2015}
-                      onChange={(e) => setFormData({ ...formData, batchYear: parseInt(e.target.value, 10) })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      {isTa ? 'கல்வித்தகுதி' : 'Highest Qualification'}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.qualification || ''}
-                      onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
-                      placeholder="e.g. B.Tech / M.Sc. / MBBS"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      {isTa ? 'தற்போதைய பதவி / தொழில் *' : 'Current Designation *'}
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.currentDesignation || ''}
-                      onChange={(e) => setFormData({ ...formData, currentDesignation: e.target.value })}
-                      placeholder="e.g. Software Engineer / Teacher"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      {isTa ? 'நிறுவனம் / பணிபுரியும் இடம்' : 'Company / Institution'}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.companyOrOrg || ''}
-                      onChange={(e) => setFormData({ ...formData, companyOrOrg: e.target.value })}
-                      placeholder="e.g. Govt. Hospital / TCS"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      {isTa ? 'தற்போது வசிக்கும் ஊர்' : 'Current City & State'}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.location || ''}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      placeholder="e.g. Theni, Tamil Nadu"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      {isTa ? 'மின்னஞ்சல்' : 'Email Address'}
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email || ''}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="alumnus@gmail.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    {isTa ? 'பள்ளி நினைவுகள் / செய்தி' : 'School Memory / Message to Juniors'}
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={formData.message || ''}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    placeholder={
-                      isTa
-                        ? 'உங்கள் பள்ளி நினைவுகள் அல்லது இளைய மாணவர்களுக்கான அறிவுரை...'
-                        : 'Share a fond memory or word of encouragement for current students...'
-                    }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div className="pt-2 flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsModalOpen(false)}
-                    className="flex-1 py-3 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                  >
-                    {isTa ? 'ரத்து' : 'Cancel'}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-lg shadow-blue-500/20 transition disabled:opacity-50 cursor-pointer"
-                  >
-                    {isSubmitting
-                      ? isTa
-                        ? 'பதிவாகிறது...'
-                        : 'Submitting...'
-                      : isTa
-                      ? 'விவரங்களைச் சமர்ப்பி'
-                      : 'Submit Registration'}
-                  </button>
-                </div>
-              </form>
+              <Input
+                label={isTa ? 'கல்வித்தகுதி (விருப்பத்தேர்வு)' : 'Highest Qualification'}
+                value={formData.qualification || ''}
+                onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
+                placeholder="e.g. B.Tech / M.Sc. / MBBS"
+              />
             </div>
-          </div>
-        )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label={isTa ? 'தற்போதைய பதவி / தொழில் *' : 'Current Designation *'}
+                required
+                value={formData.currentDesignation || ''}
+                onChange={(e) => setFormData({ ...formData, currentDesignation: e.target.value })}
+                placeholder="e.g. Software Engineer / Teacher"
+              />
+
+              <Input
+                label={isTa ? 'நிறுவனம் / பணிபுரியும் இடம்' : 'Company / Institution'}
+                value={formData.companyOrOrg || ''}
+                onChange={(e) => setFormData({ ...formData, companyOrOrg: e.target.value })}
+                placeholder="e.g. Govt. Hospital / TCS"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label={isTa ? 'தற்போது வசிக்கும் ஊர்' : 'Current City & State'}
+                value={formData.location || ''}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                placeholder="e.g. Theni, Tamil Nadu"
+              />
+
+              <Input
+                label={isTa ? 'மின்னஞ்சல் (நிர்வாக தொடர்புக்கு மட்டும்)' : 'Email (Admin Contact Only)'}
+                type="email"
+                value={formData.email || ''}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="alumnus@gmail.com"
+              />
+            </div>
+
+            <Textarea
+              label={isTa ? 'பள்ளி நினைவுகள் / செய்தி' : 'School Memory / Message to Juniors'}
+              rows={3}
+              value={formData.message || ''}
+              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+              placeholder={
+                isTa
+                  ? 'உங்கள் பள்ளி நினைவுகள் அல்லது இளைய மாணவர்களுக்கான அறிவுரை...'
+                  : 'Share a fond memory or word of encouragement for current students...'
+              }
+            />
+
+            <div className="pt-3 flex flex-col sm:flex-row gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:flex-1"
+                onClick={() => setIsModalOpen(false)}
+              >
+                {isTa ? 'ரத்து' : 'Cancel'}
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-full sm:flex-1"
+                isLoading={isSubmitting}
+              >
+                {isTa ? 'விவரங்களைச் சமர்ப்பி' : 'Submit Registration'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
       </main>
 
       <Footer />

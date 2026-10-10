@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Badge } from '@/components/ui/Badge';
 import { defaultFaculty } from '@/lib/defaultData';
+import { facultyRepository } from '@/lib/repositories';
 import { Faculty } from '@/types';
 import { GraduationCap, Briefcase, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -13,11 +14,26 @@ export default function FacultyPage() {
   const { t, getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
+  const [facultyList, setFacultyList] = useState<Faculty[]>(defaultFaculty);
   const [activeSection, setActiveSection] = useState<'all' | 'primary' | 'secondary' | 'higher-secondary'>('all');
 
+  useEffect(() => {
+    let isMounted = true;
+    facultyRepository.getPublished().then((items) => {
+      if (isMounted && items && items.length > 0) {
+        setFacultyList(items);
+      }
+    }).catch((err) => {
+      console.warn('Failed to load faculty from repository:', err);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const filteredFaculty = activeSection === 'all'
-    ? defaultFaculty
-    : defaultFaculty.filter((f: Faculty) => f.section === activeSection);
+    ? facultyList
+    : facultyList.filter((f: Faculty) => f.section === activeSection);
 
   const getSectionBadge = (section: string) => {
     if (isTa) {

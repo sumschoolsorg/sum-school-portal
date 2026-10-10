@@ -11,9 +11,8 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { galleryRepository, announcementRepository } from '@/lib/repositories';
-import { defaultGalleryImages } from '@/lib/defaultData';
 import { GalleryImage, Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Image as ImageIcon, Star, Bell, Calendar } from 'lucide-react';
+import { Plus, Edit2, Trash2, Image as ImageIcon, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GalleryAdminPage() {
@@ -49,11 +48,7 @@ export default function GalleryAdminPage() {
     try {
       setIsLoading(true);
       const data = await galleryRepository.getAll();
-      if (data && data.length > 0) {
-        setImages(data);
-      } else {
-        setImages(defaultGalleryImages);
-      }
+      setImages(data || []);
     } catch (err) {
       console.error('Error loading gallery images:', err);
       toast.error('Failed to load gallery images from database.');
@@ -65,16 +60,16 @@ export default function GalleryAdminPage() {
   useEffect(() => {
     let isMounted = true;
     galleryRepository.getAll().then((data) => {
-      if (!isMounted) return;
-      if (data && data.length > 0) {
-        setImages(data);
-      } else {
-        setImages(defaultGalleryImages);
+      if (isMounted) {
+        setImages(data || []);
+        setIsLoading(false);
       }
     }).catch((err) => {
-      console.error('Error loading gallery images:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading gallery images:', err);
+        toast.error('Failed to load gallery images from database.');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;
@@ -335,6 +330,7 @@ export default function GalleryAdminPage() {
                 { value: 'February', label: 'February' },
                 { value: 'March', label: 'March' },
                 { value: 'April', label: 'April' },
+                { value: 'May', label: 'May' },
                 { value: 'June', label: 'June' },
                 { value: 'July', label: 'July' },
                 { value: 'August', label: 'August' },

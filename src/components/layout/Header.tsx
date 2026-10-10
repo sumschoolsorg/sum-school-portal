@@ -11,10 +11,6 @@ import {
   Award,
   Sparkles,
   Info,
-  ExternalLink,
-  GraduationCap,
-  Calendar,
-  Layers,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -116,6 +112,28 @@ export function Header() {
       setAcademicsDropdown(false);
     }
   }, [pathname]);
+
+  // Handle escape key and lock body scroll when mobile drawer is open
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (mobileMenuOpen) setMobileMenuOpen(false);
+        if (academicsDropdown) setAcademicsDropdown(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mobileMenuOpen, academicsDropdown]);
 
   const navLinks = [
     { href: '/', label: t('nav.home', 'Home') },
@@ -305,7 +323,7 @@ export function Header() {
             )}
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden xl:flex items-center gap-0.5 2xl:gap-1.5 py-1.5 overflow-x-auto">
+            <nav className="hidden xl:flex items-center gap-0.5 2xl:gap-1.5 py-1.5 overflow-x-auto" aria-label="Main Navigation">
               {navLinks.map((link, idx) => {
                 if (link.isDropdown) {
                   return (
@@ -316,7 +334,9 @@ export function Header() {
                       onMouseLeave={() => setAcademicsDropdown(false)}
                     >
                       <button
-                        className={`flex items-center gap-1 px-3 py-2 text-xs 2xl:text-sm font-semibold rounded-xl transition cursor-pointer ${
+                        aria-expanded={academicsDropdown}
+                        aria-haspopup="true"
+                        className={`flex items-center gap-1 px-3 py-2 text-xs 2xl:text-sm font-semibold rounded-xl transition cursor-pointer min-h-[40px] ${
                           isActive('/academics') ||
                           isActive('/facilities') ||
                           isActive('/faculty') ||
@@ -327,7 +347,7 @@ export function Header() {
                         }`}
                       >
                         <span>{link.label}</span>
-                        <ChevronDown className="w-3.5 h-3.5 opacity-80" />
+                        <ChevronDown className="w-3.5 h-3.5 opacity-80" aria-hidden="true" />
                       </button>
 
                       {academicsDropdown && (
@@ -337,7 +357,8 @@ export function Header() {
                               <Link
                                 key={sIdx}
                                 href={sub.href}
-                                className={`block px-3.5 py-2.5 text-xs font-semibold rounded-xl transition ${
+                                aria-current={isActive(sub.href) ? 'page' : undefined}
+                                className={`block px-3.5 py-2.5 text-xs font-semibold rounded-xl transition min-h-[38px] flex items-center ${
                                   isActive(sub.href)
                                     ? 'bg-blue-600 text-white'
                                     : 'text-slate-300 hover:bg-slate-800 hover:text-white'
@@ -357,7 +378,8 @@ export function Header() {
                   <Link
                     key={idx}
                     href={link.href}
-                    className={`flex items-center gap-1.5 px-3 py-2 text-xs 2xl:text-sm font-semibold rounded-xl transition whitespace-nowrap ${
+                    aria-current={isActive(link.href) ? 'page' : undefined}
+                    className={`flex items-center gap-1.5 px-3 py-2 text-xs 2xl:text-sm font-semibold rounded-xl transition whitespace-nowrap min-h-[40px] ${
                       isActive(link.href)
                         ? 'bg-blue-600 text-white shadow-sm'
                         : 'text-slate-200 hover:text-white hover:bg-slate-800'
@@ -389,7 +411,7 @@ export function Header() {
               </Link>
               <Link
                 href="/admin/login"
-                className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition border border-slate-700/60"
+                className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition border border-slate-700/60 min-h-[36px]"
                 title={t('header.adminLogin', 'Admin Portal')}
               >
                 <Shield className="w-3.5 h-3.5 text-blue-400" />
@@ -404,8 +426,35 @@ export function Header() {
 
         {/* MOBILE FULL-SCREEN RESPONSIVE DRAWER */}
         {mobileMenuOpen && (
-          <div className="xl:hidden fixed inset-0 top-[76px] bg-slate-950/70 backdrop-blur-sm z-50 animate-fadeIn">
-            <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 max-h-[calc(100vh-120px)] overflow-y-auto px-6 py-6 shadow-2xl space-y-6">
+          <div
+            className="xl:hidden fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile Navigation Menu"
+          >
+            {/* Backdrop click to dismiss */}
+            <div
+              className="absolute inset-0"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+
+            {/* Slide-up Drawer */}
+            <div className="relative bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 rounded-t-3xl max-h-[85vh] overflow-y-auto px-5 sm:px-6 py-6 shadow-2xl space-y-6 z-10 animate-slide-up">
+              {/* Drawer Top Header with Close Button */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  {isTa ? 'வழிசெலுத்தல் பட்டி' : 'Navigation Menu'}
+                </span>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="min-w-[44px] min-h-[44px] rounded-full p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center justify-center cursor-pointer"
+                  aria-label="Close navigation menu"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
               {/* Dual Brand Card */}
               <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-amber-50 dark:from-slate-800 dark:to-slate-800/80 border border-blue-100 dark:border-slate-700 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
@@ -452,7 +501,7 @@ export function Header() {
                       setMobileMenuOpen(false);
                       setFoundersModalOpen(true);
                     }}
-                    className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                    className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer min-h-[36px] flex items-center"
                   >
                     {isTa ? 'முழு விவரம் →' : 'View Full Bios →'}
                   </button>
@@ -489,7 +538,7 @@ export function Header() {
               <LanguageSwitcher variant="mobile" />
 
               {/* Mobile Nav Links */}
-              <nav className="flex flex-col gap-1.5">
+              <nav className="flex flex-col gap-1.5" aria-label="Mobile Navigation">
                 {navLinks.map((link, idx) => {
                   if (link.isDropdown) {
                     return (
@@ -502,9 +551,11 @@ export function Header() {
                             <Link
                               key={sIdx}
                               href={sub.href}
-                              className={`px-4 py-2.5 text-sm font-semibold rounded-xl transition ${
+                              onClick={() => setMobileMenuOpen(false)}
+                              aria-current={isActive(sub.href) ? 'page' : undefined}
+                              className={`px-4 py-3 min-h-[44px] text-sm font-semibold rounded-xl flex items-center transition ${
                                 isActive(sub.href)
-                                  ? 'bg-blue-600 text-white'
+                                  ? 'bg-blue-600 text-white font-bold'
                                   : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                               }`}
                             >
@@ -520,7 +571,9 @@ export function Header() {
                     <Link
                       key={idx}
                       href={link.href}
-                      className={`px-4 py-3 text-sm font-semibold rounded-2xl flex items-center justify-between transition ${
+                      onClick={() => setMobileMenuOpen(false)}
+                      aria-current={isActive(link.href) ? 'page' : undefined}
+                      className={`px-4 py-3 min-h-[44px] text-sm font-semibold rounded-2xl flex items-center justify-between transition ${
                         isActive(link.href)
                           ? 'bg-blue-600 text-white font-bold shadow-sm'
                           : 'text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -539,18 +592,18 @@ export function Header() {
 
               {/* Mobile CTAs */}
               <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-col gap-2.5">
-                <Link href="/admissions" className="w-full">
-                  <Button variant="accent" size="lg" className="w-full font-black">
+                <Link href="/admissions" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                  <Button variant="accent" size="lg" className="w-full font-black min-h-[48px]">
                     {t('common.applyOnline', 'Apply for Admission')}
                   </Button>
                 </Link>
-                <Link href="/results" className="w-full">
-                  <Button variant="secondary" size="md" className="w-full font-bold" leftIcon={<Award className="w-4 h-4" />}>
+                <Link href="/results" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                  <Button variant="secondary" size="md" className="w-full font-bold min-h-[44px]" leftIcon={<Award className="w-4 h-4" />}>
                     {t('nav.results', 'Check Exam Results')}
                   </Button>
                 </Link>
-                <Link href="/admin/login" className="w-full">
-                  <Button variant="outline" size="sm" className="w-full" leftIcon={<Shield className="w-4 h-4" />}>
+                <Link href="/admin/login" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                  <Button variant="outline" size="sm" className="w-full min-h-[44px]" leftIcon={<Shield className="w-4 h-4" />}>
                     {t('header.adminLogin', 'Admin Portal Login')}
                   </Button>
                 </Link>

@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card } from '@/components/ui/Card';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
@@ -13,7 +12,8 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { defaultFacilities } from '@/lib/defaultData';
 import { Facility } from '@/types';
-import { Plus, Edit2, Trash2, Building2 } from 'lucide-react';
+import { facilityRepository } from '@/lib/repositories';
+import { Plus, Edit2, Trash2, Building2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FacilitiesAdminPage() {
@@ -21,6 +21,8 @@ export default function FacilitiesAdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFacility, setEditingFacility] = useState<Facility | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Facility>>({
     title: '',
@@ -29,6 +31,38 @@ export default function FacilitiesAdminPage() {
     icon: 'MonitorPlay',
     status: 'published',
   });
+
+  const loadFacilities = async () => {
+    try {
+      setIsLoading(true);
+      const data = await facilityRepository.getAll();
+      setFacilities(data || []);
+    } catch (error) {
+      console.error('Failed to load facilities:', error);
+      toast.error('Failed to load facilities.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    facilityRepository.getAll().then((data) => {
+      if (isMounted) {
+        setFacilities(data || []);
+        setIsLoading(false);
+      }
+    }).catch((error) => {
+      if (isMounted) {
+        console.error('Failed to load facilities:', error);
+        toast.error('Failed to load facilities.');
+        setIsLoading(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleOpenAdd = () => {
     setEditingFacility(null);
@@ -48,40 +82,61 @@ export default function FacilitiesAdminPage() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title) {
       toast.error('Please enter facility title.');
       return;
     }
 
-    if (editingFacility) {
-      setFacilities((prev) =>
-        prev.map((f) => (f.id === editingFacility.id ? ({ ...f, ...formData } as Facility) : f))
-      );
-      toast.success('Facility updated successfully!');
-    } else {
-      const newEntry: Facility = {
-        id: `fac-${Date.now()}`,
-        title: formData.title || 'Untitled Facility',
-        description: formData.description || '',
-        imageUrl: formData.imageUrl || 'https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80',
-        icon: formData.icon || 'MonitorPlay',
-        status: (formData.status as 'published' | 'draft') || 'published',
-        order: facilities.length + 1,
-      };
-      setFacilities((prev) => [newEntry, ...prev]);
-      toast.success('New facility added successfully!');
+    setIsSaving(true);
+    try {
+      if (editingFacility) {
+        await facilityRepository.update(editingFacility.id!, formData);
+        toast.success('Facility updated successfully!');
+      } else {
+        const newEntry = {
+          title: formData.title || 'Untitled Facility',
+          description: formData.description || '',
+          imageUrl: formData.imageUrl || 'https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80',
+          icon: formData.icon || 'MonitorPlay',
+          status: (formData.status as 'published' | 'draft') || 'published',
+          order: facilities.length + 1,
+        };
+        await facilityRepository.create(newEntry as Omit<Facility, 'id'>);
+        toast.success('New facility added successfully!');
+      }
+      await loadFacilities();
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to save facility.');
+    } finally {
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTargetId) return;
-    setFacilities((prev) => prev.filter((f) => f.id !== deleteTargetId));
-    toast.success('Facility deleted.');
-    setDeleteTargetId(null);
+    try {
+      await facilityRepository.delete(deleteTargetId);
+      toast.success('Facility deleted.');
+      await loadFacilities();
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to delete facility.');
+    } finally {
+      setDeleteTargetId(null);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   const columns: Column<Facility>[] = [
     {
@@ -220,7 +275,7 @@ export default function FacilitiesAdminPage() {
             >
               Cancel
             </Button>
-            <Button type="submit" variant="primary">
+            <Button type="submit" variant="primary" isLoading={isSaving}>
               {editingFacility ? 'Update Facility' : 'Save Facility'}
             </Button>
           </div>

@@ -12,9 +12,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { timelineRepository } from '@/lib/repositories';
-import { defaultTimelineEntries } from '@/lib/defaultData';
 import { TimelineEntry } from '@/types';
-import { Plus, Edit2, Trash2, Milestone, Calendar, ArrowUpDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, Milestone } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function TimelineAdminPage() {
@@ -40,11 +39,7 @@ export default function TimelineAdminPage() {
     try {
       setIsLoading(true);
       const data = await timelineRepository.getAll();
-      if (data && data.length > 0) {
-        setEntries(data.sort((a, b) => (a.order || 0) - (b.order || 0)));
-      } else {
-        setEntries(defaultTimelineEntries);
-      }
+      setEntries((data || []).sort((a, b) => (a.order || 0) - (b.order || 0)));
     } catch (err) {
       console.error('Error loading timeline:', err);
       toast.error('Failed to load timeline entries.');
@@ -56,16 +51,16 @@ export default function TimelineAdminPage() {
   useEffect(() => {
     let isMounted = true;
     timelineRepository.getAll().then((data) => {
-      if (!isMounted) return;
-      if (data && data.length > 0) {
-        setEntries(data.sort((a, b) => (a.order || 0) - (b.order || 0)));
-      } else {
-        setEntries(defaultTimelineEntries);
+      if (isMounted) {
+        setEntries((data || []).sort((a, b) => (a.order || 0) - (b.order || 0)));
+        setIsLoading(false);
       }
     }).catch((err) => {
-      console.error('Error loading timeline:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading timeline:', err);
+        toast.error('Failed to load timeline entries.');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;

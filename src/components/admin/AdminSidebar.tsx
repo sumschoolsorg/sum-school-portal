@@ -33,6 +33,7 @@ import {
   Milestone,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export interface AdminSidebarProps {
@@ -43,6 +44,7 @@ export interface AdminSidebarProps {
 export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { isSuperAdmin, isSchoolAdmin } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -54,32 +56,35 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     toast.success('Signed out of Admin Portal.');
     router.push('/admin/login');
   };
-
+  // Grouped Navigation Sections
   const navItems = [
-    { href: '/admin', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { href: '/admin/school-info', label: 'School Info', icon: <School className="w-4 h-4" /> },
-    { href: '/admin/research', label: 'Research & Verification', icon: <Search className="w-4 h-4" /> },
-    { href: '/admin/banners', label: 'Hero Banners', icon: <Layers className="w-4 h-4" /> },
-    { href: '/admin/homepage', label: 'Homepage Content', icon: <Home className="w-4 h-4" /> },
-    { href: '/admin/about', label: 'About School', icon: <Info className="w-4 h-4" /> },
-    { href: '/admin/academics', label: 'Academics', icon: <GraduationCap className="w-4 h-4" /> },
-    { href: '/admin/results', label: 'Exam Results', icon: <Award className="w-4 h-4" /> },
-    { href: '/admin/admissions', label: 'Admissions', icon: <FileCheck className="w-4 h-4" /> },
-    { href: '/admin/faculty', label: 'Faculty & Staff', icon: <Users className="w-4 h-4" /> },
-    { href: '/admin/facilities', label: 'Facilities', icon: <Building2 className="w-4 h-4" /> },
-    { href: '/admin/transport', label: 'Bus & Transport', icon: <Bus className="w-4 h-4" /> },
-    { href: '/admin/alumni', label: 'Alumni Network', icon: <UserCheck className="w-4 h-4" /> },
-    { href: '/admin/announcements', label: 'Announcements', icon: <Bell className="w-4 h-4" /> },
-    { href: '/admin/events', label: 'Events & Calendar', icon: <Calendar className="w-4 h-4" /> },
-    { href: '/admin/gallery', label: 'Photo Gallery', icon: <ImageIcon className="w-4 h-4" /> },
-    { href: '/admin/achievements', label: 'Achievements', icon: <Trophy className="w-4 h-4" /> },
-    { href: '/admin/timeline', label: 'School Timeline', icon: <Milestone className="w-4 h-4" /> },
-    { href: '/admin/testimonials', label: 'Testimonials', icon: <MessageSquareQuote className="w-4 h-4" /> },
-    { href: '/admin/enquiries', label: 'Enquiries & Messages', icon: <Inbox className="w-4 h-4" /> },
-    { href: '/admin/theme', label: 'Theme & Branding', icon: <Palette className="w-4 h-4" /> },
-    { href: '/admin/settings', label: 'Website Settings', icon: <Settings className="w-4 h-4" /> },
-    { href: '/admin/users', label: 'Admin Users', icon: <ShieldAlert className="w-4 h-4" /> },
-    { href: '/admin/migration', label: 'Backup & Firebase', icon: <Cloud className="w-4 h-4" /> },
+    { href: '/admin', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" />, category: 'Overview' },
+    { href: '/admin/school-info', label: 'School Profile', icon: <School className="w-4 h-4" />, category: 'Overview' },
+    { href: '/admin/research', label: 'Research & Heritage', icon: <Search className="w-4 h-4" />, category: 'Overview' },
+
+    { href: '/admin/admissions', label: 'Admissions Info', icon: <FileCheck className="w-4 h-4" />, category: 'Student Services' },
+    { href: '/admin/enquiries', label: 'Applications & Messages', icon: <Inbox className="w-4 h-4" />, category: 'Student Services' },
+    { href: '/admin/academics', label: 'Academics & Streams', icon: <GraduationCap className="w-4 h-4" />, category: 'Student Services' },
+    { href: '/admin/results', label: 'Exam Results', icon: <Award className="w-4 h-4" />, category: 'Student Services' },
+    { href: '/admin/faculty', label: 'Faculty & Staff', icon: <Users className="w-4 h-4" />, category: 'Student Services' },
+    { href: '/admin/facilities', label: 'Campus Facilities', icon: <Building2 className="w-4 h-4" />, category: 'Student Services' },
+    { href: '/admin/transport', label: 'Bus & Transport', icon: <Bus className="w-4 h-4" />, category: 'Student Services' },
+    { href: '/admin/alumni', label: 'Alumni Network', icon: <UserCheck className="w-4 h-4" />, category: 'Student Services' },
+
+    { href: '/admin/banners', label: 'Hero Banners', icon: <Layers className="w-4 h-4" />, category: 'Media & Content' },
+    { href: '/admin/homepage', label: 'Homepage Content', icon: <Home className="w-4 h-4" />, category: 'Media & Content' },
+    { href: '/admin/about', label: 'About School', icon: <Info className="w-4 h-4" />, category: 'Media & Content' },
+    { href: '/admin/announcements', label: 'Announcements', icon: <Bell className="w-4 h-4" />, category: 'Media & Content' },
+    { href: '/admin/events', label: 'Events & Calendar', icon: <Calendar className="w-4 h-4" />, category: 'Media & Content' },
+    { href: '/admin/gallery', label: 'Photo Gallery', icon: <ImageIcon className="w-4 h-4" />, category: 'Media & Content' },
+    { href: '/admin/achievements', label: 'Achievements', icon: <Trophy className="w-4 h-4" />, category: 'Media & Content' },
+    { href: '/admin/timeline', label: 'School Milestones', icon: <Milestone className="w-4 h-4" />, category: 'Media & Content' },
+    { href: '/admin/testimonials', label: 'Testimonials', icon: <MessageSquareQuote className="w-4 h-4" />, category: 'Media & Content' },
+
+    { href: '/admin/theme', label: 'Theme & Branding', icon: <Palette className="w-4 h-4" />, category: 'System & Settings' },
+    { href: '/admin/settings', label: 'Website Settings', icon: <Settings className="w-4 h-4" />, category: 'System & Settings' },
+    { href: '/admin/users', label: 'Admin Accounts', icon: <ShieldAlert className="w-4 h-4" />, category: 'System & Settings' },
+    { href: '/admin/migration', label: 'Backup & Cloud', icon: <Cloud className="w-4 h-4" />, category: 'System & Settings' },
   ];
 
   const isActive = (href: string) => {
@@ -135,22 +140,52 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           </div>
 
           {/* Nav List */}
-          <div className="p-4 overflow-y-auto max-h-[calc(100vh-180px)] space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold transition ${
-                  isActive(item.href)
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            ))}
+          <div className="p-3 overflow-y-auto max-h-[calc(100vh-180px)] space-y-4">
+            {['Overview', 'Student Services', 'Media & Content', 'System & Settings'].map((categoryName) => {
+              const isPermitted = (href: string) => {
+                if (href === '/admin/users' || href === '/admin/migration') return isSuperAdmin;
+                if (
+                  href === '/admin/results' ||
+                  href === '/admin/enquiries' ||
+                  href === '/admin/settings' ||
+                  href === '/admin/admissions' ||
+                  href === '/admin/school-info'
+                ) {
+                  return isSchoolAdmin;
+                }
+                return true;
+              };
+
+              const groupItems = navItems
+                .filter((item) => item.category === categoryName)
+                .filter((item) => isPermitted(item.href));
+
+              if (groupItems.length === 0) return null;
+
+              return (
+                <div key={categoryName} className="space-y-1">
+                  <div className="px-3 text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    {categoryName}
+                  </div>
+                  {groupItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      aria-current={isActive(item.href) ? 'page' : undefined}
+                      className={`flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold transition min-h-[38px] ${
+                        isActive(item.href)
+                          ? 'bg-blue-600 text-white shadow-md'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                      }`}
+                    >
+                      {item.icon}
+                      <span className="truncate">{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
 

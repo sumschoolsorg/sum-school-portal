@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   Navigation,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 
 export default function TransportPage() {
@@ -32,7 +31,7 @@ export default function TransportPage() {
   useEffect(() => {
     const loadRoutes = async () => {
       try {
-        const data = await transportRepository.getAll();
+        const data = await transportRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((r) => r.status === 'published');
           setRoutes(published);

@@ -1,19 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card } from '@/components/ui/Card';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
-import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { defaultTestimonials } from '@/lib/defaultData';
 import { Testimonial } from '@/types';
-import { Plus, Edit2, Trash2, MessageSquareQuote, Star } from 'lucide-react';
+import { testimonialRepository } from '@/lib/repositories';
+import { Plus, Edit2, Trash2, MessageSquareQuote, Star, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function TestimonialsAdminPage() {
@@ -21,6 +19,8 @@ export default function TestimonialsAdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Testimonial | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Testimonial>>({
     name: '',
@@ -30,6 +30,38 @@ export default function TestimonialsAdminPage() {
     rating: 5,
     status: 'published',
   });
+
+  const loadTestimonials = async () => {
+    try {
+      setIsLoading(true);
+      const data = await testimonialRepository.getAll();
+      setTestimonials(data || []);
+    } catch (error) {
+      console.error('Failed to load testimonials:', error);
+      toast.error('Failed to load testimonials.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    testimonialRepository.getAll().then((data) => {
+      if (isMounted) {
+        setTestimonials(data || []);
+        setIsLoading(false);
+      }
+    }).catch((error) => {
+      if (isMounted) {
+        console.error('Failed to load testimonials:', error);
+        toast.error('Failed to load testimonials.');
+        setIsLoading(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleOpenAdd = () => {
     setEditingItem(null);
@@ -50,41 +82,62 @@ export default function TestimonialsAdminPage() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.message) {
       toast.error('Please enter name and message.');
       return;
     }
 
-    if (editingItem) {
-      setTestimonials((prev) =>
-        prev.map((t) => (t.id === editingItem.id ? ({ ...t, ...formData } as Testimonial) : t))
-      );
-      toast.success('Testimonial updated successfully!');
-    } else {
-      const newEntry: Testimonial = {
-        id: `test-${Date.now()}`,
-        name: formData.name || 'Anonymous',
-        role: formData.role || 'Parent',
-        message: formData.message || '',
-        photoUrl: formData.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-        rating: formData.rating || 5,
-        status: (formData.status as 'published' | 'draft') || 'published',
-        order: testimonials.length + 1,
-      };
-      setTestimonials((prev) => [newEntry, ...prev]);
-      toast.success('New testimonial added!');
+    setIsSaving(true);
+    try {
+      if (editingItem) {
+        await testimonialRepository.update(editingItem.id!, formData);
+        toast.success('Testimonial updated successfully!');
+      } else {
+        const newEntry = {
+          name: formData.name || 'Anonymous',
+          role: formData.role || 'Parent',
+          message: formData.message || '',
+          photoUrl: formData.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+          rating: formData.rating || 5,
+          status: (formData.status as 'published' | 'draft') || 'published',
+          order: testimonials.length + 1,
+        };
+        await testimonialRepository.create(newEntry as Omit<Testimonial, 'id'>);
+        toast.success('New testimonial added!');
+      }
+      await loadTestimonials();
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to save testimonial.');
+    } finally {
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTargetId) return;
-    setTestimonials((prev) => prev.filter((t) => t.id !== deleteTargetId));
-    toast.success('Testimonial removed.');
-    setDeleteTargetId(null);
+    try {
+      await testimonialRepository.delete(deleteTargetId);
+      toast.success('Testimonial removed.');
+      await loadTestimonials();
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to delete testimonial.');
+    } finally {
+      setDeleteTargetId(null);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   const columns: Column<Testimonial>[] = [
     {
@@ -223,7 +276,7 @@ export default function TestimonialsAdminPage() {
             >
               Cancel
             </Button>
-            <Button type="submit" variant="primary">
+            <Button type="submit" variant="primary" isLoading={isSaving}>
               {editingItem ? 'Save Changes' : 'Add Testimonial'}
             </Button>
           </div>

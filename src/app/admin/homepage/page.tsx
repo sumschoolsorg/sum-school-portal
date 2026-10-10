@@ -1,19 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { defaultHomepageContent } from '@/lib/defaultData';
-import { setDocument } from '@/lib/firestore';
-import { Save, Home } from 'lucide-react';
+import { homepageRepository } from '@/lib/repositories';
+import { Save, Home, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function HomepageAdminPage() {
   const [formData, setFormData] = useState(defaultHomepageContent);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await homepageRepository.get();
+        setFormData(data);
+      } catch (error) {
+        console.warn('Failed to load homepage data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
   const handleHeroChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -40,7 +55,7 @@ export default function HomepageAdminPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await setDocument('homepage', 'content', formData);
+      await homepageRepository.save(formData);
       toast.success('Homepage hero, statistics, and principal message saved to Firestore!');
     } catch (error) {
       console.warn('Saved in offline mode:', error);
@@ -49,6 +64,14 @@ export default function HomepageAdminPage() {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl space-y-6">

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Trophy, ArrowRight, Award, Star, MapPin, CheckCircle, GraduationCap } from 'lucide-react';
+import { Trophy, ArrowRight, Star, MapPin } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Button } from '@/components/ui/Button';
 import { defaultAchievements } from '@/lib/defaultData';
@@ -11,7 +11,7 @@ import { Achievement } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function AchievementsSection({ achievements: initialAchievements = defaultAchievements }: { achievements?: Achievement[] }) {
-  const { t, getLocalized, language } = useLanguage();
+  const { getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
   const [achievements, setAchievements] = useState<Achievement[]>(initialAchievements);
@@ -19,7 +19,7 @@ export function AchievementsSection({ achievements: initialAchievements = defaul
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await achievementRepository.getAll();
+        const data = await achievementRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
           if (published.length > 0) {

@@ -10,7 +10,6 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { transportRepository } from '@/lib/repositories';
-import { defaultTransportRoutes } from '@/lib/defaultData';
 import { TransportRoute, TransportStop } from '@/types';
 import {
   Bus,
@@ -18,9 +17,7 @@ import {
   Edit2,
   Trash2,
   Phone,
-  Clock,
   MapPin,
-  Users,
   PlusCircle,
   X,
 } from 'lucide-react';
@@ -57,11 +54,7 @@ export default function AdminTransportPage() {
     try {
       setIsLoading(true);
       const data = await transportRepository.getAll();
-      if (data && data.length > 0) {
-        setRoutes(data);
-      } else {
-        setRoutes(defaultTransportRoutes);
-      }
+      setRoutes(data || []);
     } catch (err) {
       console.error('Error loading routes:', err);
       toast.error('Failed to load transport routes.');
@@ -73,16 +66,16 @@ export default function AdminTransportPage() {
   useEffect(() => {
     let isMounted = true;
     transportRepository.getAll().then((data) => {
-      if (!isMounted) return;
-      if (data && data.length > 0) {
-        setRoutes(data);
-      } else {
-        setRoutes(defaultTransportRoutes);
+      if (isMounted) {
+        setRoutes(data || []);
+        setIsLoading(false);
       }
     }).catch((err) => {
-      console.error('Error loading routes:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading routes:', err);
+        toast.error('Failed to load transport routes.');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;

@@ -1,24 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
+import React, { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { studentResultRepository } from '@/lib/repositories';
-import { defaultStudentResults } from '@/lib/defaultData';
 import { StudentResult } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Award,
   Search,
   Printer,
-  FileCheck,
   CheckCircle,
   XCircle,
   Calendar,
   Sparkles,
-  School,
-  ArrowRight,
   ShieldCheck,
   RotateCcw,
 } from 'lucide-react';
@@ -34,65 +28,62 @@ export default function ResultsPage() {
   const [result, setResult] = useState<StudentResult | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Load results from repository or fallback to default
-  const [allResults, setAllResults] = useState<StudentResult[]>(defaultStudentResults);
+  const [isLocalPreview, setIsLocalPreview] = useState(false);
+  const [cloudGuidance, setCloudGuidance] = useState<{ message: string } | null>(null);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await studentResultRepository.getAll();
-        if (data && data.length > 0) {
-          setAllResults(data.filter((r) => r.status === 'published'));
-        }
-      } catch (err) {
-        console.warn('Error loading results:', err);
-      }
-    };
-    loadData();
-  }, []);
-
-  const handleSearch = (e?: React.FormEvent) => {
+  const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!rollNumber.trim()) {
+    const cleanRoll = rollNumber.trim().toUpperCase();
+    if (!cleanRoll) {
       toast.error(isTa ? 'பதிவு எண் அல்லது ரோல் எண்ணை உள்ளிடவும்.' : 'Please enter your Roll Number or Register Number.');
+      return;
+    }
+    if (!dob) {
+      toast.error(isTa ? 'சரிபார்ப்பிற்கு பிறந்த தேதியை உள்ளிடவும்.' : 'Please enter your Date of Birth for verification.');
       return;
     }
 
     setIsSearching(true);
     setHasSearched(true);
+    setCloudGuidance(null);
 
-    setTimeout(() => {
-      const cleanRoll = rollNumber.trim().toUpperCase();
-      const match = allResults.find(
-        (r) =>
-          r.rollNumber.toUpperCase() === cleanRoll ||
-          r.registerNumber.toUpperCase() === cleanRoll ||
-          r.rollNumber.toUpperCase().includes(cleanRoll)
-      );
+    try {
+      const res = await fetch('/api/results/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rollNumber: cleanRoll, dob }),
+      });
 
-      if (match) {
-        setResult(match);
+      const data = await res.json();
+
+      if (res.status === 429) {
+        toast.error(data.message || 'Rate limit exceeded. Please wait a moment.');
+        setResult(null);
+        return;
+      }
+
+      if (data.requiresAdminVerification || res.status === 503) {
+        setCloudGuidance({
+          message: data.message || 'Online result lookup requires examination office verification.',
+        });
+        setResult(null);
+        toast.info(isTa ? 'பாதுகாக்கப்பட்ட தேர்வுத் துறை சரிபார்ப்பு தேவை.' : 'Official examination verification notice.');
+        return;
+      }
+
+      if (data.success && data.result) {
+        setResult(data.result);
+        setIsLocalPreview(Boolean(data.isLocalPreview));
         toast.success(isTa ? 'தேர்வு முடிவுகள் கண்டறியப்பட்டன!' : 'Mark sheet retrieved successfully!');
       } else {
         setResult(null);
-        toast.error(
-          isTa
-            ? 'மாணவர் பதிவு எண் கிடைக்கவில்லை. சரிபார்த்து மீண்டும் உள்ளிடவும்.'
-            : 'No matching record found. Please verify the Roll Number.'
-        );
+        toast.error(data.message || (isTa ? 'தேர்வு முடிவுகள் கிடைக்கவில்லை.' : 'No matching record found.'));
       }
+    } catch (err) {
+      console.error('Lookup request error:', err);
+      toast.error(isTa ? 'பிழை ஏற்பட்டது. பின்னர் முயற்சிக்கவும்.' : 'Network error. Please try again.');
+    } finally {
       setIsSearching(false);
-    }, 400);
-  };
-
-  const handleQuickDemo = (demoRoll: string, demoDob: string) => {
-    setRollNumber(demoRoll);
-    setDob(demoDob);
-    const match = allResults.find((r) => r.rollNumber === demoRoll);
-    if (match) {
-      setResult(match);
-      setHasSearched(true);
-      toast.success(isTa ? 'மாதிரி மதிப்பெண் சான்றிதழ் ஏற்றப்பட்டது.' : `Loaded mark sheet for ${match.studentName}`);
     }
   };
 
@@ -105,6 +96,8 @@ export default function ResultsPage() {
     setDob('');
     setResult(null);
     setHasSearched(false);
+    setCloudGuidance(null);
+    setIsLocalPreview(false);
   };
 
   return (
@@ -127,16 +120,26 @@ export default function ResultsPage() {
             </h1>
             <p className="mt-4 text-base sm:text-lg text-blue-100 max-w-2xl mx-auto leading-relaxed">
               {isTa
-                ? 'உங்கள் ரோல் எண் அல்லது தேர்வு பதிவு எண்ணை உள்ளிட்டு டிஜிட்டல் மதிப்பெண் சான்றிதழைப் பெற்று அச்சிடலாம்.'
-                : 'Enter your Examination Roll Number or Register Number to view, verify, and print your official digital mark sheet.'}
+                ? 'உங்கள் ரோல் எண் அல்லது தேர்வு பதிவு எண் மற்றும் பிறந்த தேதியை உள்ளிட்டு டிஜிட்டல் மதிப்பெண் சான்றிதழைப் பெறலாம்.'
+                : 'Enter your Examination Roll Number and Date of Birth to view, verify, and print your official digital mark sheet.'}
             </p>
           </div>
         </section>
 
-        {/* Search Box & Demo Chips */}
+        {/* Search Box */}
         <section className="print:hidden py-10 border-b border-slate-200 dark:border-slate-800">
           <div className="container-main max-w-3xl">
             <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-xl">
+              {cloudGuidance && (
+                <div role="status" className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 dark:bg-blue-950/40 p-5 text-sm text-blue-950 dark:text-blue-100 space-y-2">
+                  <div className="font-bold text-base flex items-center gap-2 text-blue-900 dark:text-blue-200">
+                    <ShieldCheck className="w-5 h-5 text-blue-600" />
+                    {isTa ? 'அதிகாரப்பூர்வ தேர்வுத் துறை அறிவிப்பு' : 'Official Examination Office Notice'}
+                  </div>
+                  <p className="leading-relaxed text-slate-700 dark:text-slate-300">{cloudGuidance.message}</p>
+                </div>
+              )}
+
               <form onSubmit={handleSearch} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -151,22 +154,23 @@ export default function ResultsPage() {
                         value={rollNumber}
                         onChange={(e) => setRollNumber(e.target.value)}
                         placeholder="e.g. SUM2026-1001"
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-semibold text-slate-900 dark:text-white uppercase focus:ring-2 focus:ring-blue-500 tracking-wider"
+                        className="w-full pl-10 pr-4 py-3 min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-semibold text-slate-900 dark:text-white uppercase focus:ring-2 focus:ring-blue-500 tracking-wider"
                       />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">
-                      {isTa ? 'பிறந்த தேதி (விருப்பத்தேர்வு)' : 'Date of Birth (Optional)'}
+                      {isTa ? 'பிறந்த தேதி *' : 'Date of Birth (YYYY-MM-DD) *'}
                     </label>
                     <div className="relative">
                       <Calendar className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="date"
+                        required
                         value={dob}
                         onChange={(e) => setDob(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                        className="w-full pl-10 pr-4 py-3 min-h-[44px] rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -179,10 +183,10 @@ export default function ResultsPage() {
                     className="w-full sm:flex-1 py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                   >
                     <Search className="w-4 h-4" />
-                    <span>{isSearching ? (isTa ? 'தேடுகிறது...' : 'Verifying...') : isTa ? 'முடிவுகளைக் காண்க' : 'View Mark Sheet'}</span>
+                    <span>{isSearching ? (isTa ? 'சரிபார்க்கிறது...' : 'Verifying...') : isTa ? 'மதிப்பெண்களைக் காண்க' : 'Verify & View Mark Sheet'}</span>
                   </button>
 
-                  {result && (
+                  {(result || hasSearched) && (
                     <button
                       type="button"
                       onClick={handleReset}
@@ -194,34 +198,6 @@ export default function ResultsPage() {
                   )}
                 </div>
               </form>
-
-              {/* Quick Demo Shortcuts */}
-              <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
-                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>{isTa ? 'உடனடி மாதிரி சோதனைகள் (1-Click Demo):' : 'Try sample records directly:'}</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => handleQuickDemo('SUM2026-1001', '2010-05-14')}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 transition cursor-pointer"
-                  >
-                    10th SSLC: S. Kavin Kumar (96%)
-                  </button>
-                  <button
-                    onClick={() => handleQuickDemo('SUM2026-1201', '2008-08-22')}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition cursor-pointer"
-                  >
-                    12th Science: M. Anitha Mary (95.2%)
-                  </button>
-                  <button
-                    onClick={() => handleQuickDemo('SUM2026-1202', '2008-11-05')}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition cursor-pointer"
-                  >
-                    12th Commerce: J. Praveen Raj (91%)
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         </section>
@@ -229,7 +205,7 @@ export default function ResultsPage() {
         {/* Results Marksheet Section */}
         <section className="py-12">
           <div className="container-main max-w-4xl">
-            {hasSearched && !result && (
+            {hasSearched && !result && !cloudGuidance && (
               <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 shadow-sm">
                 <XCircle className="w-12 h-12 text-rose-500 mx-auto mb-3" />
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -237,14 +213,24 @@ export default function ResultsPage() {
                 </h3>
                 <p className="text-sm text-slate-500 mt-1 max-w-md mx-auto">
                   {isTa
-                    ? 'உள்ளிட்ட ரோல் எண்ணை சரிபார்த்து மீண்டும் முயற்சிக்கவும் (எ.கா: SUM2026-1001).'
-                    : 'Please check your Roll Number and try again. You can click one of the sample student links above.'}
+                    ? 'உள்ளிட்ட ரோல் எண் மற்றும் பிறந்த தேதியை சரிபார்த்து மீண்டும் முயற்சிக்கவும்.'
+                    : 'Please verify your Roll Number and Date of Birth and try again.'}
                 </p>
               </div>
             )}
 
             {result && (
               <div className="space-y-6">
+                {isLocalPreview && (
+                  <div className="print:hidden rounded-2xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-4 text-xs font-semibold text-amber-900 dark:text-amber-200 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                      <span>{isTa ? 'கவனிக்க: இது மாதிரி முன்னோட்ட மதிப்பெண் சான்றிதழ் (டெமோ தரவு).' : 'Notice: This is a verified local demonstration/preview mark sheet.'}</span>
+                    </div>
+                    <span className="uppercase text-[10px] tracking-wider font-extrabold px-2 py-0.5 rounded bg-amber-200/80 text-amber-950">Preview Mode</span>
+                  </div>
+                )}
+
                 {/* Print & Action Bar */}
                 <div className="print:hidden flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                   <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
@@ -328,7 +314,6 @@ export default function ResultsPage() {
                       <div className="font-bold text-slate-900 text-xs mt-0.5">
                         {result.className} {result.section ? `(Sec ${result.section})` : ''}
                       </div>
-                      <div className="text-[10px] text-slate-500">DOB: {result.dob}</div>
                     </div>
 
                     <div>
@@ -350,8 +335,15 @@ export default function ResultsPage() {
                   </div>
 
                   {/* Subject Scores Table */}
-                  <div className="overflow-x-auto my-6">
-                    <table className="w-full text-left border-collapse border border-slate-300 text-xs">
+                  <div className="my-6">
+                    <div className="sm:hidden flex items-center justify-between text-[11px] text-slate-500 mb-1.5 font-medium px-1 print:hidden">
+                      <span>{isTa ? 'பாட வாரியான மதிப்பெண்கள்' : 'Subject Details'}</span>
+                      <span className="flex items-center gap-1 text-blue-600 font-semibold">
+                        {isTa ? 'பக்கவாட்டில் நகர்த்தவும் ↔' : 'Swipe table sideways ↔'}
+                      </span>
+                    </div>
+                    <div className="overflow-x-auto rounded-xl border border-slate-300">
+                      <table className="w-full text-left border-collapse text-xs min-w-[560px]">
                       <thead>
                         <tr className="bg-slate-100 text-slate-800 font-bold border-b border-slate-300 uppercase text-[11px]">
                           <th className="p-3 border-r border-slate-300 w-14 text-center">Code</th>
@@ -410,6 +402,7 @@ export default function ResultsPage() {
                       </tfoot>
                     </table>
                   </div>
+                </div>
 
                   {/* Summary Bar */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-blue-50/80 border border-blue-200 text-xs text-center my-6">

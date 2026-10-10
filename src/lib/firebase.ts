@@ -8,12 +8,21 @@ import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
-const rawApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-const isConfigured = Boolean(
-  rawApiKey &&
-  rawApiKey !== 'your-api-key' &&
-  !rawApiKey.includes('your-')
+const firebaseEnvironment = [
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+];
+const isConfigured = firebaseEnvironment.every((value) =>
+  Boolean(
+    value &&
+    !['your-', 'your_', 'dummy', 'placeholder'].some((marker) => value.toLowerCase().includes(marker))
+  )
 );
+const rawApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
 // Valid fallback mock config so Firebase SDK doesn't throw during build / SSR evaluation
 const firebaseConfig = {
@@ -56,6 +65,36 @@ try {
 } catch (e) {
   console.warn('Storage initialization fallback:', e);
   storage = {} as FirebaseStorage;
+}
+
+export interface FirebaseConfigStatus {
+  isConfigured: boolean;
+  hasApiKey: boolean;
+  hasAuthDomain: boolean;
+  hasProjectId: boolean;
+  hasStorageBucket: boolean;
+  hasMessagingSenderId: boolean;
+  hasAppId: boolean;
+  projectId: string;
+}
+
+export function getFirebaseConfigStatus(): FirebaseConfigStatus {
+  const isKeyValid = (val?: string) => Boolean(
+    val && !['your-', 'your_', 'dummy', 'placeholder'].some((marker) => val.toLowerCase().includes(marker))
+  );
+
+  return {
+    isConfigured,
+    hasApiKey: isKeyValid(process.env.NEXT_PUBLIC_FIREBASE_API_KEY),
+    hasAuthDomain: isKeyValid(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN),
+    hasProjectId: isKeyValid(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID),
+    hasStorageBucket: isKeyValid(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET),
+    hasMessagingSenderId: isKeyValid(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID),
+    hasAppId: isKeyValid(process.env.NEXT_PUBLIC_FIREBASE_APP_ID),
+    projectId: isKeyValid(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID)
+      ? String(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID)
+      : 'unconfigured',
+  };
 }
 
 export { app, db, auth, storage, isConfigured };

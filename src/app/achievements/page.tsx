@@ -5,16 +5,11 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import {
   Trophy,
-  Medal,
-  Award,
   Search,
   MapPin,
   GraduationCap,
   Calendar,
-  Sparkles,
   CheckCircle,
-  ExternalLink,
-  Filter,
   X,
   Share2,
 } from 'lucide-react';
@@ -27,7 +22,7 @@ import { Modal } from '@/components/ui/Modal';
 import { toast } from 'sonner';
 
 export default function AchievementsPage() {
-  const { t, getLocalized, language } = useLanguage();
+  const { getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
   const [achievements, setAchievements] = useState<Achievement[]>(defaultAchievements);
@@ -43,7 +38,7 @@ export default function AchievementsPage() {
     const loadAchievements = async () => {
       try {
         setIsLoading(true);
-        const data = await achievementRepository.getAll();
+        const data = await achievementRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
           setAchievements(published.length > 0 ? published : defaultAchievements);

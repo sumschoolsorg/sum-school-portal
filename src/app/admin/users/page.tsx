@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -15,8 +15,10 @@ import { adminUserRepository } from '@/lib/repositories';
 import { AdminUser } from '@/types';
 import { Plus, Edit2, Trash2, Shield, UserCheck, ShieldAlert, KeyRound } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminUsersPage() {
+  const { user: currentUser, refreshRole } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,32 +28,25 @@ export default function AdminUsersPage() {
   const [formData, setFormData] = useState<Partial<AdminUser>>({
     name: '',
     email: '',
+    uid: '',
     photoUrl: '/images/principal-photo.jpg',
     role: 'admin',
     status: 'active',
   });
 
-  const loadData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const data = await adminUserRepository.getAll();
-      setUsers(data);
-    } catch (err) {
-      console.error('Error loading admin users:', err);
-      toast.error('Failed to load admin users.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
     let isMounted = true;
     adminUserRepository.getAll().then((data) => {
-      if (isMounted) setUsers(data);
+      if (isMounted) {
+        setUsers(data);
+        setIsLoading(false);
+      }
     }).catch((err) => {
-      console.error('Error loading admin users:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading admin users:', err);
+        toast.error('Failed to load admin users.');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;
@@ -63,6 +58,7 @@ export default function AdminUsersPage() {
     setFormData({
       name: '',
       email: '',
+      uid: '',
       photoUrl: '/images/faculty-1.jpg',
       role: 'admin',
       status: 'active',
@@ -78,9 +74,21 @@ export default function AdminUsersPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) {
-      toast.error('Please provide user name and official email.');
+    const userUid = (editingUser?.uid || formData.uid || '').trim();
+    if (!formData.name || !formData.email || !userUid) {
+      toast.error('Please provide the name, official email, and Firebase Auth UID.');
       return;
+    }
+
+    if (currentUser?.uid && userUid === currentUser.uid) {
+      if (formData.status === 'inactive') {
+        toast.error('You cannot deactivate your own administrative account.');
+        return;
+      }
+      if (formData.role && formData.role !== 'super-admin') {
+        toast.error('You cannot demote your own Super Administrator role.');
+        return;
+      }
     }
 
     try {
@@ -88,23 +96,31 @@ export default function AdminUsersPage() {
         const updated = await adminUserRepository.save({
           ...editingUser,
           ...formData,
+          id: userUid,
+          uid: userUid,
         } as AdminUser);
-        setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+        if (editingUser.id && editingUser.id !== userUid) {
+          await adminUserRepository.delete(editingUser.id);
+        }
+        setUsers((prev) => [updated, ...prev.filter((u) => u.id !== editingUser.id && u.id !== updated.id)]);
         toast.success('Admin user updated successfully!');
       } else {
         const newUser: AdminUser = {
-          id: `admin-${Date.now()}`,
+          id: userUid,
           name: formData.name || '',
           email: formData.email || '',
           photoUrl: formData.photoUrl || '/images/faculty-1.jpg',
           role: formData.role || 'admin',
           status: formData.status || 'active',
-          uid: `uid_${Date.now()}`,
+          uid: userUid,
           lastLogin: new Date(),
         };
         const saved = await adminUserRepository.save(newUser);
         setUsers((prev) => [saved, ...prev]);
-        toast.success('New admin account created!');
+        toast.success('Admin role profile saved. The user must already have a Firebase Authentication account with this UID.');
+      }
+      if (currentUser?.uid && userUid === currentUser.uid) {
+        await refreshRole();
       }
       setIsModalOpen(false);
     } catch (err) {
@@ -115,11 +131,38 @@ export default function AdminUsersPage() {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTargetId) return;
+    const targetUser = users.find((u) => u.id === deleteTargetId);
+    if (!targetUser?.uid) {
+      toast.error('This profile has no Firebase UID and cannot be safely deactivated.');
+      setDeleteTargetId(null);
+      return;
+    }
+    if (currentUser?.uid && targetUser.uid === currentUser.uid) {
+      toast.error('You cannot deactivate your own administrative account.');
+      setDeleteTargetId(null);
+      return;
+    }
+    if (targetUser.role === 'super-admin' && targetUser.status === 'active') {
+      const superAdmins = users.filter((u) => u.role === 'super-admin' && u.status === 'active');
+      if (superAdmins.length <= 1) {
+        toast.error('Cannot delete the sole Super Administrator account.');
+        setDeleteTargetId(null);
+        return;
+      }
+    }
     try {
-      await adminUserRepository.delete(deleteTargetId);
-      setUsers((prev) => prev.filter((u) => u.id !== deleteTargetId));
-      toast.success('Admin user account removed.');
-    } catch (err) {
+      const inactiveProfile = await adminUserRepository.save({
+        ...targetUser,
+        id: targetUser.uid,
+        uid: targetUser.uid,
+        status: 'inactive',
+      });
+      if (deleteTargetId !== targetUser.uid) {
+        await adminUserRepository.delete(deleteTargetId);
+      }
+      setUsers((prev) => [inactiveProfile, ...prev.filter((u) => u.id !== deleteTargetId && u.id !== inactiveProfile.id)]);
+      toast.success('Admin access deactivated. Disable the Firebase Authentication account separately if needed.');
+    } catch {
       toast.error('Failed to delete user.');
     } finally {
       setDeleteTargetId(null);
@@ -244,7 +287,7 @@ export default function AdminUsersPage() {
         <KeyRound className="w-5 h-5 text-purple-700 flex-shrink-0 mt-0.5" />
         <div>
           <span className="font-bold text-purple-950">Role-Based Access Control (RBAC): </span>
-          Super Admins have full authority including user provisioning and Firebase synchronization. Administrators manage academics, admissions, and faculty. Content Editors update news, events, and galleries.
+              Super Admins manage access profiles. Create the Firebase Authentication account first, then register its UID here. Administrators and content editors receive access according to the deployed Firebase rules.
         </div>
       </Card>
 
@@ -253,7 +296,9 @@ export default function AdminUsersPage() {
         <DataTable
           data={users}
           columns={columns}
+          searchKey="name"
           searchPlaceholder="Search admin by name or email..."
+          isLoading={isLoading}
         />
       </Card>
 
@@ -261,7 +306,7 @@ export default function AdminUsersPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingUser ? 'Edit Admin User' : 'Create Admin User'}
+        title={editingUser ? 'Edit Admin Profile' : 'Add Admin Profile'}
       >
         <form onSubmit={handleSave} className="space-y-4">
           <Input
@@ -279,6 +324,16 @@ export default function AdminUsersPage() {
             value={formData.email || ''}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
+          />
+
+          <Input
+            label="Firebase Authentication UID *"
+            placeholder="Create the Auth user first, then paste their Firebase UID"
+            value={formData.uid || ''}
+            onChange={(e) => setFormData({ ...formData, uid: e.target.value })}
+            disabled={Boolean(editingUser)}
+            required
+            helperText="This must exactly match the UID of an existing Firebase Authentication account."
           />
 
           <ImageUpload
@@ -316,7 +371,7 @@ export default function AdminUsersPage() {
               Cancel
             </Button>
             <Button type="submit">
-              {editingUser ? 'Update Account' : 'Create Account'}
+              {editingUser ? 'Update Profile' : 'Save Profile'}
             </Button>
           </div>
         </form>
@@ -325,9 +380,9 @@ export default function AdminUsersPage() {
       {/* Delete Confirmation */}
       <ConfirmDialog
         isOpen={!!deleteTargetId}
-        title="Remove Admin Account"
-        message="Are you sure you want to remove this admin account? They will no longer be able to log into the school administration portal."
-        confirmLabel="Remove User"
+        title="Deactivate Admin Access"
+        message="This marks the UID-linked role profile inactive. The Firebase Authentication account itself is not deleted."
+        confirmLabel="Deactivate Access"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTargetId(null)}
       />

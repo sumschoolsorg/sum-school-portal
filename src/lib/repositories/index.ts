@@ -20,7 +20,9 @@ import {
   getDocuments,
   setDocument,
   deleteDocument,
+  whereEqual,
 } from '@/lib/firestore';
+import { isConfigured } from '@/lib/firebase';
 
 import {
   SchoolSettings,
@@ -44,6 +46,7 @@ import {
   ThemeSettings,
   AdminUser,
   AlumniMember,
+  AlumniPrivateContact,
   TransportRoute,
   StudentResult,
 } from '@/types';
@@ -51,27 +54,29 @@ import {
 export type DataMode = 'local' | 'firebase';
 
 export function isFirebaseConfigured(): boolean {
-  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-  return Boolean(
-    apiKey &&
-    apiKey !== 'your-api-key' &&
-    apiKey !== 'dummy-api-key' &&
-    !apiKey.includes('your-')
-  );
+  return isConfigured;
 }
 
 export function getCurrentDataMode(): DataMode {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('sum_data_mode') as DataMode | null;
-    if (saved === 'local') return 'local';
-    if (saved === 'firebase' && isFirebaseConfigured()) return 'firebase';
+    try {
+      const saved = localStorage.getItem('sum_data_mode') as DataMode | null;
+      if (saved === 'local') return 'local';
+      if (saved === 'firebase' && isFirebaseConfigured()) return 'firebase';
+    } catch {
+      // Storage can be blocked by browser privacy settings; use the configured default.
+    }
   }
   return isFirebaseConfigured() ? 'firebase' : 'local';
 }
 
 export function setDataMode(mode: DataMode): void {
   if (typeof window !== 'undefined') {
-    localStorage.setItem('sum_data_mode', mode);
+    try {
+      localStorage.setItem('sum_data_mode', mode);
+    } catch {
+      throw new Error('Unable to save the data mode in this browser. Check browser storage permissions.');
+    }
   }
 }
 
@@ -90,7 +95,8 @@ export class SingleDocRepository<T extends { id?: string }> {
         const doc = await getDocument<T>(this.firestoreCollection, this.defaultDocId);
         if (doc) return doc;
       } catch (err) {
-        console.warn(`Firestore get failed for ${this.firestoreCollection}, falling back to local:`, err);
+        console.error(`Firestore get failed for ${this.firestoreCollection}:`, err);
+        throw new Error(`Cloud read failed for ${this.firestoreCollection}: ${(err as Error).message}`);
       }
     }
 
@@ -111,7 +117,8 @@ export class SingleDocRepository<T extends { id?: string }> {
       try {
         await setDocument(this.firestoreCollection, this.defaultDocId, itemToSave);
       } catch (err) {
-        console.warn(`Firestore save failed for ${this.firestoreCollection}:`, err);
+        console.error(`Firestore save failed for ${this.firestoreCollection}:`, err);
+        throw new Error(`Cloud save failed for ${this.firestoreCollection}. Switch to Local Preview Mode only if you intend to save this change on this device.`);
       }
     }
 
@@ -131,9 +138,10 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection);
-        if (docs && docs.length > 0) return docs;
+        return docs || [];
       } catch (err) {
-        console.warn(`Firestore getDocuments failed for ${this.firestoreCollection}, falling back to local:`, err);
+        console.error(`Firestore getDocuments failed for ${this.firestoreCollection}:`, err);
+        throw new Error(`Cloud query failed for ${this.firestoreCollection}: ${(err as Error).message}`);
       }
     }
 
@@ -141,8 +149,20 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
   }
 
   async getPublished(): Promise<T[]> {
-    const all = await this.getAll();
-    return all.filter((item) => !item.status || item.status === 'published');
+    const mode = getCurrentDataMode();
+    if (mode === 'firebase' && isFirebaseConfigured()) {
+      try {
+        // Constrain the Firestore query itself: filtering after an unrestricted
+        // query would expose drafts and pending records to public clients.
+        const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
+        return docs || [];
+      } catch (err) {
+        console.error(`Firestore published query failed for ${this.firestoreCollection}:`, err);
+        throw new Error(`Cloud published query failed for ${this.firestoreCollection}: ${(err as Error).message}`);
+      }
+    }
+    const all = await getLocalAll<T>(this.storeName);
+    return all.filter((item) => item.status === 'published');
   }
 
   async getById(id: string): Promise<T | null> {
@@ -150,9 +170,10 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const doc = await getDocument<T>(this.firestoreCollection, id);
-        if (doc) return doc;
+        return doc || null;
       } catch (err) {
-        console.warn(`Firestore getDocument failed for ${this.firestoreCollection}/${id}:`, err);
+        console.error(`Firestore getDocument failed for ${this.firestoreCollection}/${id}:`, err);
+        throw new Error(`Cloud fetch failed for ${this.firestoreCollection}/${id}: ${(err as Error).message}`);
       }
     }
 
@@ -161,19 +182,17 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
 
   async save(data: T): Promise<T> {
     const mode = getCurrentDataMode();
-    const savedLocal = await putLocal<T>(this.storeName, data);
-
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
-        if (savedLocal.id) {
-          await setDocument(this.firestoreCollection, savedLocal.id, savedLocal);
-        }
+        if (!data.id) throw new Error('A document ID is required for a cloud save.');
+        await setDocument(this.firestoreCollection, data.id, data);
       } catch (err) {
-        console.warn(`Firestore save failed for ${this.firestoreCollection}:`, err);
+        console.error(`Firestore save failed for ${this.firestoreCollection}:`, err);
+        throw new Error(`Cloud save failed for ${this.firestoreCollection}. The change was not reported as synced.`);
       }
     }
 
-    return savedLocal;
+    return putLocal<T>(this.storeName, data);
   }
 
   async create(data: Partial<T>): Promise<T> {
@@ -199,15 +218,15 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
 
   async delete(id: string): Promise<void> {
     const mode = getCurrentDataMode();
-    await deleteLocal(this.storeName, id);
-
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         await deleteDocument(this.firestoreCollection, id);
       } catch (err) {
-        console.warn(`Firestore delete failed for ${this.firestoreCollection}/${id}:`, err);
+        console.error(`Firestore delete failed for ${this.firestoreCollection}/${id}:`, err);
+        throw new Error(`Cloud delete failed for ${this.firestoreCollection}/${id}. The record was not reported as deleted.`);
       }
     }
+    await deleteLocal(this.storeName, id);
   }
 }
 
@@ -316,6 +335,11 @@ export const adminUserRepository = new CollectionRepository<AdminUser>(
 export const alumniRepository = new CollectionRepository<AlumniMember>(
   STORES.ALUMNI,
   'alumni'
+);
+
+export const alumniPrivateRepository = new CollectionRepository<AlumniPrivateContact>(
+  STORES.ALUMNI_PRIVATE,
+  'alumniPrivate'
 );
 
 export const transportRepository = new CollectionRepository<TransportRoute>(

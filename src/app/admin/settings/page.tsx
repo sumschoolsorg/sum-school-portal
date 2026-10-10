@@ -1,18 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { defaultWebsiteSettings } from '@/lib/defaultData';
-import { setDocument } from '@/lib/firestore';
-import { Save, Settings, Shield } from 'lucide-react';
+import { websiteSettingsRepository } from '@/lib/repositories';
+import { Save, Settings, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function WebsiteSettingsAdminPage() {
   const [formData, setFormData] = useState(defaultWebsiteSettings);
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const data = await websiteSettingsRepository.get();
+        setFormData(data);
+      } catch (error) {
+        console.warn('Failed to load settings data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,7 +37,7 @@ export default function WebsiteSettingsAdminPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await setDocument('websiteSettings', 'general', formData);
+      await websiteSettingsRepository.save(formData);
       toast.success('Website SEO and global configuration updated in Firestore!');
     } catch (error) {
       console.warn('Saved in offline mode:', error);
@@ -31,6 +46,14 @@ export default function WebsiteSettingsAdminPage() {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl space-y-6">

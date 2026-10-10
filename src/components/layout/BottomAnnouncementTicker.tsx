@@ -4,14 +4,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Bell,
-  Volume2,
   Pause,
   Play,
   ChevronRight,
-  ExternalLink,
-  Sparkles,
-  X,
-  ChevronUp,
 } from 'lucide-react';
 import { announcementRepository } from '@/lib/repositories';
 import { defaultAnnouncements } from '@/lib/defaultData';
@@ -24,12 +19,11 @@ export function BottomAnnouncementTicker() {
 
   const [announcements, setAnnouncements] = useState<Announcement[]>(defaultAnnouncements);
   const [isPaused, setIsPaused] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await announcementRepository.getAll();
+        const data = await announcementRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => {
             if (item.status && item.status !== 'published') return false;

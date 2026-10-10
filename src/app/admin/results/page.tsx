@@ -10,7 +10,6 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { studentResultRepository, announcementRepository } from '@/lib/repositories';
-import { defaultStudentResults } from '@/lib/defaultData';
 import { StudentResult, SubjectScore } from '@/types';
 import {
   Award,
@@ -19,16 +18,10 @@ import {
   Trash2,
   PlusCircle,
   X,
-  FileCheck,
-  CheckCircle,
-  XCircle,
-  Sparkles,
   Download,
   UploadCloud,
   FileSpreadsheet,
-  AlertTriangle,
   AlertCircle,
-  FileText,
   Check,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -101,11 +94,7 @@ export default function AdminResultsPage() {
     try {
       setIsLoading(true);
       const data = await studentResultRepository.getAll();
-      if (data && data.length > 0) {
-        setResults(data);
-      } else {
-        setResults(defaultStudentResults);
-      }
+      setResults(data || []);
     } catch (err) {
       console.error('Error loading student results:', err);
       toast.error('Failed to load student results.');
@@ -117,16 +106,16 @@ export default function AdminResultsPage() {
   useEffect(() => {
     let isMounted = true;
     studentResultRepository.getAll().then((data) => {
-      if (!isMounted) return;
-      if (data && data.length > 0) {
-        setResults(data);
-      } else {
-        setResults(defaultStudentResults);
+      if (isMounted) {
+        setResults(data || []);
+        setIsLoading(false);
       }
     }).catch((err) => {
-      console.error('Error loading student results:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading student results:', err);
+        toast.error('Failed to load student results.');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;

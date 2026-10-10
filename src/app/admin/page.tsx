@@ -7,21 +7,14 @@ import {
   Bell,
   Calendar,
   Users,
-  Image as ImageIcon,
-  Trophy,
   Plus,
   ArrowRight,
   School,
-  ExternalLink,
-  Clock,
 } from 'lucide-react';
-import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import {
-  defaultAnnouncements,
-  defaultEvents,
-  defaultFaculty,
   defaultSchoolSettings,
 } from '@/lib/defaultData';
 import {
@@ -34,43 +27,25 @@ import {
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState({
-    enquiriesCount: 12,
-    newEnquiriesCount: 4,
-    announcementsCount: defaultAnnouncements.length,
-    eventsCount: defaultEvents.length,
-    facultyCount: defaultFaculty.length,
-    galleryCount: 9,
+    enquiriesCount: 0,
+    newEnquiriesCount: 0,
+    announcementsCount: 0,
+    eventsCount: 0,
+    facultyCount: 0,
+    galleryCount: 0,
   });
 
-  const [recentEnquiries, setRecentEnquiries] = useState([
-    {
-      id: 'enq-1',
-      studentName: 'R. Kavin',
-      parentName: 'R. Rajesh',
-      classApplyingFor: 'Grade 11 (Science)',
-      phone: '+91 98765 43210',
-      status: 'new',
-      date: 'Today, 10:30 AM',
-    },
-    {
-      id: 'enq-2',
-      studentName: 'M. Sneha',
-      parentName: 'M. Meenakshi',
-      classApplyingFor: 'LKG',
-      phone: '+91 98765 12345',
-      status: 'new',
-      date: 'Today, 9:15 AM',
-    },
-    {
-      id: 'enq-3',
-      studentName: 'S. Harish',
-      parentName: 'S. Sundaram',
-      classApplyingFor: 'Grade 6',
-      phone: '+91 94444 55555',
-      status: 'contacted',
-      date: 'Yesterday',
-    },
-  ]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const [recentEnquiries, setRecentEnquiries] = useState<{
+    id: string;
+    studentName: string;
+    parentName: string;
+    classApplyingFor: string;
+    phone: string;
+    status: string;
+    date: string;
+  }[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -86,41 +61,36 @@ export default function AdminDashboardPage() {
 
         if (!isMounted) return;
 
-        if (enqs && enqs.length > 0) {
-          const newCount = enqs.filter((e) => e.status === 'new').length;
-          setStats((prev) => ({
-            ...prev,
-            enquiriesCount: enqs.length,
-            newEnquiriesCount: newCount,
-            announcementsCount: anns.length || prev.announcementsCount,
-            eventsCount: evts.length || prev.eventsCount,
-            facultyCount: facs.length || prev.facultyCount,
-            galleryCount: gals.length || prev.galleryCount,
-          }));
-          setRecentEnquiries(
-            enqs.slice(0, 5).map((e) => ({
-              id: e.id || '',
-              studentName: e.studentName || 'Student Applicant',
-              parentName: e.parentName || 'Parent / Guardian',
-              classApplyingFor: e.classApplyingFor || 'General Enquiry',
-              phone: e.phone || '',
-              status: e.status || 'new',
-              date: e.createdAt instanceof Date
-                ? e.createdAt.toLocaleDateString()
-                : 'Recent',
-            }))
-          );
-        } else {
-          setStats((prev) => ({
-            ...prev,
-            announcementsCount: anns.length || prev.announcementsCount,
-            eventsCount: evts.length || prev.eventsCount,
-            facultyCount: facs.length || prev.facultyCount,
-            galleryCount: gals.length || prev.galleryCount,
-          }));
-        }
+        const newCount = enqs.filter((e) => e.status === 'new').length;
+        setStats({
+          enquiriesCount: enqs.length,
+          newEnquiriesCount: newCount,
+          announcementsCount: anns.length,
+          eventsCount: evts.length,
+          facultyCount: facs.length,
+          galleryCount: gals.length,
+        });
+        setRecentEnquiries(
+          enqs.slice(0, 5).map((e) => ({
+            id: e.id || '',
+            studentName: e.studentName || 'Student Applicant',
+            parentName: e.parentName || 'Parent / Guardian',
+            classApplyingFor: e.classApplyingFor || 'General Enquiry',
+            phone: e.phone || '',
+            status: e.status || 'new',
+            date: e.createdAt
+              ? (typeof e.createdAt === 'object' && 'toDate' in e.createdAt
+                  ? (e.createdAt as { toDate: () => Date }).toDate().toLocaleDateString()
+                  : e.createdAt instanceof Date
+                    ? e.createdAt.toLocaleDateString()
+                    : String(e.createdAt))
+              : 'Recent',
+          }))
+        );
       } catch (err) {
         console.warn('Dashboard stats load error:', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
     };
     loadLiveStats();
@@ -163,6 +133,17 @@ export default function AdminDashboardPage() {
       color: 'bg-indigo-50 dark:bg-indigo-950/60',
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-3">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-slate-500 dark:text-slate-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -248,7 +229,13 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="space-y-3">
-              {recentEnquiries.map((enq) => (
+              {recentEnquiries.length === 0 ? (
+                <div className="p-8 text-center text-sm text-slate-400 dark:text-slate-500">
+                  <Inbox className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                  No admission enquiries yet.
+                </div>
+              ) : (
+                recentEnquiries.map((enq) => (
                 <div
                   key={enq.id}
                   className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
@@ -272,7 +259,8 @@ export default function AdminDashboardPage() {
                     <span className="text-[11px] text-slate-400">{enq.date}</span>
                   </div>
                 </div>
-              ))}
+                ))
+              )}
             </div>
           </Card>
         </div>

@@ -12,9 +12,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { achievementRepository, announcementRepository } from '@/lib/repositories';
-import { defaultAchievements } from '@/lib/defaultData';
 import { Achievement, Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Trophy, Star, CheckCircle, Bell, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, Trophy, Star, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AchievementsAdminPage() {
@@ -51,13 +50,8 @@ export default function AchievementsAdminPage() {
 
   const loadAchievements = useCallback(async () => {
     try {
-      setIsLoading(true);
       const data = await achievementRepository.getAll();
-      if (data && data.length > 0) {
-        setAchievements(data);
-      } else {
-        setAchievements(defaultAchievements);
-      }
+      setAchievements(data || []);
     } catch (err) {
       console.error('Error loading achievements:', err);
       toast.error('Failed to load achievements from database.');
@@ -69,16 +63,16 @@ export default function AchievementsAdminPage() {
   useEffect(() => {
     let isMounted = true;
     achievementRepository.getAll().then((data) => {
-      if (!isMounted) return;
-      if (data && data.length > 0) {
-        setAchievements(data);
-      } else {
-        setAchievements(defaultAchievements);
+      if (isMounted) {
+        setAchievements(data || []);
+        setIsLoading(false);
       }
     }).catch((err) => {
-      console.error('Error loading achievements:', err);
-    }).finally(() => {
-      if (isMounted) setIsLoading(false);
+      if (isMounted) {
+        console.error('Error loading achievements:', err);
+        toast.error('Failed to load achievements from database.');
+        setIsLoading(false);
+      }
     });
     return () => {
       isMounted = false;
@@ -141,7 +135,7 @@ export default function AchievementsAdminPage() {
         await achievementRepository.update(editingItem.id, formData);
         toast.success('Achievement updated successfully!');
       } else {
-        const created = await achievementRepository.create({
+        await achievementRepository.create({
           ...formData,
           date: new Date(),
         });

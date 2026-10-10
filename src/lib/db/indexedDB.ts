@@ -21,15 +21,12 @@ import {
   defaultHeroBanners,
   defaultResearchRecords,
   defaultThemeSettings,
-  defaultAdminUsers,
   defaultAlumni,
   defaultTransportRoutes,
-  defaultStudentResults,
-  defaultEnquiries,
 } from '@/lib/defaultData';
 
 const DB_NAME = 'sum_school_local_db';
-const DB_VERSION = 4;
+const DB_VERSION = 5;
 
 export const STORES = {
   SCHOOL_SETTINGS: 'school_settings',
@@ -53,6 +50,7 @@ export const STORES = {
   WEBSITE_SETTINGS: 'website_settings',
   ADMIN_USERS: 'admin_users',
   ALUMNI: 'alumni',
+  ALUMNI_PRIVATE: 'alumni_private',
   TRANSPORT_ROUTES: 'transport_routes',
   STUDENT_RESULTS: 'student_results',
 } as const;
@@ -127,11 +125,8 @@ async function seedInitialData(db: IDBDatabase): Promise<void> {
     [STORES.TIMELINE]: defaultTimelineEntries,
     [STORES.TESTIMONIALS]: defaultTestimonials,
     [STORES.RESEARCH_RECORDS]: defaultResearchRecords,
-    [STORES.ADMIN_USERS]: defaultAdminUsers,
     [STORES.ALUMNI]: defaultAlumni,
     [STORES.TRANSPORT_ROUTES]: defaultTransportRoutes,
-    [STORES.STUDENT_RESULTS]: defaultStudentResults,
-    [STORES.ENQUIRIES]: defaultEnquiries,
     [STORES.CONTACT_MESSAGES]: [],
   };
 

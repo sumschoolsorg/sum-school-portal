@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  Bell,
   CheckCircle,
   ArrowRight,
   ChevronLeft,
@@ -34,7 +33,7 @@ export function LiveAnnouncementBar() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const data = await announcementRepository.getAll();
+        const data = await announcementRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
           if (published.length > 0) {

@@ -9,102 +9,136 @@ service cloud.firestore {
     
     function isAdmin() {
       return isAuthenticated() && (
-        request.auth.token.role == 'super-admin' ||
-        request.auth.token.role == 'admin' ||
-        request.auth.token.role == 'content-manager' ||
-        exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+        (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.status == 'active'
+          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role in ['super-admin', 'admin', 'content-manager'])
+        || (!exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+          && request.auth.token.role in ['super-admin', 'admin', 'content-manager'])
       );
     }
     
     function isSuperAdmin() {
       return isAuthenticated() && (
-        request.auth.token.role == 'super-admin' ||
-        get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == 'super-admin'
+        (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == 'super-admin'
+          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.status == 'active')
+        || (!exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+          && request.auth.token.role == 'super-admin')
       );
+    }
+
+    function isSchoolAdmin() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.status == 'active'
+          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role in ['super-admin', 'admin'])
+        || (!exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+          && request.auth.token.role in ['super-admin', 'admin'])
+      );
+    }
+
+    // Alumni contact details are collected during registration. Firestore
+    // cannot redact fields per reader, so only records without private contact
+    // keys may be included in public reads.
+    function isPublicAlumni() {
+      return resource != null
+        && resource.data.status == 'published'
+        && !('email' in resource.data)
+        && !('phone' in resource.data);
     }
 
     // Public school profile and settings - Read public, Write Admin only
     match /schoolSettings/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     match /homepageContent/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     match /aboutContent/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     match /academicsContent/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     match /admissionsContent/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     match /themeSettings/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     match /websiteSettings/{docId} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
-    // Hero banners - Read published public, Write Admin
+    // Hero banners - Public can get published & list all, Admin full access
     match /heroBanners/{bannerId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
+      allow get: if resource.data.status == 'published' || isAdmin();
+      allow list: if resource.data.status == 'published' || isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     // Faculty, Facilities, Announcements, Events, Gallery, Achievements, Testimonials
+    // Public collections: get checks published status, list is open for public pages
     match /faculty/{facultyId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
+      allow get: if resource.data.status == 'published' || isAdmin();
+      allow list: if resource.data.status == 'published' || isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     match /facilities/{facilityId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
+      allow get: if resource.data.status == 'published' || isAdmin();
+      allow list: if resource.data.status == 'published' || isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     match /announcements/{announcementId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
+      allow get: if resource.data.status == 'published' || isAdmin();
+      allow list: if resource.data.status == 'published' || isAdmin();
       allow write: if isAdmin();
     }
 
     match /events/{eventId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
+      allow get: if resource.data.status == 'published' || isAdmin();
+      allow list: if resource.data.status == 'published' || isAdmin();
       allow write: if isAdmin();
     }
 
     match /gallery/{imageId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
+      allow get: if resource.data.status == 'published' || isAdmin();
+      allow list: if resource.data.status == 'published' || isAdmin();
       allow write: if isAdmin();
     }
 
     match /achievements/{achievementId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
+      allow get: if resource.data.status == 'published' || isAdmin();
+      allow list: if resource.data.status == 'published' || isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     match /testimonials/{testimonialId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
+      allow get: if resource.data.status == 'published' || isAdmin();
+      allow list: if resource.data.status == 'published' || isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
-    // Research records - Read approved published public, Write Admin
+    // Research records - Read approved published public, list admin-only
     match /researchRecords/{recordId} {
-      allow read: if (resource.data.published == true && resource.data.adminApproval == true) || isAdmin();
-      allow write: if isAdmin();
+      allow get: if (resource.data.published == true && resource.data.adminApproval == true) || isSchoolAdmin();
+      allow list: if isSchoolAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     // Admission Enquiries:
@@ -114,8 +148,11 @@ service cloud.firestore {
       allow create: if request.resource.data.parentName is string
                     && request.resource.data.phone is string
                     && request.resource.data.parentName.size() > 1
-                    && request.resource.data.phone.size() >= 10;
-      allow read, update, delete: if isAdmin();
+                    && request.resource.data.parentName.size() <= 100
+                    && request.resource.data.phone.size() >= 10
+                    && request.resource.data.phone.size() <= 15
+                    && (isSchoolAdmin() || request.resource.data.status in ['new', 'pending']);
+      allow read, update, delete: if isSchoolAdmin();
     }
 
     // Contact Messages:
@@ -126,47 +163,71 @@ service cloud.firestore {
                     && request.resource.data.email is string
                     && request.resource.data.message is string
                     && request.resource.data.name.size() > 1
-                    && request.resource.data.message.size() > 2;
-      allow read, update, delete: if isAdmin();
+                    && request.resource.data.name.size() <= 100
+                    && request.resource.data.email.size() <= 100
+                    && request.resource.data.message.size() > 2
+                    && request.resource.data.message.size() <= 2000
+                    && (isSchoolAdmin() || request.resource.data.status in ['new', 'pending']);
+      allow read, update, delete: if isSchoolAdmin();
     }
 
-    // Timeline Entries (School History)
+    // Timeline Entries (School History) - Public collection
     match /timelineEntries/{entryId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
+      allow get: if resource.data.status == 'published' || isAdmin();
+      allow list: if resource.data.status == 'published' || isAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     // Alumni Members:
-    // Public can view verified published alumni or submit a registration with pending status
+    // Public can view verified published alumni (without private contact data) or submit registration
     // Administrators approve, update, or delete profiles
     match /alumni/{alumniId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
-      allow create: if request.resource.data.name is string
-                    && request.resource.data.status == 'pending';
-      allow update, delete: if isAdmin();
+      allow get: if isPublicAlumni() || isSchoolAdmin();
+      allow list: if isPublicAlumni() || isSchoolAdmin();
+      allow create: if (!('email' in request.resource.data) && !('phone' in request.resource.data))
+                    && (isSchoolAdmin() || (request.resource.data.name is string && request.resource.data.status == 'pending'));
+      allow update: if isSchoolAdmin()
+                    && !('email' in request.resource.data)
+                    && !('phone' in request.resource.data);
+      allow delete: if isSchoolAdmin();
+    }
+
+    // Alumni Private Contacts - Strictly School Admin readable/writeable, Public create only during registration
+    match /alumniPrivate/{alumniId} {
+      allow read, update, delete: if isSchoolAdmin();
+      allow create: if request.resource.data.alumniId is string
+                    && request.resource.data.name is string;
     }
 
     // Transport Routes & Bus Stops:
     // Public can view published routes and bus timings
     // Administrators manage routes, stops, and fleet details
     match /transportRoutes/{routeId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
+      allow get: if resource.data.status == 'published' || isSchoolAdmin();
+      allow list: if resource.data.status == 'published' || isSchoolAdmin();
+      allow write: if isSchoolAdmin();
     }
 
     // Student Examination Results:
     // Public can retrieve published results by roll/registration lookup
     // Administrators upload, update, and manage marks
     match /studentResults/{resultId} {
-      allow read: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
+      // Student marks are private educational records; public access must use a
+      // dedicated authenticated/validated lookup endpoint, never collection reads.
+      allow get: if isSchoolAdmin();
+      allow list: if isSchoolAdmin();
+      allow create, update: if isSchoolAdmin()
+                    && request.resource.data.rollNumber is string
+                    && request.resource.data.studentName is string
+                    && request.resource.data.status in ['draft', 'published', 'withheld'];
+      allow delete: if isSchoolAdmin();
     }
 
     // Admin Users collection - Strictly managed by Super Admin
     match /adminUsers/{userId} {
-      allow read: if isAuthenticated();
+      allow get: if isAuthenticated() && (userId == request.auth.uid || isSuperAdmin());
+      allow list: if isSuperAdmin();
       allow write: if isSuperAdmin();
     }
   }
 }
-

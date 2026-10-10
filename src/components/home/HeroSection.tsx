@@ -21,11 +21,10 @@ import { heroBannerRepository } from '@/lib/repositories';
 import { HeroBanner } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export function HeroSection({
-  content = defaultHomepageContent,
-}: {
+export function HeroSection(props?: {
   content?: typeof defaultHomepageContent;
 }) {
+  void props;
   const [banners, setBanners] = useState<HeroBanner[]>(defaultHeroBanners);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);

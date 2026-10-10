@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Input } from '@/components/ui/Input';
@@ -9,9 +9,8 @@ import { Select } from '@/components/ui/Select';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { defaultAdmissionsContent } from '@/lib/defaultData';
-import { enquiryRepository } from '@/lib/repositories';
-import { addDocument } from '@/lib/firestore';
-import { Enquiry } from '@/types';
+import { enquiryRepository, admissionsRepository } from '@/lib/repositories';
+import { Enquiry, AdmissionsContent } from '@/types';
 import {
   FileText,
   CheckCircle,
@@ -21,14 +20,11 @@ import {
   Search,
   Copy,
   Check,
-  Calendar,
   Phone,
-  MapPin,
   Clock,
   ArrowRight,
   ShieldCheck,
   GraduationCap,
-  UserCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -37,7 +33,21 @@ export default function AdmissionsPage() {
   const { t, getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
-  const content = defaultAdmissionsContent;
+  const [content, setContent] = useState<AdmissionsContent>(defaultAdmissionsContent);
+
+  useEffect(() => {
+    let isMounted = true;
+    admissionsRepository.get().then((data) => {
+      if (isMounted && data) {
+        setContent(data);
+      }
+    }).catch((err) => {
+      console.warn('Failed to load admissions content from repository:', err);
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const [activeTab, setActiveTab] = useState<'form' | 'tracker' | 'guidelines'>('form');
 
@@ -65,6 +75,7 @@ export default function AdmissionsPage() {
 
   // Application Tracker State
   const [trackQuery, setTrackQuery] = useState('');
+  const [trackPhone, setTrackPhone] = useState('');
   const [isTracking, setIsTracking] = useState(false);
   const [trackedRecord, setTrackedRecord] = useState<Enquiry | null>(null);
   const [trackSearched, setTrackSearched] = useState(false);
@@ -119,7 +130,7 @@ export default function AdmissionsPage() {
     }
 
     setIsSubmitting(true);
-    const appNumber = `ADM-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const appNumber = `ADM-${new Date().getFullYear()}-${crypto.randomUUID().toUpperCase()}`;
     const today = new Date().toISOString().split('T')[0];
 
     const applicationPayload: Enquiry = {
@@ -143,13 +154,6 @@ export default function AdmissionsPage() {
     try {
       // Save locally first to IndexedDB
       await enquiryRepository.create(applicationPayload);
-
-      // Attempt Firestore sync
-      try {
-        await addDocument('enquiries', applicationPayload);
-      } catch (fbErr) {
-        console.warn('Firestore write warning, saved locally in IndexedDB:', fbErr);
-      }
 
       setSubmittedApp({
         appNo: appNumber,
@@ -192,35 +196,51 @@ export default function AdmissionsPage() {
   };
 
   const handleSearchTracking = async (queryToSearch?: string) => {
-    const term = (queryToSearch || trackQuery).trim().toLowerCase();
-    if (!term) {
-      toast.error(t('admissions.enterAppNoOrPhone', 'Please enter Application Number or Phone Number'));
+    const term = (queryToSearch || trackQuery).trim().toUpperCase();
+    const phoneDigits = trackPhone.replace(/\D/g, '');
+    if (!term || phoneDigits.length < 10) {
+      toast.error(isTa ? 'விண்ணப்ப எண் மற்றும் 10 இலக்க தொலைபேசி எண்ணை உள்ளிடவும்.' : 'Enter both the Application Number and 10-digit registered Phone Number.');
       return;
     }
 
     setIsTracking(true);
     setTrackSearched(true);
     try {
-      const allRecords = await enquiryRepository.getAll();
-      const cleanDigits = term.replace(/\D/g, '');
-
-      const match = allRecords.find((rec) => {
-        const appMatch = rec.applicationNumber && rec.applicationNumber.toLowerCase() === term;
-        const phoneMatch = cleanDigits.length >= 7 && rec.phone && rec.phone.replace(/\D/g, '').includes(cleanDigits);
-        return appMatch || phoneMatch;
+      const res = await fetch('/api/admissions/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationNumber: term, phone: phoneDigits }),
       });
 
-      setTrackedRecord(match || null);
-      if (!match) {
+      const data = await res.json();
+
+      if (res.status === 429) {
+        toast.error(data.message || 'Rate limit exceeded. Please wait a moment.');
+        setTrackedRecord(null);
+        return;
+      }
+
+      if (data.requiresOfficeContact || res.status === 503) {
+        toast.info(data.message || (isTa ? 'அலுவலகத்தைத் தொடர்பு கொள்ளவும்.' : 'Please contact the school office for application status.'));
+        setTrackedRecord(null);
+        return;
+      }
+
+      if (data.success && data.result) {
+        setTrackedRecord(data.result);
+        toast.success(isTa ? 'விண்ணப்ப நிலை கண்டறியப்பட்டது.' : 'Application record verified successfully.');
+      } else {
+        setTrackedRecord(null);
         toast.info(
-          isTa
-            ? 'விண்ணப்பம் கிடைக்கவில்லை. தயவுசெய்து எண்ணைச் சரிபார்க்கவும்.'
-            : 'No matching application found. Please verify Application Number or Phone.'
+          data.message ||
+          (isTa
+            ? 'விண்ணப்பம் கிடைக்கவில்லை. தயவுசெய்து எண்களைச் சரிபார்க்கவும்.'
+            : 'No matching application found. Please verify Application Number and Phone.')
         );
       }
     } catch (err) {
       console.error('Tracking query failed:', err);
-      toast.error('Error fetching application records. Please try again.');
+      toast.error('Error verifying application. Please try again.');
     } finally {
       setIsTracking(false);
     }
@@ -567,46 +587,45 @@ export default function AdmissionsPage() {
                     {t('admissions.tabStatus', 'Track Application Status')}
                   </h2>
                   <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 max-w-lg mx-auto">
-                    Enter your Application Tracking Number (e.g., ADM-2026-1001) or your registered 10-digit mobile number to view real-time status.
+                    Enter the full application number and registered phone number to check your status.
                   </p>
 
-                  <div className="mt-6 flex flex-col sm:flex-row gap-2 max-w-xl mx-auto">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleSearchTracking();
+                    }}
+                    className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto text-left"
+                  >
                     <Input
-                      name="trackQuery"
-                      placeholder="e.g. ADM-2026-1001 or 9842178901"
+                      name="applicationNumber"
+                      label={isTa ? 'விண்ணப்ப எண் *' : 'Application Number *'}
+                      placeholder="ADM-2026-…"
                       value={trackQuery}
                       onChange={(e) => setTrackQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleSearchTracking();
-                      }}
-                      className="flex-1"
+                      required
+                    />
+                    <Input
+                      name="registeredPhone"
+                      label={isTa ? 'பதிவு செய்யப்பட்ட தொலைபேசி எண் *' : 'Registered Phone *'}
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder="10-digit mobile number"
+                      value={trackPhone}
+                      onChange={(e) => setTrackPhone(e.target.value)}
+                      required
                     />
                     <Button
-                      onClick={() => handleSearchTracking()}
+                      type="submit"
                       variant="primary"
                       isLoading={isTracking}
                       leftIcon={<Search className="w-4 h-4" />}
+                      className="sm:col-span-2 mt-2 w-full"
                     >
                       {t('admissions.trackNowBtn', 'Track Status')}
                     </Button>
-                  </div>
+                  </form>
 
-                  {/* Sample Chips for Testing */}
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
-                    <span className="text-slate-500 font-medium">Quick Demo Search:</span>
-                    {['ADM-2026-1001', 'ADM-2026-1002', 'ADM-2026-1003', 'ADM-2026-1004'].map((chip) => (
-                      <button
-                        key={chip}
-                        onClick={() => {
-                          setTrackQuery(chip);
-                          handleSearchTracking(chip);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-mono font-bold transition border border-slate-200 dark:border-slate-700 cursor-pointer"
-                      >
-                        {chip}
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
                 {/* Tracked Record Result */}
@@ -701,38 +720,12 @@ export default function AdmissionsPage() {
                         Official Admissions Office Note:
                       </span>
                       <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mt-1 leading-relaxed">
-                        {trackedRecord.notes || 'Your application is registered. The school admissions committee is reviewing submitted details.'}
+                        {trackedRecord.status === 'approved'
+                          ? 'Your application has been approved. Contact the school office for enrollment instructions.'
+                          : trackedRecord.status === 'rejected'
+                            ? 'The school office has updated your application. Please contact the office for details.'
+                            : 'Your application has been received. The admissions office will contact you if more information is needed.'}
                       </p>
-                    </div>
-
-                    {/* Applicant Summary */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                      <div>
-                        <span className="text-slate-400">Parent / Guardian:</span>
-                        <div className="font-bold text-slate-800 dark:text-slate-200">{trackedRecord.parentName}</div>
-                      </div>
-                      <div>
-                        <span className="text-slate-400">Contact Number:</span>
-                        <div className="font-bold text-slate-800 dark:text-slate-200">{trackedRecord.phone}</div>
-                      </div>
-                      {trackedRecord.dob && (
-                        <div>
-                          <span className="text-slate-400">Date of Birth:</span>
-                          <div className="font-bold text-slate-800 dark:text-slate-200">{trackedRecord.dob}</div>
-                        </div>
-                      )}
-                      {trackedRecord.previousSchool && (
-                        <div>
-                          <span className="text-slate-400">Previous School:</span>
-                          <div className="font-bold text-slate-800 dark:text-slate-200">{trackedRecord.previousSchool}</div>
-                        </div>
-                      )}
-                      {trackedRecord.address && (
-                        <div className="sm:col-span-2">
-                          <span className="text-slate-400">Address:</span>
-                          <div className="font-bold text-slate-800 dark:text-slate-200">{trackedRecord.address}</div>
-                        </div>
-                      )}
                     </div>
 
                     {/* Assistance Action */}

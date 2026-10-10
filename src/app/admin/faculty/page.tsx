@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Card } from '@/components/ui/Card';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
@@ -11,13 +10,14 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
-import { defaultFaculty } from '@/lib/defaultData';
+import { facultyRepository } from '@/lib/repositories';
 import { Faculty } from '@/types';
 import { Plus, Edit2, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FacultyAdminPage() {
-  const [facultyList, setFacultyList] = useState<Faculty[]>(defaultFaculty);
+  const [facultyList, setFacultyList] = useState<Faculty[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState<Faculty | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -56,43 +56,80 @@ export default function FacultyAdminPage() {
     setIsModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const fetchFaculty = async () => {
+    setIsLoading(true);
+    try {
+      const data = await facultyRepository.getAll();
+      setFacultyList(data as Faculty[]);
+    } catch {
+      toast.error('Failed to load faculty');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    facultyRepository.getAll().then((data) => {
+      if (isMounted) {
+        setFacultyList(data as Faculty[]);
+        setIsLoading(false);
+      }
+    }).catch(() => {
+      if (isMounted) {
+        toast.error('Failed to load faculty');
+        setIsLoading(false);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.designation) {
       toast.error('Please enter teacher name and designation.');
       return;
     }
 
-    if (editingFaculty) {
-      setFacultyList((prev) =>
-        prev.map((f) => (f.id === editingFaculty.id ? ({ ...f, ...formData } as Faculty) : f))
-      );
-      toast.success('Faculty profile updated successfully!');
-    } else {
-      const newEntry: Faculty = {
-        id: `fac-${Date.now()}`,
-        name: formData.name || 'Faculty Member',
-        designation: formData.designation || 'Teacher',
-        qualification: formData.qualification || '',
-        subject: formData.subject || '',
-        section: (formData.section as Faculty['section']) || 'secondary',
-        experience: formData.experience || '',
-        photoUrl: formData.photoUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80',
-        biography: formData.biography || '',
-        status: formData.status || 'published',
-        order: facultyList.length + 1,
-      };
-      setFacultyList((prev) => [newEntry, ...prev]);
-      toast.success('New faculty member added successfully!');
+    try {
+      if (editingFaculty && editingFaculty.id) {
+        await facultyRepository.update(editingFaculty.id, formData);
+        toast.success('Faculty profile updated successfully!');
+      } else {
+        const newEntry = {
+          name: formData.name || 'Faculty Member',
+          designation: formData.designation || 'Teacher',
+          qualification: formData.qualification || '',
+          subject: formData.subject || '',
+          section: (formData.section as Faculty['section']) || 'secondary',
+          experience: formData.experience || '',
+          photoUrl: formData.photoUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80',
+          biography: formData.biography || '',
+          status: formData.status || 'published',
+          order: facultyList.length + 1,
+        };
+        await facultyRepository.create(newEntry);
+        toast.success('New faculty member added successfully!');
+      }
+      setIsModalOpen(false);
+      await fetchFaculty();
+    } catch {
+      toast.error('Failed to save faculty');
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTargetId) return;
-    setFacultyList((prev) => prev.filter((f) => f.id !== deleteTargetId));
-    toast.success('Faculty member removed.');
-    setDeleteTargetId(null);
+    try {
+      await facultyRepository.delete(deleteTargetId);
+      toast.success('Faculty member removed.');
+      setDeleteTargetId(null);
+      await fetchFaculty();
+    } catch {
+      toast.error('Failed to delete faculty');
+    }
   };
 
   const columns: Column<Faculty>[] = [
@@ -179,14 +216,29 @@ export default function FacultyAdminPage() {
         </Button>
       </div>
 
-      <DataTable
-        data={facultyList}
-        columns={columns}
-        searchKey="name"
-        searchPlaceholder="Search faculty by name..."
-        onAddClick={handleOpenAdd}
-        addLabel="Add Faculty"
-      />
+      {isLoading ? (
+        <div className="flex justify-center p-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      ) : facultyList.length === 0 ? (
+        <div className="text-center p-12 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+          <Users className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">No faculty members</h3>
+          <p className="text-slate-500 mb-6">Add your first faculty member to display them on the website.</p>
+          <Button onClick={handleOpenAdd} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
+            Add Faculty
+          </Button>
+        </div>
+      ) : (
+        <DataTable
+          data={facultyList}
+          columns={columns}
+          searchKey="name"
+          searchPlaceholder="Search faculty by name..."
+          onAddClick={handleOpenAdd}
+          addLabel="Add Faculty"
+        />
+      )}
 
       {/* Add / Edit Modal */}
       <Modal

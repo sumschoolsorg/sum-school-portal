@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
+import { Clock, MapPin, ArrowRight } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Button } from '@/components/ui/Button';
 import { defaultEvents } from '@/lib/defaultData';
