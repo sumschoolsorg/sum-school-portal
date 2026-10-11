@@ -24,7 +24,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export function HeroSection(props?: {
   content?: typeof defaultHomepageContent;
 }) {
-  void props;
   const [banners, setBanners] = useState<HeroBanner[]>(defaultHeroBanners);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -75,7 +74,31 @@ export function HeroSection(props?: {
     return () => clearInterval(interval);
   }, [isPaused, prefersReducedMotion, banners.length, handleNext]);
 
-  const currentBanner = banners[currentIndex] || defaultHeroBanners[0];
+  const homepageHero = props?.content?.hero ?? defaultHomepageContent.hero;
+  const currentBanner: HeroBanner = banners[currentIndex] ?? {
+    id: 'homepage-hero',
+    title: homepageHero.title,
+    title_en: homepageHero.title_en,
+    title_ta: homepageHero.title_ta,
+    subtitle: homepageHero.subtitle,
+    subtitle_en: homepageHero.subtitle_en,
+    subtitle_ta: homepageHero.subtitle_ta,
+    description: homepageHero.description,
+    description_en: homepageHero.description_en,
+    description_ta: homepageHero.description_ta,
+    imageUrl: homepageHero.imageUrl,
+    ctaText: homepageHero.ctaText,
+    ctaText_en: homepageHero.ctaText_en,
+    ctaText_ta: homepageHero.ctaText_ta,
+    ctaLink: homepageHero.ctaLink,
+    secondaryCtaText: homepageHero.secondaryCtaText,
+    secondaryCtaText_en: homepageHero.secondaryCtaText_en,
+    secondaryCtaText_ta: homepageHero.secondaryCtaText_ta,
+    secondaryCtaLink: homepageHero.secondaryCtaLink,
+    order: 0,
+    status: 'published',
+    animationStyle: 'fade',
+  };
 
   const bannerTitle = getLocalized(currentBanner, 'title', 'title_en') || t('home.hero.defaultTitle');
   const bannerSubtitle = getLocalized(currentBanner, 'subtitle', 'subtitle_en') || t('home.hero.defaultEyebrow');

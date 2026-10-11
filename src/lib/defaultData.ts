@@ -472,7 +472,7 @@ export const defaultAdmissionsContent: AdmissionsContent = {
   schoolTimings: "Monday – Friday: 9:00 AM – 4:30 PM | Saturday: 9:00 AM – 1:00 PM",
 };
 
-export const defaultFaculty: Faculty[] = [
+const unverifiedFacultySeed: Faculty[] = [
   {
     id: "fac-mem-1",
     name: "Thiru S. Xavier, M.Sc., M.Ed., M.Phil.",
@@ -592,7 +592,7 @@ export const defaultFaculty: Faculty[] = [
   },
 ];
 
-export const defaultFacilities: Facility[] = [
+const unverifiedFacilitiesSeed: Facility[] = [
   {
     id: "fac-atl-1",
     title: "Atal Tinkering Lab (ATL) & Robotics Center",
@@ -686,7 +686,7 @@ export const defaultFacilities: Facility[] = [
   },
 ];
 
-export const defaultEvents: SchoolEvent[] = [
+const unverifiedEventsSeed: SchoolEvent[] = [
   {
     id: "event-atl-1",
     title: "State Level Engineering Hackathon 2026",
@@ -911,7 +911,7 @@ export const defaultEvents: SchoolEvent[] = [
   },
 ];
 
-export const defaultAchievements: Achievement[] = [
+const unverifiedAchievementsSeed: Achievement[] = [
   // --- State Level Robotics & Innovation Achievements ---
   {
     id: "ach-atl-1",
@@ -1182,7 +1182,7 @@ export const defaultAchievements: Achievement[] = [
   },
 ];
 
-export const defaultGalleryImages: GalleryImage[] = [
+const unverifiedGalleryImagesSeed: GalleryImage[] = [
   {
     id: "g-atl-1",
     title: "State Hackathon 2026 — 1st Prize ₹10,000 Cheque Presentation",
@@ -1489,7 +1489,7 @@ export const defaultGalleryImages: GalleryImage[] = [
   },
 ];
 
-export const defaultTimelineEntries: TimelineEntry[] = [
+const unverifiedTimelineEntriesSeed: TimelineEntry[] = [
   {
     id: "timeline-1",
     year: "1963",
@@ -1604,7 +1604,7 @@ export const defaultTimelineEntries: TimelineEntry[] = [
   },
 ];
 
-export const defaultAnnouncements: Announcement[] = [
+const unverifiedAnnouncementsSeed: Announcement[] = [
   {
     id: "ann-atl-1",
     title: "Congratulations! S.U.M. School ATL Team Wins 1st Prize (₹10,000) at State Hackathon 2026",
@@ -1702,7 +1702,7 @@ export const defaultAnnouncements: Announcement[] = [
   },
 ];
 
-export const defaultTestimonials: Testimonial[] = [
+const unverifiedTestimonialsSeed: Testimonial[] = [
   {
     id: "test-1",
     name: "Mr. P. Muthukumar",
@@ -1747,7 +1747,7 @@ export const defaultWebsiteSettings: WebsiteSettings = {
   maintenanceMessage: "The website is currently undergoing scheduled maintenance. Please check back shortly.",
 };
 
-export const defaultHeroBanners: HeroBanner[] = [
+const unverifiedHeroBannersSeed: HeroBanner[] = [
   {
     id: "banner-1",
     title: "Inspiring Wisdom & Values Since 1963",
@@ -1846,7 +1846,7 @@ export const defaultHeroBanners: HeroBanner[] = [
   },
 ];
 
-export const defaultResearchRecords: ResearchRecord[] = [
+const unverifiedResearchRecordsSeed: ResearchRecord[] = [
   {
     id: "res-1",
     title: "Official Institution Name & Title",
@@ -2072,7 +2072,7 @@ export const defaultThemeSettings: ThemeSettings = {
 
 export const defaultAdminUsers: AdminUser[] = [];
 export const defaultAlumni: AlumniMember[] = [];
-export const defaultTransportRoutes: TransportRoute[] = [
+const unverifiedTransportRoutesSeed: TransportRoute[] = [
   {
     id: "route-1",
     routeNumber: "Route 01",
@@ -2260,3 +2260,31 @@ export const defaultTransportRoutes: TransportRoute[] = [
 
 export const defaultStudentResults: StudentResult[] = [];
 export const defaultEnquiries: Enquiry[] = [];
+
+// Seed records were not verified against school-provided source material. They are
+// retained for review but never seeded or rendered as current school records.
+export const unverifiedLocalSeedArchive = {
+  defaultFaculty: unverifiedFacultySeed,
+  defaultFacilities: unverifiedFacilitiesSeed,
+  defaultEvents: unverifiedEventsSeed,
+  defaultAchievements: unverifiedAchievementsSeed,
+  defaultGalleryImages: unverifiedGalleryImagesSeed,
+  defaultTimelineEntries: unverifiedTimelineEntriesSeed,
+  defaultAnnouncements: unverifiedAnnouncementsSeed,
+  defaultTestimonials: unverifiedTestimonialsSeed,
+  defaultHeroBanners: unverifiedHeroBannersSeed,
+  defaultResearchRecords: unverifiedResearchRecordsSeed,
+  defaultTransportRoutes: unverifiedTransportRoutesSeed
+};
+
+export const defaultFaculty: Faculty[] = [];
+export const defaultFacilities: Facility[] = [];
+export const defaultEvents: SchoolEvent[] = [];
+export const defaultAchievements: Achievement[] = [];
+export const defaultGalleryImages: GalleryImage[] = [];
+export const defaultTimelineEntries: TimelineEntry[] = [];
+export const defaultAnnouncements: Announcement[] = [];
+export const defaultTestimonials: Testimonial[] = [];
+export const defaultHeroBanners: HeroBanner[] = [];
+export const defaultResearchRecords: ResearchRecord[] = [];
+export const defaultTransportRoutes: TransportRoute[] = [];

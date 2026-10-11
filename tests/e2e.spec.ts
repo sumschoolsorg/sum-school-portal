@@ -100,6 +100,12 @@ test.describe('Announcement Integrity', () => {
     await page.goto('/news', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('#main-content')).toBeVisible();
   });
+
+  test('Unverified local seed announcements are not shown as official news', async ({ page }) => {
+    await page.goto('/news', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByText(/State Hackathon 2026/i)).toHaveCount(0);
+    await expect(page.getByText(/Tamil Nadu Robotics League/i)).toHaveCount(0);
+  });
 });
 
 // 5. SEO & Metadata Endpoints
