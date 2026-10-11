@@ -12,7 +12,6 @@ import {
   CheckCircle,
   XCircle,
   Calendar,
-  Sparkles,
   ShieldCheck,
   RotateCcw,
 } from 'lucide-react';
@@ -28,7 +27,6 @@ export default function ResultsPage() {
   const [result, setResult] = useState<StudentResult | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
 
-  const [isLocalPreview, setIsLocalPreview] = useState(false);
   const [cloudGuidance, setCloudGuidance] = useState<{ message: string } | null>(null);
 
   const handleSearch = async (e?: React.FormEvent) => {
@@ -73,7 +71,6 @@ export default function ResultsPage() {
 
       if (data.success && data.result) {
         setResult(data.result);
-        setIsLocalPreview(Boolean(data.isLocalPreview));
         toast.success(isTa ? 'தேர்வு முடிவுகள் கண்டறியப்பட்டன!' : 'Mark sheet retrieved successfully!');
       } else {
         setResult(null);
@@ -97,7 +94,6 @@ export default function ResultsPage() {
     setResult(null);
     setHasSearched(false);
     setCloudGuidance(null);
-    setIsLocalPreview(false);
   };
 
   return (

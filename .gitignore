@@ -45,3 +45,6 @@ next-env.d.ts
 eslint-report.json
 eslint_output.json
 
+# firebase
+.firebase/
+

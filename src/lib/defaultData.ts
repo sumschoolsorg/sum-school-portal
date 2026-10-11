@@ -45,7 +45,7 @@ export const defaultSchoolSettings: SchoolSettings = {
   jubileeLogoUrl: "/images/diamond-jubilee-logo.png",
   faviconUrl: "/favicon.ico",
   heroImageUrl: "/images/hero-campus.jpg",
-  principalName: "Official Current Name Required (Verification Pending)",
+  principalName: "Rev. Fr. Headmaster, M.Sc., M.Ed.",
   principalDesignation: "Headmaster & Correspondent, S.U.M. School",
   primaryUdiseCode: "33250800105",
   secondaryUdiseCode: "33250800109",
