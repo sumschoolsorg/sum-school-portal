@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://sumschool.in';
+  const baseUrl = 'https://www.sumschools.org';
   const lastModified = new Date();
 
   return [

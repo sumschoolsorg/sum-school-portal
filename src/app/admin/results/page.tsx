@@ -74,7 +74,7 @@ export default function AdminResultsPage() {
     registerNumber: '',
     studentName: '',
     studentName_ta: '',
-    dob: '2010-05-14',
+    dob: '',
     className: '10th Standard (SSLC)',
     section: 'A',
     examName: 'Tamil Nadu SSLC Annual Board Examination',
@@ -83,11 +83,11 @@ export default function AdminResultsPage() {
     totalMarks: 0,
     totalMaxMarks: 500,
     percentage: 0,
-    overallGrade: 'Distinction (A1)',
-    resultStatus: 'PASS',
-    remarks: 'Good academic performance.',
-    issueDate: '2026-05-20',
-    status: 'published',
+    overallGrade: '-',
+    resultStatus: 'FAIL',
+    remarks: '',
+    issueDate: '',
+    status: 'draft',
   });
 
   const loadData = useCallback(async () => {
@@ -125,36 +125,32 @@ export default function AdminResultsPage() {
   const handleOpenAdd = () => {
     setEditingResult(null);
     const initialSubjects: SubjectScore[] = [
-      { code: '001', name: 'Tamil', maxMarks: 100, passingMarks: 35, marksObtained: 90, grade: 'A1', isPassed: true },
-      { code: '002', name: 'English', maxMarks: 100, passingMarks: 35, marksObtained: 88, grade: 'A2', isPassed: true },
-      { code: '003', name: 'Mathematics', maxMarks: 100, passingMarks: 35, marksObtained: 95, grade: 'A1', isPassed: true },
-      { code: '004', name: 'Science', maxMarks: 100, passingMarks: 35, marksObtained: 92, grade: 'A1', isPassed: true },
-      { code: '005', name: 'Social Science', maxMarks: 100, passingMarks: 35, marksObtained: 89, grade: 'A2', isPassed: true },
+      { code: '001', name: 'Tamil', maxMarks: 100, passingMarks: 35, marksObtained: 0, grade: 'F', isPassed: false },
+      { code: '002', name: 'English', maxMarks: 100, passingMarks: 35, marksObtained: 0, grade: 'F', isPassed: false },
+      { code: '003', name: 'Mathematics', maxMarks: 100, passingMarks: 35, marksObtained: 0, grade: 'F', isPassed: false },
+      { code: '004', name: 'Science', maxMarks: 100, passingMarks: 35, marksObtained: 0, grade: 'F', isPassed: false },
+      { code: '005', name: 'Social Science', maxMarks: 100, passingMarks: 35, marksObtained: 0, grade: 'F', isPassed: false },
     ];
 
-    const total = initialSubjects.reduce((acc, s) => acc + s.marksObtained, 0);
-    const totalMax = initialSubjects.reduce((acc, s) => acc + s.maxMarks, 0);
-    const pct = totalMax > 0 ? parseFloat(((total / totalMax) * 100).toFixed(2)) : 0;
-
     setFormData({
-      rollNumber: `SUM2026-${1000 + results.length + 1}`,
-      registerNumber: `TN-SSLC-${332508100 + results.length + 1}`,
+      rollNumber: '',
+      registerNumber: '',
       studentName: '',
       studentName_ta: '',
-      dob: '2010-06-15',
+      dob: '',
       className: '10th Standard (SSLC)',
       section: 'A',
       examName: 'Tamil Nadu SSLC Annual Board Examination',
       academicYear: '2025–2026',
       subjects: initialSubjects,
-      totalMarks: total,
-      totalMaxMarks: totalMax,
-      percentage: pct,
-      overallGrade: pct >= 90 ? 'Distinction (A1)' : pct >= 75 ? 'First Class (A)' : 'Pass (B)',
-      resultStatus: 'PASS',
-      remarks: 'Certified under State Board Regulations.',
+      totalMarks: 0,
+      totalMaxMarks: 500,
+      percentage: 0,
+      overallGrade: '-',
+      resultStatus: 'FAIL',
+      remarks: '',
       issueDate: new Date().toISOString().split('T')[0],
-      status: 'published',
+      status: 'draft',
     });
     setIsModalOpen(true);
   };

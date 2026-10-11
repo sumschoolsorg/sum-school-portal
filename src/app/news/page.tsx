@@ -22,7 +22,14 @@ export default function NewsPage() {
     let isMounted = true;
     announcementRepository.getPublished().then((items) => {
       if (isMounted && items && items.length > 0) {
-        setAnnouncements(items);
+        const seen = new Set();
+        const unique = items.filter((item) => {
+          const key = item.id || item.title;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        setAnnouncements(unique);
       }
     }).catch((err) => {
       console.warn('Failed to load announcements from repository:', err);
@@ -97,7 +104,7 @@ export default function NewsPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Hero */}
         <section className="relative py-20 lg:py-28 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="container-main relative z-10 text-center">

@@ -35,7 +35,14 @@ export function BottomAnnouncementTicker() {
             return true;
           });
           if (published.length > 0) {
-            setAnnouncements(published);
+            const seen = new Set();
+            const unique = published.filter((item) => {
+              const key = item.id || item.title;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+            setAnnouncements(unique);
           }
         }
       } catch (err) {

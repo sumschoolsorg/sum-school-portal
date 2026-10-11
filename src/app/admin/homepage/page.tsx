@@ -7,12 +7,13 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { defaultHomepageContent } from '@/lib/defaultData';
-import { homepageRepository } from '@/lib/repositories';
-import { Save, Home, Loader2 } from 'lucide-react';
+import { homepageRepository, getCurrentDataMode, isFirebaseConfigured } from '@/lib/repositories';
+import { HomepageContent } from '@/types';
+import { Save, Home, Loader2, Megaphone, UserCheck, BarChart3, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function HomepageAdminPage() {
-  const [formData, setFormData] = useState(defaultHomepageContent);
+  const [formData, setFormData] = useState<HomepageContent>(defaultHomepageContent);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -20,7 +21,16 @@ export default function HomepageAdminPage() {
     async function loadData() {
       try {
         const data = await homepageRepository.get();
-        setFormData(data);
+        if (data) {
+          setFormData({
+            ...defaultHomepageContent,
+            ...data,
+            hero: { ...defaultHomepageContent.hero, ...(data.hero || {}) },
+            stats: { ...defaultHomepageContent.stats, ...(data.stats || {}) },
+            principalMessage: { ...defaultHomepageContent.principalMessage, ...(data.principalMessage || {}) },
+            admissionCta: { ...defaultHomepageContent.admissionCta, ...(data.admissionCta || {}) },
+          });
+        }
       } catch (error) {
         console.warn('Failed to load homepage data:', error);
       } finally {
@@ -51,15 +61,26 @@ export default function HomepageAdminPage() {
     });
   };
 
+  const handleAdmissionCtaChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      admissionCta: { ...formData.admissionCta, [e.target.name]: e.target.value },
+    });
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     try {
       await homepageRepository.save(formData);
-      toast.success('Homepage hero, statistics, and principal message saved to Firestore!');
+      if (getCurrentDataMode() === 'firebase' && isFirebaseConfigured()) {
+        toast.success('Homepage content saved to Cloud Firestore!');
+      } else {
+        toast.info('Homepage configuration saved to local offline preview.');
+      }
     } catch (error) {
       console.warn('Saved in offline mode:', error);
-      toast.info('Homepage configuration saved locally.');
+      toast.info('Homepage configuration saved to local offline storage.');
     } finally {
       setIsSaving(false);
     }
@@ -81,44 +102,70 @@ export default function HomepageAdminPage() {
           Homepage Content Manager
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Edit hero headlines, banner images, statistics counters, and leadership messages.
+          Edit hero headlines, campus background images, numeric statistics counters, leadership messages, and admission CTA banners.
         </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Hero Section */}
         <Card className="p-6 sm:p-8 space-y-4">
-          <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-blue-600" />
             Hero Section Banner
           </h3>
 
-          <Input
-            label="Hero Tagline / Subtitle"
-            name="subtitle"
-            value={formData.hero.subtitle}
-            onChange={handleHeroChange}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Hero Tagline / Subtitle (English)"
+              name="subtitle"
+              value={formData.hero.subtitle}
+              onChange={handleHeroChange}
+            />
+            <Input
+              label="Hero Tagline / Subtitle (Tamil)"
+              name="subtitle_ta"
+              value={formData.hero.subtitle_ta || ''}
+              onChange={handleHeroChange}
+            />
+          </div>
 
-          <Input
-            label="Main Hero Headline"
-            name="title"
-            value={formData.hero.title}
-            onChange={handleHeroChange}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Main Hero Headline (English)"
+              name="title"
+              value={formData.hero.title}
+              onChange={handleHeroChange}
+            />
+            <Input
+              label="Main Hero Headline (Tamil)"
+              name="title_ta"
+              value={formData.hero.title_ta || ''}
+              onChange={handleHeroChange}
+            />
+          </div>
 
-          <Textarea
-            label="Hero Introduction Paragraph"
-            name="description"
-            rows={3}
-            value={formData.hero.description}
-            onChange={handleHeroChange}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Textarea
+              label="Hero Introduction (English)"
+              name="description"
+              rows={3}
+              value={formData.hero.description}
+              onChange={handleHeroChange}
+            />
+            <Textarea
+              label="Hero Introduction (Tamil)"
+              name="description_ta"
+              rows={3}
+              value={formData.hero.description_ta || ''}
+              onChange={handleHeroChange}
+            />
+          </div>
 
           <ImageUpload
             label="Hero Campus Background Image"
             folder="hero"
-            currentImageUrl={formData.hero.imageUrl}
-            onImageUploaded={(url) =>
+            value={formData.hero.imageUrl}
+            onChange={(url) =>
               setFormData({
                 ...formData,
                 hero: { ...formData.hero, imageUrl: url },
@@ -144,31 +191,32 @@ export default function HomepageAdminPage() {
 
         {/* Live Stats */}
         <Card className="p-6 sm:p-8 space-y-4">
-          <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-emerald-600" />
             School Highlights &amp; Numeric Statistics
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Years of Excellence"
+              label="Years of Excellence (e.g. 60+)"
               name="yearsOfExcellence"
               value={formData.stats.yearsOfExcellence}
               onChange={handleStatsChange}
             />
             <Input
-              label="Student Strength"
+              label="Student Strength (e.g. 3,300+)"
               name="totalStudents"
               value={formData.stats.totalStudents}
               onChange={handleStatsChange}
             />
             <Input
-              label="Total Faculty / Staff"
+              label="Total Faculty / Staff (e.g. 70+)"
               name="totalTeachers"
               value={formData.stats.totalTeachers}
               onChange={handleStatsChange}
             />
             <Input
-              label="Classes Offered"
+              label="Classes Offered (e.g. 1st – 12th)"
               name="totalClasses"
               value={formData.stats.totalClasses}
               onChange={handleStatsChange}
@@ -176,7 +224,7 @@ export default function HomepageAdminPage() {
           </div>
 
           <Input
-            label="Key Academic Result / Highlight"
+            label="Key Academic Result / Highlight (e.g. 100% Board Exam Pass Rate)"
             name="achievements"
             value={formData.stats.achievements}
             onChange={handleStatsChange}
@@ -185,21 +233,37 @@ export default function HomepageAdminPage() {
 
         {/* Principal's Message */}
         <Card className="p-6 sm:p-8 space-y-4">
-          <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <UserCheck className="w-5 h-5 text-amber-500" />
             Principal / Headmaster Message
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Principal Name"
+              label="Principal Name (English)"
               name="name"
               value={formData.principalMessage.name}
               onChange={handlePrincipalChange}
             />
             <Input
-              label="Official Designation"
+              label="Principal Name (Tamil)"
+              name="name_ta"
+              value={formData.principalMessage.name_ta || ''}
+              onChange={handlePrincipalChange}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Official Designation (English)"
               name="designation"
               value={formData.principalMessage.designation}
+              onChange={handlePrincipalChange}
+            />
+            <Input
+              label="Designation (Tamil)"
+              name="designation_ta"
+              value={formData.principalMessage.designation_ta || ''}
               onChange={handlePrincipalChange}
             />
           </div>
@@ -207,8 +271,8 @@ export default function HomepageAdminPage() {
           <ImageUpload
             label="Principal Photograph"
             folder="principal"
-            currentImageUrl={formData.principalMessage.photoUrl}
-            onImageUploaded={(url) =>
+            value={formData.principalMessage.photoUrl}
+            onChange={(url) =>
               setFormData({
                 ...formData,
                 principalMessage: { ...formData.principalMessage, photoUrl: url },
@@ -216,13 +280,77 @@ export default function HomepageAdminPage() {
             }
           />
 
-          <Textarea
-            label="Official Message Quote"
-            name="message"
-            rows={4}
-            value={formData.principalMessage.message}
-            onChange={handlePrincipalChange}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Textarea
+              label="Official Message Quote (English)"
+              name="message"
+              rows={4}
+              value={formData.principalMessage.message}
+              onChange={handlePrincipalChange}
+            />
+            <Textarea
+              label="Official Message Quote (Tamil)"
+              name="message_ta"
+              rows={4}
+              value={formData.principalMessage.message_ta || ''}
+              onChange={handlePrincipalChange}
+            />
+          </div>
+        </Card>
+
+        {/* Admission Campaign CTA Section */}
+        <Card className="p-6 sm:p-8 space-y-4">
+          <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <Megaphone className="w-5 h-5 text-rose-500" />
+            Admission Call-to-Action Banner Box
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="CTA Title (English)"
+              name="title"
+              value={formData.admissionCta.title}
+              onChange={handleAdmissionCtaChange}
+            />
+            <Input
+              label="CTA Title (Tamil)"
+              name="title_ta"
+              value={formData.admissionCta.title_ta || ''}
+              onChange={handleAdmissionCtaChange}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Textarea
+              label="CTA Description (English)"
+              name="description"
+              rows={3}
+              value={formData.admissionCta.description}
+              onChange={handleAdmissionCtaChange}
+            />
+            <Textarea
+              label="CTA Description (Tamil)"
+              name="description_ta"
+              rows={3}
+              value={formData.admissionCta.description_ta || ''}
+              onChange={handleAdmissionCtaChange}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Button Text"
+              name="buttonText"
+              value={formData.admissionCta.buttonText}
+              onChange={handleAdmissionCtaChange}
+            />
+            <Input
+              label="Destination Link"
+              name="buttonLink"
+              value={formData.admissionCta.buttonLink}
+              onChange={handleAdmissionCtaChange}
+            />
+          </div>
         </Card>
 
         <div className="flex justify-end">

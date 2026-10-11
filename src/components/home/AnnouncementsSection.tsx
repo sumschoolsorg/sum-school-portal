@@ -1,33 +1,26 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { defaultAnnouncements } from '@/lib/defaultData';
-import { announcementRepository } from '@/lib/repositories';
 import { Announcement } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-export function AnnouncementsSection({ announcements: initialAnnouncements = defaultAnnouncements }: { announcements?: Announcement[] }) {
+export function AnnouncementsSection({ announcements = defaultAnnouncements }: { announcements?: Announcement[] }) {
   const { t, getLocalized, language } = useLanguage();
-  const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
 
-  useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
-        const live = await announcementRepository.getPublished();
-        if (live && live.length > 0) {
-          setAnnouncements(live);
-        }
-      } catch {
-        // Fallback to initial
-      }
-    };
-    fetchAnnouncements();
-  }, []);
+  const uniqueAnnouncements = useMemo(() => {
+    const map = new Map<string, Announcement>();
+    (announcements || []).forEach((item) => {
+      const key = item.id || item.title;
+      if (!map.has(key)) map.set(key, item);
+    });
+    return Array.from(map.values());
+  }, [announcements]);
 
   const getCategoryBadge = (category: string) => {
     switch (category) {
@@ -84,7 +77,7 @@ export function AnnouncementsSection({ announcements: initialAnnouncements = def
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {announcements.slice(0, 3).map((ann) => {
+          {uniqueAnnouncements.slice(0, 3).map((ann) => {
             const title = getLocalized(ann, 'title');
             const description = getLocalized(ann, 'description');
 

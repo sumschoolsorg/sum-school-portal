@@ -18,8 +18,8 @@ export async function uploadImage(
   path: string
 ): Promise<string> {
   if (!file) throw new Error('No file provided for upload.');
-  if (file.size > 10 * 1024 * 1024) {
-    throw new Error('File size exceeds the 10MB limit allowed by school storage policy.');
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('File size exceeds the 5MB limit allowed by school storage policy.');
   }
   if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
     throw new Error('Only image files (JPEG, PNG, WebP) and PDF documents are allowed.');

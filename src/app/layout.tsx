@@ -9,6 +9,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.sumschools.org'),
   title: {
     template: "%s | S.U.M. Higher Secondary & Primary School",
     default: "S.U.M. Higher Secondary & Primary School | Excellence in Education",

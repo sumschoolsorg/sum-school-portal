@@ -39,35 +39,39 @@ export default function AcademicsPage() {
     };
   }, []);
 
+  const primary = content?.primarySection || defaultAcademicsContent.primarySection;
+  const secondary = content?.secondarySection || defaultAcademicsContent.secondarySection;
+  const higherSecondary = content?.higherSecondarySection || defaultAcademicsContent.higherSecondarySection;
+
   const primarySubjects =
-    language === 'ta' && content.primarySection.subjects_ta
-      ? content.primarySection.subjects_ta
-      : content.primarySection.subjects_en || content.primarySection.subjects;
+    (language === 'ta' && primary?.subjects_ta
+      ? primary.subjects_ta
+      : primary?.subjects_en || primary?.subjects) || [];
 
   const secondarySubjects =
-    language === 'ta' && content.secondarySection.subjects_ta
-      ? content.secondarySection.subjects_ta
-      : content.secondarySection.subjects_en || content.secondarySection.subjects;
+    (language === 'ta' && secondary?.subjects_ta
+      ? secondary.subjects_ta
+      : secondary?.subjects_en || secondary?.subjects) || [];
 
   const higherSecondarySubjects =
-    language === 'ta' && content.higherSecondarySection.subjects_ta
-      ? content.higherSecondarySection.subjects_ta
-      : content.higherSecondarySection.subjects_en || content.higherSecondarySection.subjects;
+    (language === 'ta' && higherSecondary?.subjects_ta
+      ? higherSecondary.subjects_ta
+      : higherSecondary?.subjects_en || higherSecondary?.subjects) || [];
 
   const academicActivities =
-    language === 'ta' && content.academicActivities_ta
+    (language === 'ta' && content?.academicActivities_ta
       ? content.academicActivities_ta
-      : content.academicActivities_en || content.academicActivities;
+      : content?.academicActivities_en || content?.academicActivities) || [];
 
   const coCurricularActivities =
-    language === 'ta' && content.coCurricularActivities_ta
+    (language === 'ta' && content?.coCurricularActivities_ta
       ? content.coCurricularActivities_ta
-      : content.coCurricularActivities_en || content.coCurricularActivities;
+      : content?.coCurricularActivities_en || content?.coCurricularActivities) || [];
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         {/* Hero Banner */}
         <section className="relative py-20 lg:py-28 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="container-main relative z-10 text-center">
@@ -92,10 +96,10 @@ export default function AcademicsPage() {
                   {t('academics.stage1Tag', 'Stage 1: Foundational Learning')}
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-slate-900 dark:text-white">
-                  {getLocalized(content.primarySection, 'title')}
+                  {getLocalized(primary, 'title')}
                 </h2>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {getLocalized(content.primarySection, 'description')}
+                  {getLocalized(primary, 'description')}
                 </p>
 
                 <div className="pt-2">
@@ -117,8 +121,8 @@ export default function AcademicsPage() {
                 <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-100 dark:border-slate-800">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={content.primarySection.imageUrl}
-                    alt={getLocalized(content.primarySection, 'title')}
+                    src={primary.imageUrl || '/images/facility-library.jpg'}
+                    alt={getLocalized(primary, 'title')}
                     className="w-full h-[380px] object-cover"
                   />
                 </div>
@@ -135,8 +139,8 @@ export default function AcademicsPage() {
                 <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white dark:border-slate-800">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={content.secondarySection.imageUrl}
-                    alt={getLocalized(content.secondarySection, 'title')}
+                    src={secondary.imageUrl || '/images/facility-science-lab.jpg'}
+                    alt={getLocalized(secondary, 'title')}
                     className="w-full h-[380px] object-cover"
                   />
                 </div>
@@ -147,10 +151,10 @@ export default function AcademicsPage() {
                   {t('academics.stage2Tag', 'Stage 2: Secondary Wing (SSLC)')}
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-slate-900 dark:text-white">
-                  {getLocalized(content.secondarySection, 'title')}
+                  {getLocalized(secondary, 'title')}
                 </h2>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {getLocalized(content.secondarySection, 'description')}
+                  {getLocalized(secondary, 'description')}
                 </p>
 
                 <div className="pt-2">
@@ -180,10 +184,10 @@ export default function AcademicsPage() {
                   {t('academics.stage3Tag', 'Stage 3: Higher Secondary (+1 & +2 HSC)')}
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-slate-900 dark:text-white">
-                  {getLocalized(content.higherSecondarySection, 'title')}
+                  {getLocalized(higherSecondary, 'title')}
                 </h2>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {getLocalized(content.higherSecondarySection, 'description')}
+                  {getLocalized(higherSecondary, 'description')}
                 </p>
 
                 <div className="pt-2">
@@ -205,8 +209,8 @@ export default function AcademicsPage() {
                 <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-100 dark:border-slate-800">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={content.higherSecondarySection.imageUrl}
-                    alt={getLocalized(content.higherSecondarySection, 'title')}
+                    src={higherSecondary.imageUrl || '/images/facility-computer-lab.jpg'}
+                    alt={getLocalized(higherSecondary, 'title')}
                     className="w-full h-[380px] object-cover"
                   />
                 </div>

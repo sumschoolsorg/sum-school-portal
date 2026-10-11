@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { defaultWebsiteSettings } from '@/lib/defaultData';
 import { websiteSettingsRepository } from '@/lib/repositories';
 import { Save, Settings, Loader2 } from 'lucide-react';
@@ -89,11 +90,11 @@ export default function WebsiteSettingsAdminPage() {
             onChange={handleChange}
           />
 
-          <Input
-            label="Social Share Preview Image Path (Open Graph)"
-            name="ogImageUrl"
+          <ImageUpload
+            label="Social Share Preview Image (Open Graph)"
             value={formData.ogImageUrl}
-            onChange={handleChange}
+            onChange={(url) => setFormData({ ...formData, ogImageUrl: url })}
+            folder="settings"
           />
         </Card>
 

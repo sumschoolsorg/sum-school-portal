@@ -16,16 +16,12 @@ import {
   Phone,
   ShieldCheck,
   CheckCircle2,
-  Gauge,
   Calendar,
   Users,
   Bell,
-  Play,
-  Pause,
-  RotateCcw,
-  Wifi,
   Check,
   X,
+  Info,
 } from 'lucide-react';
 
 export default function BusTrackingPage() {
@@ -36,12 +32,18 @@ export default function BusTrackingPage() {
   const [selectedRouteId, setSelectedRouteId] = useState<string>('route-1');
   const [tripDirection, setTripDirection] = useState<'morning' | 'evening'>('morning');
 
-  // Simulation State
-  const [currentStopIndex, setCurrentStopIndex] = useState<number>(1);
-  const [progressBetweenStops, setProgressBetweenStops] = useState<number>(45); // 0 - 100%
-  const [currentSpeed, setCurrentSpeed] = useState<number>(36);
-  const [isSimulating, setIsSimulating] = useState<boolean>(true);
-  const [lastPingSeconds, setLastPingSeconds] = useState<number>(2);
+  // Authentic Route & Transit Status State
+  const [transitState, setTransitState] = useState<{
+    isInTransitWindow: boolean;
+    period: 'morning' | 'evening' | 'standby';
+    statusText: string;
+    statusText_ta: string;
+  }>({
+    isInTransitWindow: false,
+    period: 'standby',
+    statusText: 'Standby / Parked at S.U.M. Campus Depot',
+    statusText_ta: 'நிறுத்தத்தில் உள்ளது / எஸ்.யு.எம். பள்ளி வளாகம்',
+  });
   const [selectedStopDetails, setSelectedStopDetails] = useState<TransportStop | null>(null);
 
   // Notification Modal State
@@ -69,43 +71,71 @@ export default function BusTrackingPage() {
     loadRoutes();
   }, []);
 
+  // Compute authentic transit window using IST (Indian Standard Time)
+  useEffect(() => {
+    const computeTransitState = () => {
+      try {
+        const now = new Date();
+        const istFormatter = new Intl.DateTimeFormat('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          hour: 'numeric',
+          minute: 'numeric',
+          hour12: false,
+        });
+        const parts = istFormatter.formatToParts(now);
+        const hour = parseInt(parts.find((p) => p.type === 'hour')?.value || '0', 10);
+        const minute = parseInt(parts.find((p) => p.type === 'minute')?.value || '0', 10);
+        const timeInMinutes = hour * 60 + minute;
+
+        // Morning transit window: 07:15 AM (435m) to 08:45 AM (525m)
+        const isMorning = timeInMinutes >= 435 && timeInMinutes <= 525;
+        // Evening transit window: 04:15 PM (975m) to 05:45 PM (1065m)
+        const isEvening = timeInMinutes >= 975 && timeInMinutes <= 1065;
+
+        if (isMorning) {
+          setTripDirection('morning');
+          setTransitState({
+            isInTransitWindow: true,
+            period: 'morning',
+            statusText: 'Active Morning Transit (Scheduled Window)',
+            statusText_ta: 'காலை நேரப் பயணம் செயல்பாட்டில் உள்ளது',
+          });
+        } else if (isEvening) {
+          setTripDirection('evening');
+          setTransitState({
+            isInTransitWindow: true,
+            period: 'evening',
+            statusText: 'Active Evening Transit (Scheduled Window)',
+            statusText_ta: 'மாலை நேரப் பயணம் செயல்பாட்டில் உள்ளது',
+          });
+        } else {
+          setTransitState({
+            isInTransitWindow: false,
+            period: 'standby',
+            statusText: 'Standby / Parked at S.U.M. Campus Depot',
+            statusText_ta: 'நிறுத்தத்தில் உள்ளது / எஸ்.யு.எம். பள்ளி வளாகம்',
+          });
+        }
+      } catch {
+        setTransitState({
+          isInTransitWindow: false,
+          period: 'standby',
+          statusText: 'Standby / Campus Depot',
+          statusText_ta: 'நிறுத்தத்தில் உள்ளது / பள்ளி வளாகம்',
+        });
+      }
+    };
+
+    computeTransitState();
+    const interval = setInterval(computeTransitState, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const activeRoute = useMemo(() => {
-    return routes.find((r) => r.id === selectedRouteId) || routes[0];
+    return routes.find((r) => r.id === selectedRouteId) || routes[0] || defaultTransportRoutes[0];
   }, [routes, selectedRouteId]);
 
-  const totalStops = activeRoute.stops.length;
-
-  // Real-time GPS Simulation Timer
-  useEffect(() => {
-    if (!isSimulating) return;
-
-    const interval = setInterval(() => {
-      setLastPingSeconds((prev) => (prev >= 6 ? 1 : prev + 1));
-
-      // Fluctuating speed between 28 and 41 km/h for realistic telematics
-      setCurrentSpeed((prev) => {
-        const delta = Math.floor(Math.random() * 5) - 2;
-        const newSpeed = Math.min(42, Math.max(26, prev + delta));
-        return newSpeed;
-      });
-
-      // Advance progress between stops
-      setProgressBetweenStops((prev) => {
-        if (prev >= 98) {
-          setCurrentStopIndex((stopIdx) => {
-            if (stopIdx >= totalStops - 1) {
-              return 0; // Loop back to start after finishing route
-            }
-            return stopIdx + 1;
-          });
-          return 5;
-        }
-        return prev + 6;
-      });
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [isSimulating, totalStops]);
+  const totalStops = activeRoute?.stops?.length || 0;
 
   // Handle Stop Alert Submission
   const handleSetNotification = (e: React.FormEvent) => {
@@ -115,23 +145,20 @@ export default function BusTrackingPage() {
       return;
     }
     const targetStop = activeRoute.stops.find((s) => s.id === notifStopId) || activeRoute.stops[0];
-    const stopName = isTa && targetStop.name_ta ? targetStop.name_ta : targetStop.name;
+    const stopName = isTa && targetStop?.name_ta ? targetStop.name_ta : targetStop?.name || 'Selected Stop';
     setNotifSuccessMessage(
       isTa
-        ? `அறிவிப்பு பதிவு செய்யப்பட்டது! ${activeRoute.busRegistrationNumber} பேருந்து "${stopName}" நிறுத்தத்திற்கு 10 நிமிடங்களுக்கு முன்பாக ${notifPhone} எண்ணுக்கு குறுஞ்செய்தி (SMS/WhatsApp) அனுப்பப்படும்.`
-        : `Alert activated! You will receive an SMS/WhatsApp notification on ${notifPhone} 10 minutes prior to ${activeRoute.busRegistrationNumber} reaching "${stopName}".`
+        ? `பேருந்து விவரக் குறிப்பு: ${activeRoute.busRegistrationNumber} பேருந்து "${stopName}" நிறுத்தத்திற்கான போக்குவரத்துத் தகவல்களுக்கு உங்கள் எண் (${notifPhone}) பள்ளி அலுவலகப் பதிவேட்டில் இணைக்க பள்ளி அலுவலகத்தை (04554-293450) தொடர்பு கொள்ளவும்.`
+        : `Transport Notice: To link mobile number ${notifPhone} for verified route alerts on bus ${activeRoute.busRegistrationNumber} at "${stopName}", please confirm registration with the school transport desk at 04554-293450.`
     );
   };
-
-  const currentApproachingStop = activeRoute.stops[currentStopIndex] || activeRoute.stops[0];
-  const nextEtaMinutes = Math.max(1, Math.round(((100 - progressBetweenStops) / 100) * 8));
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
       <Header />
 
-      <main className="flex-1 pb-20">
-        {/* Hero Banner with Live Radar Beacon */}
+      <main id="main-content" className="flex-1 pb-20">
+        {/* Hero Banner with Authentic Status */}
         <section className="relative py-12 lg:py-16 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(59,130,246,0.15),transparent_70%)] pointer-events-none" />
           
@@ -139,27 +166,27 @@ export default function BusTrackingPage() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div>
                 <div className="flex flex-wrap items-center gap-2.5 mb-3">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                    <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping inline-block" />
-                    {isTa ? 'நேரலை ஜிபிஎஸ் டிராக்கிங்' : 'LIVE GPS RADAR'}
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                    <Bus className="w-3.5 h-3.5 text-blue-400" />
+                    {isTa ? 'வாகன வழித்தட கண்காணிப்பு' : 'FLEET ROUTE STATUS'}
                   </span>
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                    <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-                    {isTa ? 'NavIC / GPS செயற்கைக்கோள் இணைப்பு' : 'NavIC / GPS Dual-Band Connected'}
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    {isTa ? 'தமிழ்நாடு அரசு விதிமுறைப்படி இயக்கப்படுகிறது' : 'TN RTO Approved Routes'}
                   </span>
                 </div>
 
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-heading text-white tracking-tight">
-                  {isTa ? 'பள்ளிப் பேருந்து நேரலை இருப்பிடம்' : 'Live School Bus GPS Tracking'}
+                  {isTa ? 'பள்ளிப் பேருந்து வழித்தடம் & நேரக் கண்காணிப்பு' : 'School Bus Routes & Schedule Tracking'}
                 </h1>
                 <p className="mt-2 text-sm sm:text-base text-blue-100 max-w-2xl">
                   {isTa
-                    ? 'எஸ்.யு.எம். பள்ளி வாகனங்களின் துல்லியமான இருப்பிடம், வேகம், அடுத்த நிறுத்த வருகை நேரம் மற்றும் ஓட்டுநர் விவரங்களை உடனுக்குடன் அறியலாம்.'
-                    : 'Track your ward’s school bus in real-time with live speed telematics, ETA countdowns, and instant driver contact.'}
+                    ? 'எஸ்.யு.எம். பள்ளி வாகனங்களின் அங்கீகரிக்கப்பட்ட வழித்தடங்கள், நிறுத்த வருகை நேரம் மற்றும் ஓட்டுநர் நேரடித் தொடர்பு விவரங்கள்.'
+                    : 'Verified school bus routes, morning & evening stop timetables, and direct crew contact for S.U.M. Higher Secondary & Primary School.'}
                 </p>
               </div>
 
-              {/* Quick Actions / Dial Buttons */}
+              {/* Quick Actions */}
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href="/transport"
@@ -171,7 +198,9 @@ export default function BusTrackingPage() {
 
                 <button
                   onClick={() => {
-                    setNotifStopId(currentApproachingStop.id);
+                    if (activeRoute?.stops?.[0]?.id) {
+                      setNotifStopId(activeRoute.stops[0].id);
+                    }
                     setNotifSuccessMessage(null);
                     setNotificationModalOpen(true);
                   }}
@@ -192,8 +221,7 @@ export default function BusTrackingPage() {
                     key={route.id}
                     onClick={() => {
                       setSelectedRouteId(route.id || '');
-                      setCurrentStopIndex(1);
-                      setProgressBetweenStops(30);
+                      setSelectedStopDetails(null);
                     }}
                     className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center gap-2 cursor-pointer ${
                       isSelected
@@ -213,7 +241,7 @@ export default function BusTrackingPage() {
           </div>
         </section>
 
-        {/* Live Tracking Command Bar */}
+        {/* Route Command & Schedule Bar */}
         <section className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs backdrop-blur-md bg-white/95 dark:bg-slate-900/95">
           <div className="container-main py-3.5 flex flex-wrap items-center justify-between gap-4">
             {/* Bus ID & Status */}
@@ -226,14 +254,20 @@ export default function BusTrackingPage() {
                   <span className="text-sm font-black text-slate-900 dark:text-white">
                     {activeRoute.busRegistrationNumber}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                    ● {isTa ? 'இயக்கத்தில் உள்ளது' : 'On Trip'}
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                      transitState.isInTransitWindow
+                        ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                        : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800'
+                    }`}
+                  >
+                    ● {isTa ? transitState.statusText_ta : transitState.statusText}
                   </span>
                 </div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">
-                  {isTa ? 'கடைசி ஜிபிஎஸ் சிக்னல்:' : 'GPS Signal:'}{' '}
-                  <span className="font-medium text-blue-600 dark:text-blue-400">
-                    {lastPingSeconds} {isTa ? 'வினாடிகளுக்கு முன்' : 'sec ago'}
+                  {isTa ? 'இயக்க நேரம்:' : 'Operating Hours:'}{' '}
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    07:15 AM – 08:45 AM & 04:15 PM – 05:45 PM (IST)
                   </span>
                 </div>
               </div>
@@ -262,109 +296,90 @@ export default function BusTrackingPage() {
                 🌇 {isTa ? 'மாலை திரும்பல் (வீட்டிற்கு)' : 'Evening Drop'}
               </button>
             </div>
-
-            {/* Simulation Controls */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsSimulating(!isSimulating)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer ${
-                  isSimulating
-                    ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
-                    : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                }`}
-                title={isSimulating ? 'Pause Live Simulation' : 'Resume Live Simulation'}
-              >
-                {isSimulating ? (
-                  <>
-                    <Pause className="w-3.5 h-3.5" />
-                    <span>{isTa ? 'நிறுத்து' : 'Pause'}</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5" />
-                    <span>{isTa ? 'தொடங்கு' : 'Play'}</span>
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={() => {
-                  setCurrentStopIndex(0);
-                  setProgressBetweenStops(0);
-                }}
-                className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 transition cursor-pointer"
-                title={isTa ? 'மீண்டும் தொடக்கத்திற்கு மீட்டமை' : 'Reset Simulation'}
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-            </div>
           </div>
         </section>
 
-        {/* Main Telematics & Radar Grid */}
+        {/* Notice of GPS Hardware Integration */}
+        <section className="bg-amber-500/10 border-b border-amber-500/20 py-3">
+          <div className="container-main flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-start sm:items-center gap-2 text-amber-900 dark:text-amber-200">
+              <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
+              <span>
+                <strong>{isTa ? 'நேரடித் தொடர்பு தகவல்:' : 'Direct Fleet Coordination:'}</strong>{' '}
+                {isTa
+                  ? `வாகனம் ${activeRoute.busRegistrationNumber}-க்கான உடனடி வழித்தட விவரங்களுக்கு ஓட்டுநர் திரு. ${activeRoute.driverName} அவர்களை ${activeRoute.driverPhone} எண்ணில் தொடர்புகொள்ளலாம்.`
+                  : `For real-time stop updates or student coordination during transit hours, please contact driver ${activeRoute.driverName} directly at ${activeRoute.driverPhone}.`}
+              </span>
+            </div>
+            <a
+              href={`tel:${activeRoute.driverPhone.replace(/\s+/g, '')}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold hover:bg-amber-600 transition shrink-0"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              <span>{isTa ? 'ஓட்டுநரை அழைக்க' : 'Call Driver'}</span>
+            </a>
+          </div>
+        </section>
+
+        {/* Main Route Metrics & Overview Grid */}
         <section className="py-8">
           <div className="container-main space-y-8">
-            {/* Top Telematics Metric Cards */}
+            {/* Top Metric Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Speed Card */}
+              {/* Departure Point Card */}
               <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
                 <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
                   <span className="text-xs font-bold uppercase tracking-wider">
-                    {isTa ? 'தற்போதைய வேகம்' : 'Current Speed'}
+                    {isTa ? 'தொடக்க இடம்' : 'Starting Hub'}
                   </span>
-                  <Gauge className="w-4 h-4 text-blue-500" />
+                  <MapPin className="w-4 h-4 text-blue-500" />
                 </div>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-black text-slate-900 dark:text-white font-mono">
-                    {currentSpeed}
-                  </span>
-                  <span className="text-xs font-semibold text-slate-500">km/h</span>
+                <div className="text-base font-extrabold text-slate-900 dark:text-white line-clamp-1">
+                  {tripDirection === 'morning' ? activeRoute.startPoint : 'S.U.M. School Campus'}
                 </div>
-                <div className="mt-2 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>{isTa ? 'பாதுகாப்பு வரம்பிற்குள் (Max 40)' : 'Speed Compliant (< 40)'}</span>
+                <div className="mt-2 text-[11px] font-bold text-blue-600 dark:text-blue-400">
+                  {tripDirection === 'morning' ? activeRoute.morningDepartureTime : activeRoute.eveningDepartureTime} ({isTa ? 'புறப்படும் நேரம்' : 'Departure'})
                 </div>
               </div>
 
-              {/* Approaching Stop Card */}
+              {/* Total Stops Card */}
               <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
                 <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
                   <span className="text-xs font-bold uppercase tracking-wider">
-                    {isTa ? 'அடுத்த நிறுத்தம்' : 'Next Stop'}
+                    {isTa ? 'நிறுத்தங்கள்' : 'Total Stops'}
                   </span>
                   <Navigation className="w-4 h-4 text-amber-500" />
                 </div>
-                <div className="text-base font-extrabold text-slate-900 dark:text-white line-clamp-1">
-                  {isTa && currentApproachingStop.name_ta
-                    ? currentApproachingStop.name_ta
-                    : currentApproachingStop.name}
-                </div>
-                <div className="mt-2 text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>
-                    {isTa ? `வருகை: ~${nextEtaMinutes} நிமிடங்கள்` : `ETA: ~${nextEtaMinutes} mins`}
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-black text-slate-900 dark:text-white font-mono">
+                    {totalStops}
                   </span>
+                  <span className="text-xs font-semibold text-slate-500">{isTa ? 'இடங்கள்' : 'Boarding Points'}</span>
+                </div>
+                <div className="mt-2 text-[11px] font-bold text-slate-500">
+                  {isTa ? 'அனைத்து கிராமங்கள் இணைக்கப்பட்டுள்ளன' : 'Covering all route villages'}
                 </div>
               </div>
 
-              {/* Occupancy Card */}
+              {/* Capacity Card */}
               <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
                 <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
                   <span className="text-xs font-bold uppercase tracking-wider">
-                    {isTa ? 'மாணவர் எண்ணிக்கை' : 'Occupancy'}
+                    {isTa ? 'வாகன கொள்ளளவு' : 'Seat Capacity'}
                   </span>
                   <Users className="w-4 h-4 text-purple-500" />
                 </div>
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-3xl font-black text-slate-900 dark:text-white font-mono">
-                    {Math.min(activeRoute.capacity, 28 + currentStopIndex * 4)}
+                    {activeRoute.capacity}
                   </span>
                   <span className="text-xs font-semibold text-slate-500">
-                    / {activeRoute.capacity} {isTa ? 'இருக்கைகள்' : 'seats'}
+                    {isTa ? 'இருக்கைகள்' : 'Seats'}
                   </span>
                 </div>
-                <div className="mt-2 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                  {Math.round(((28 + currentStopIndex * 4) / activeRoute.capacity) * 100)}% {isTa ? 'நிறைவு' : 'Filled'}
+                <div className="mt-2 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>{isTa ? 'அரசு வழிகாட்டுதல் பின்பற்றுதல்' : 'RTO Regulated'}</span>
                 </div>
               </div>
 
@@ -381,17 +396,15 @@ export default function BusTrackingPage() {
                     ? isTa
                       ? 'எஸ்.யு.எம். பள்ளி வளாகம்'
                       : 'S.U.M. School Campus'
-                    : isTa
-                    ? activeRoute.startPoint
-                    : activeRoute.startPoint}
+                    : activeRoute.endPoint}
                 </div>
                 <div className="mt-2 text-[11px] font-bold text-slate-500">
-                  {tripDirection === 'morning' ? '08:35 AM' : '05:40 PM'} ({isTa ? 'திட்டமிடப்பட்ட நேரம்' : 'Scheduled'})
+                  {tripDirection === 'morning' ? '08:35 AM' : '05:40 PM'} ({isTa ? 'வருகை நேரம்' : 'Arrival'})
                 </div>
               </div>
             </div>
 
-            {/* Interactive Visual Route Corridor (Map Schematic) */}
+            {/* Visual Route Corridor */}
             <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-lg">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-100 dark:border-slate-800">
                 <div>
@@ -413,55 +426,16 @@ export default function BusTrackingPage() {
                 </div>
               </div>
 
-              {/* Visual Highway Path / Stop Radar */}
+              {/* Visual Track Line & Stops */}
               <div className="relative py-8 px-2 sm:px-6 overflow-x-auto">
-                {/* Horizontal Track Line */}
                 <div className="relative min-w-[650px] flex items-center justify-between">
-                  {/* Background Track Line */}
-                  <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full z-0" />
-
-                  {/* Active Covered Track Line */}
-                  <div
-                    className="absolute left-6 top-1/2 -translate-y-1/2 h-2.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-amber-500 rounded-full z-0 transition-all duration-700"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        (currentStopIndex / (totalStops - 1)) * 100 +
-                          (progressBetweenStops / 100) * (100 / (totalStops - 1))
-                      )}%`,
-                    }}
-                  />
-
-                  {/* Animated Moving Bus Marker */}
-                  <div
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 transition-all duration-700 pointer-events-none"
-                    style={{
-                      left: `${Math.min(
-                        96,
-                        Math.max(
-                          4,
-                          (currentStopIndex / (totalStops - 1)) * 100 +
-                            (progressBetweenStops / 100) * (100 / (totalStops - 1))
-                        )
-                      )}%`,
-                    }}
-                  >
-                    <div className="relative flex items-center justify-center">
-                      <span className="absolute w-12 h-12 rounded-full bg-amber-400/40 animate-ping" />
-                      <div className="relative w-11 h-11 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center shadow-xl ring-4 ring-white dark:ring-slate-900">
-                        <Bus className="w-5 h-5" />
-                      </div>
-                      <div className="absolute -top-7 whitespace-nowrap px-2 py-0.5 rounded-md bg-slate-900 text-white text-[10px] font-black shadow-md border border-slate-700">
-                        {currentSpeed} km/h
-                      </div>
-                    </div>
-                  </div>
+                  {/* Track Line */}
+                  <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-2 bg-slate-200 dark:bg-slate-800 rounded-full z-0" />
 
                   {/* Stop Nodes */}
                   {activeRoute.stops.map((stop, idx) => {
-                    const isPassed = idx < currentStopIndex;
-                    const isCurrent = idx === currentStopIndex;
                     const isFinal = idx === totalStops - 1;
+                    const isSelected = selectedStopDetails?.id === stop.id;
 
                     return (
                       <div
@@ -472,22 +446,14 @@ export default function BusTrackingPage() {
                         {/* Circle Indicator */}
                         <div
                           className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm transition-all shadow-md ${
-                            isPassed
-                              ? 'bg-emerald-500 text-white ring-4 ring-emerald-500/20'
-                              : isCurrent
+                            isSelected
                               ? 'bg-blue-600 text-white ring-4 ring-blue-500/30 scale-110'
                               : isFinal
                               ? 'bg-amber-500 text-slate-950 ring-4 ring-amber-500/20'
-                              : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-2 border-slate-300 dark:border-slate-700'
+                              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-2 border-slate-300 dark:border-slate-700 group-hover:border-blue-500'
                           }`}
                         >
-                          {isPassed ? (
-                            <Check className="w-5 h-5" />
-                          ) : isFinal ? (
-                            'SUM'
-                          ) : (
-                            stop.order
-                          )}
+                          {isFinal ? 'SUM' : stop.order}
                         </div>
 
                         {/* Stop Label Below */}
@@ -498,11 +464,6 @@ export default function BusTrackingPage() {
                           <div className="text-[11px] font-semibold text-slate-500 mt-0.5">
                             {tripDirection === 'morning' ? stop.morningPickupTime : stop.eveningDropTime}
                           </div>
-                          {isCurrent && (
-                            <span className="mt-1 inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 animate-pulse">
-                              {isTa ? 'அடுத்தது' : 'Approaching'}
-                            </span>
-                          )}
                         </div>
                       </div>
                     );
@@ -541,7 +502,7 @@ export default function BusTrackingPage() {
                             : 'Pickup Time'
                           : isTa
                           ? 'மாலை நேரம்'
-                          : 'Drop Time'}
+                            : 'Drop Time'}
                       </div>
                       <div className="text-xs font-black text-slate-900 dark:text-white">
                         {tripDirection === 'morning'
@@ -574,12 +535,12 @@ export default function BusTrackingPage() {
 
             {/* Two Column Layout: Detailed Stops Table & Driver/Safety Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Left 2 Cols: Step-by-Step Schedule & Status */}
+              {/* Left 2 Cols: Step-by-Step Schedule */}
               <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-xs">
                 <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-100 dark:border-slate-800">
                   <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white flex items-center gap-2">
                     <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <span>{isTa ? 'வழித்தட நிறுத்தங்களின் நேரங்கள்' : 'Route Stops & Live Timings'}</span>
+                    <span>{isTa ? 'வழித்தட நிறுத்தங்களின் நேரங்கள்' : 'Route Stops & Timings'}</span>
                   </h3>
                   <span className="text-xs text-slate-500 font-semibold">
                     {totalStops} {isTa ? 'நிறுத்தங்கள்' : 'Boarding Points'}
@@ -588,44 +549,34 @@ export default function BusTrackingPage() {
 
                 <div className="space-y-4">
                   {activeRoute.stops.map((stop, idx) => {
-                    const isPassed = idx < currentStopIndex;
-                    const isCurrent = idx === currentStopIndex;
                     const isFinal = idx === totalStops - 1;
+                    const isSelected = selectedStopDetails?.id === stop.id;
 
                     return (
                       <div
                         key={stop.id}
                         className={`p-4 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-                          isCurrent
+                          isSelected
                             ? 'bg-blue-50/70 dark:bg-blue-950/40 border-blue-400 dark:border-blue-700 shadow-xs'
-                            : isPassed
-                            ? 'bg-slate-50/50 dark:bg-slate-850/40 border-slate-200 dark:border-slate-800 opacity-80'
                             : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
                         }`}
                       >
                         <div className="flex items-center gap-3.5">
                           <div
                             className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0 ${
-                              isPassed
-                                ? 'bg-emerald-500 text-white'
-                                : isCurrent
-                                ? 'bg-blue-600 text-white ring-2 ring-blue-500/30'
-                                : isFinal
+                              isFinal
                                 ? 'bg-amber-500 text-slate-950'
+                                : isSelected
+                                ? 'bg-blue-600 text-white'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                             }`}
                           >
-                            {isPassed ? <Check className="w-4 h-4" /> : isFinal ? 'SUM' : stop.order}
+                            {isFinal ? 'SUM' : stop.order}
                           </div>
 
                           <div>
                             <div className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                               <span>{isTa && stop.name_ta ? stop.name_ta : stop.name}</span>
-                              {isCurrent && (
-                                <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-blue-600 text-white">
-                                  {isTa ? 'அடுத்தது' : 'Approaching'}
-                                </span>
-                              )}
                             </div>
                             {stop.landmark && (
                               <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
@@ -636,7 +587,7 @@ export default function BusTrackingPage() {
                           </div>
                         </div>
 
-                        {/* Timings & Status */}
+                        {/* Timings */}
                         <div className="flex items-center gap-4 shrink-0 pl-12 sm:pl-0">
                           <div className="text-right">
                             <div className="text-[10px] uppercase font-bold text-slate-400">
@@ -647,21 +598,12 @@ export default function BusTrackingPage() {
                             </div>
                           </div>
 
-                          <div className="w-24 text-right">
-                            {isPassed ? (
-                              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                                ✓ {isTa ? 'கடந்தது' : 'Passed'}
-                              </span>
-                            ) : isCurrent ? (
-                              <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">
-                                ~{nextEtaMinutes} {isTa ? 'நிமி' : 'mins'}
-                              </span>
-                            ) : (
-                              <span className="text-[11px] font-medium text-slate-400">
-                                {isTa ? 'விரைவில்' : 'Upcoming'}
-                              </span>
-                            )}
-                          </div>
+                          <button
+                            onClick={() => setSelectedStopDetails(stop)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition"
+                          >
+                            {isTa ? 'விவரம்' : 'Details'}
+                          </button>
                         </div>
                       </div>
                     );
@@ -812,8 +754,8 @@ export default function BusTrackingPage() {
               <form onSubmit={handleSetNotification} className="space-y-4">
                 <p className="text-xs text-slate-600 dark:text-slate-400">
                   {isTa
-                    ? 'பேருந்து உங்கள் நிறுத்தத்திற்கு 10 நிமிடங்களுக்கு முன்பாக வரும் போது இலவச SMS அல்லது WhatsApp செய்தி பெறவும்.'
-                    : 'Receive a free SMS/WhatsApp alert when the school bus is within 10 minutes of your selected boarding point.'}
+                    ? 'பேருந்து உங்கள் நிறுத்தத்திற்கு வரும் போது SMS அல்லது WhatsApp செய்தி பெற உங்கள் தொலைபேசி எண்ணை பதிவு செய்யவும்.'
+                    : 'Register your mobile number to receive stop notifications when the school bus arrives at your designated stop.'}
                 </p>
 
                 <div>

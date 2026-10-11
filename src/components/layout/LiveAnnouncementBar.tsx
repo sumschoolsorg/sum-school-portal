@@ -37,7 +37,14 @@ export function LiveAnnouncementBar() {
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
           if (published.length > 0) {
-            setAnnouncements(published);
+            const seen = new Set();
+            const unique = published.filter((item) => {
+              const key = item.id || item.title;
+              if (seen.has(key)) return false;
+              seen.add(key);
+              return true;
+            });
+            setAnnouncements(unique);
           }
         }
       } catch (err) {

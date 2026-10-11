@@ -124,15 +124,17 @@ export function Header() {
 
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
     } else {
       document.body.style.overflow = 'unset';
     }
 
-    return () => {
-      document.body.style.overflow = 'unset';
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    if (mobileMenuOpen || academicsDropdown) {
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = 'unset';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
   }, [mobileMenuOpen, academicsDropdown]);
 
   const navLinks = [
@@ -218,7 +220,7 @@ export function Header() {
 
               {/* 4 Portraits side-by-side */}
               <div className="flex items-center gap-1.5">
-                {HISTORICAL_FOUNDERS.map((founder, idx) => (
+                {HISTORICAL_FOUNDERS.map((founder) => (
                   <div
                     key={founder.id}
                     onClick={() => {
@@ -236,10 +238,6 @@ export function Header() {
                         className="w-full h-full object-cover object-top"
                       />
                     </div>
-                    {/* Index Tag */}
-                    <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-500 text-slate-950 font-black text-[8px] flex items-center justify-center shadow-xs border border-white dark:border-slate-900">
-                      {idx + 1}
-                    </span>
                   </div>
                 ))}
               </div>
@@ -334,6 +332,14 @@ export function Header() {
                       onMouseLeave={() => setAcademicsDropdown(false)}
                     >
                       <button
+                        type="button"
+                        onClick={() => setAcademicsDropdown((prev) => !prev)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setAcademicsDropdown((prev) => !prev);
+                          }
+                        }}
                         aria-expanded={academicsDropdown}
                         aria-haspopup="true"
                         className={`flex items-center gap-1 px-3 py-2 text-xs 2xl:text-sm font-semibold rounded-xl transition cursor-pointer min-h-[40px] ${
@@ -347,7 +353,7 @@ export function Header() {
                         }`}
                       >
                         <span>{link.label}</span>
-                        <ChevronDown className="w-3.5 h-3.5 opacity-80" aria-hidden="true" />
+                        <ChevronDown className={`w-3.5 h-3.5 opacity-80 transition-transform duration-200 ${academicsDropdown ? 'rotate-180' : ''}`} aria-hidden="true" />
                       </button>
 
                       {academicsDropdown && (
@@ -357,6 +363,7 @@ export function Header() {
                               <Link
                                 key={sIdx}
                                 href={sub.href}
+                                onClick={() => setAcademicsDropdown(false)}
                                 aria-current={isActive(sub.href) ? 'page' : undefined}
                                 className={`block px-3.5 py-2.5 text-xs font-semibold rounded-xl transition min-h-[38px] flex items-center ${
                                   isActive(sub.href)
@@ -674,7 +681,7 @@ export function Header() {
 
           {/* All 4 Founders Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {HISTORICAL_FOUNDERS.map((f, idx) => (
+            {HISTORICAL_FOUNDERS.map((f) => (
               <div
                 key={f.id}
                 onClick={() => setSelectedFounder(f)}
@@ -694,7 +701,7 @@ export function Header() {
                 </div>
 
                 <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                  {isTa ? f.role_ta : f.role} #{idx + 1}
+                  {isTa ? f.role_ta : f.role}
                 </span>
 
                 <h4 className="text-sm font-bold font-heading text-slate-900 dark:text-white mt-1 line-clamp-2">
