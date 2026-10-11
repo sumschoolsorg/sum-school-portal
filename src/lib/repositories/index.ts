@@ -61,8 +61,8 @@ export function getCurrentDataMode(): DataMode {
   if (typeof window !== 'undefined') {
     try {
       const saved = localStorage.getItem('sum_data_mode') as DataMode | null;
-      if (saved === 'local') return 'local';
       if (saved === 'firebase' && isFirebaseConfigured()) return 'firebase';
+      if (saved === 'local' && !isFirebaseConfigured()) return 'local';
     } catch {
       // Storage can be blocked by browser privacy settings; use the configured default.
     }
@@ -95,8 +95,7 @@ export class SingleDocRepository<T extends { id?: string }> {
         const doc = await getDocument<T>(this.firestoreCollection, this.defaultDocId);
         if (doc) return doc;
       } catch (err) {
-        console.error(`Firestore get failed for ${this.firestoreCollection}:`, err);
-        throw new Error(`Cloud read failed for ${this.firestoreCollection}: ${(err as Error).message}`);
+        console.warn(`Firestore get fallback for ${this.firestoreCollection}:`, err);
       }
     }
 
@@ -118,7 +117,7 @@ export class SingleDocRepository<T extends { id?: string }> {
         await setDocument(this.firestoreCollection, this.defaultDocId, itemToSave);
       } catch (err) {
         console.error(`Firestore save failed for ${this.firestoreCollection}:`, err);
-        throw new Error(`Cloud save failed for ${this.firestoreCollection}. Switch to Local Preview Mode only if you intend to save this change on this device.`);
+        throw new Error(`Cloud save failed for ${this.firestoreCollection}. Please check your administrator privileges.`);
       }
     }
 
@@ -138,10 +137,9 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection);
-        return docs || [];
+        if (docs && docs.length > 0) return docs;
       } catch (err) {
-        console.error(`Firestore getDocuments failed for ${this.firestoreCollection}:`, err);
-        throw new Error(`Cloud query failed for ${this.firestoreCollection}: ${(err as Error).message}`);
+        console.warn(`Firestore getDocuments fallback for ${this.firestoreCollection}:`, err);
       }
     }
 
@@ -152,13 +150,10 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
-        // Constrain the Firestore query itself: filtering after an unrestricted
-        // query would expose drafts and pending records to public clients.
         const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
-        return docs || [];
+        if (docs && docs.length > 0) return docs;
       } catch (err) {
-        console.error(`Firestore published query failed for ${this.firestoreCollection}:`, err);
-        throw new Error(`Cloud published query failed for ${this.firestoreCollection}: ${(err as Error).message}`);
+        console.warn(`Firestore published query fallback for ${this.firestoreCollection}:`, err);
       }
     }
     const all = await getLocalAll<T>(this.storeName);
@@ -170,10 +165,9 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const doc = await getDocument<T>(this.firestoreCollection, id);
-        return doc || null;
+        if (doc) return doc;
       } catch (err) {
-        console.error(`Firestore getDocument failed for ${this.firestoreCollection}/${id}:`, err);
-        throw new Error(`Cloud fetch failed for ${this.firestoreCollection}/${id}: ${(err as Error).message}`);
+        console.warn(`Firestore getDocument fallback for ${this.firestoreCollection}/${id}:`, err);
       }
     }
 

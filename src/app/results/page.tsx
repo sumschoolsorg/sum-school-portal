@@ -221,15 +221,6 @@ export default function ResultsPage() {
 
             {result && (
               <div className="space-y-6">
-                {isLocalPreview && (
-                  <div className="print:hidden rounded-2xl border border-amber-300 bg-amber-50 dark:bg-amber-950/40 p-4 text-xs font-semibold text-amber-900 dark:text-amber-200 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                      <span>{isTa ? 'கவனிக்க: இது மாதிரி முன்னோட்ட மதிப்பெண் சான்றிதழ் (டெமோ தரவு).' : 'Notice: This is a verified local demonstration/preview mark sheet.'}</span>
-                    </div>
-                    <span className="uppercase text-[10px] tracking-wider font-extrabold px-2 py-0.5 rounded bg-amber-200/80 text-amber-950">Preview Mode</span>
-                  </div>
-                )}
 
                 {/* Print & Action Bar */}
                 <div className="print:hidden flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">

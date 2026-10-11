@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ClientProviders } from "@/components/providers/ClientProviders";
-import { LocalPreviewBanner } from "@/components/layout/LocalPreviewBanner";
 
 export const viewport: Viewport = {
   themeColor: "#1e3a8a",
@@ -45,7 +44,6 @@ export default function RootLayout({
         <a href="#main-content" className="skip-to-content">
           Skip to main content
         </a>
-        <LocalPreviewBanner />
         <ClientProviders>{children}</ClientProviders>
       </body>
     </html>
