@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { transportRepository } from '@/lib/repositories';
+import { transportRepository, isFirebaseConfigured } from '@/lib/repositories';
 import { defaultTransportRoutes } from '@/lib/defaultData';
 import { TransportRoute } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -25,10 +25,11 @@ export default function TransportPage() {
   const { language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [routes, setRoutes] = useState<TransportRoute[]>(defaultTransportRoutes);
+  const [routes, setRoutes] = useState<TransportRoute[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<string>('route-1');
 
   useEffect(() => {
+    const useFirebase = isFirebaseConfigured();
     const loadRoutes = async () => {
       try {
         const data = await transportRepository.getPublished();
@@ -38,9 +39,12 @@ export default function TransportPage() {
           if (published.length > 0) {
             setSelectedRouteId(published[0].id || 'route-1');
           }
+        } else if (!useFirebase) {
+          setRoutes(defaultTransportRoutes);
         }
       } catch (err) {
         console.warn('Error loading transport routes:', err);
+        if (!useFirebase) setRoutes(defaultTransportRoutes);
       }
     };
     loadRoutes();

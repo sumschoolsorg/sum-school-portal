@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { defaultFacilities } from '@/lib/defaultData';
-import { facilityRepository } from '@/lib/repositories';
+import { facilityRepository, isFirebaseConfigured } from '@/lib/repositories';
 import { Facility } from '@/types';
 import {
   MonitorPlay,
@@ -24,16 +24,20 @@ export default function FacilitiesPage() {
   const { t, getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [facilities, setFacilities] = useState<Facility[]>(defaultFacilities);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
 
   useEffect(() => {
+    const useFirebase = isFirebaseConfigured();
     let isMounted = true;
     facilityRepository.getPublished().then((items) => {
       if (isMounted && items && items.length > 0) {
         setFacilities(items);
+      } else if (isMounted && !useFirebase) {
+        setFacilities(defaultFacilities);
       }
     }).catch((err) => {
       console.warn('Failed to load facilities from repository:', err);
+      if (isMounted && !useFirebase) setFacilities(defaultFacilities);
     });
     return () => {
       isMounted = false;

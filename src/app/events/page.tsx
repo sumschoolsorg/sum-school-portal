@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { eventRepository } from '@/lib/repositories';
+import { eventRepository, isFirebaseConfigured } from '@/lib/repositories';
 import { defaultEvents } from '@/lib/defaultData';
 import { SchoolEvent } from '@/types';
 import {
@@ -26,7 +26,7 @@ export default function EventsPage() {
   const { getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [events, setEvents] = useState<SchoolEvent[]>(defaultEvents);
+  const [events, setEvents] = useState<SchoolEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Tabs: upcoming vs archive
@@ -39,19 +39,20 @@ export default function EventsPage() {
   const [currentTime] = useState(() => Date.now());
 
   useEffect(() => {
+    const useFirebase = isFirebaseConfigured();
     const loadEvents = async (showLoading = false) => {
       try {
         if (showLoading) setIsLoading(true);
         const data = await eventRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
-          setEvents(published.length > 0 ? published : defaultEvents);
+          setEvents(published.length > 0 ? published : (useFirebase ? [] : defaultEvents));
         } else {
-          setEvents(defaultEvents);
+          setEvents(useFirebase ? [] : defaultEvents);
         }
       } catch (err) {
         console.warn('Error loading events:', err);
-        setEvents(defaultEvents);
+        setEvents(useFirebase ? [] : defaultEvents);
       } finally {
         setIsLoading(false);
       }

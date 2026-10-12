@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 export default function AnnouncementsAdminPage() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>(defaultAnnouncements);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);

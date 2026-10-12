@@ -14,7 +14,7 @@ import {
   Image as ImageIcon,
   FolderOpen,
 } from 'lucide-react';
-import { galleryRepository } from '@/lib/repositories';
+import { galleryRepository, isFirebaseConfigured } from '@/lib/repositories';
 import { defaultGalleryImages } from '@/lib/defaultData';
 import { GalleryImage } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,7 +24,7 @@ export default function GalleryPage() {
   const { getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [images, setImages] = useState<GalleryImage[]>(defaultGalleryImages);
+  const [images, setImages] = useState<GalleryImage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Year & Month Filters
@@ -37,19 +37,20 @@ export default function GalleryPage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
+    const useFirebase = isFirebaseConfigured();
     const loadImages = async () => {
       try {
         setIsLoading(true);
         const data = await galleryRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
-          setImages(published.length > 0 ? published : defaultGalleryImages);
+          setImages(published.length > 0 ? published : (useFirebase ? [] : defaultGalleryImages));
         } else {
-          setImages(defaultGalleryImages);
+          setImages(useFirebase ? [] : defaultGalleryImages);
         }
       } catch (err) {
         console.warn('Error loading gallery images:', err);
-        setImages(defaultGalleryImages);
+        setImages(useFirebase ? [] : defaultGalleryImages);
       } finally {
         setIsLoading(false);
       }

@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Badge } from '@/components/ui/Badge';
 import { defaultFaculty } from '@/lib/defaultData';
-import { facultyRepository } from '@/lib/repositories';
+import { facultyRepository, isFirebaseConfigured } from '@/lib/repositories';
 import { Faculty } from '@/types';
 import { GraduationCap, Briefcase, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -14,17 +14,21 @@ export default function FacultyPage() {
   const { t, getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [facultyList, setFacultyList] = useState<Faculty[]>(defaultFaculty);
+  const [facultyList, setFacultyList] = useState<Faculty[]>([]);
   const [activeSection, setActiveSection] = useState<'all' | 'primary' | 'secondary' | 'higher-secondary'>('all');
 
   useEffect(() => {
+    const useFirebase = isFirebaseConfigured();
     let isMounted = true;
     facultyRepository.getPublished().then((items) => {
       if (isMounted && items && items.length > 0) {
         setFacultyList(items);
+      } else if (isMounted && !useFirebase) {
+        setFacultyList(defaultFaculty);
       }
     }).catch((err) => {
       console.warn('Failed to load faculty from repository:', err);
+      if (isMounted && !useFirebase) setFacultyList(defaultFaculty);
     });
     return () => {
       isMounted = false;
@@ -115,6 +119,19 @@ export default function FacultyPage() {
             </div>
 
             {/* Faculty Cards Grid */}
+            {filteredFaculty.length === 0 ? (
+              <div className="text-center py-20 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8">
+                <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">
+                  {isTa ? 'ஆசிரியர் விவரங்கள் இன்னும் பதிவேற்றப்படவில்லை' : 'Faculty information is being updated'}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-md mx-auto">
+                  {isTa
+                    ? 'பள்ளி நிர்வாகம் விரைவில் ஆசிரியர் விவரங்களை வெளியிடும்.'
+                    : 'The school administration will publish faculty details soon. Please check back later.'}
+                </p>
+              </div>
+            ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {filteredFaculty.map((staff: Faculty) => {
                 const name = getLocalized(staff, 'name');
@@ -175,6 +192,7 @@ export default function FacultyPage() {
                 );
               })}
             </div>
+            )}
           </div>
         </section>
       </main>

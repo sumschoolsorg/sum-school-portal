@@ -17,7 +17,7 @@ import { Plus, Edit2, Trash2, Building2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FacilitiesAdminPage() {
-  const [facilities, setFacilities] = useState<Facility[]>(defaultFacilities);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFacility, setEditingFacility] = useState<Facility | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);

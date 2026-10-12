@@ -15,7 +15,7 @@ import { Plus, Edit2, Trash2, MessageSquareQuote, Star, Loader2 } from 'lucide-r
 import { toast } from 'sonner';
 
 export default function TestimonialsAdminPage() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(defaultTestimonials);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Testimonial | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);

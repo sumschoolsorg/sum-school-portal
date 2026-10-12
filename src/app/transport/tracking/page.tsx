@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { transportRepository } from '@/lib/repositories';
+import { transportRepository, isFirebaseConfigured } from '@/lib/repositories';
 import { defaultTransportRoutes } from '@/lib/defaultData';
 import { TransportRoute, TransportStop } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -28,7 +28,7 @@ export default function BusTrackingPage() {
   const { language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [routes, setRoutes] = useState<TransportRoute[]>(defaultTransportRoutes);
+  const [routes, setRoutes] = useState<TransportRoute[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<string>('route-1');
   const [tripDirection, setTripDirection] = useState<'morning' | 'evening'>('morning');
 
@@ -54,6 +54,7 @@ export default function BusTrackingPage() {
 
   // Load routes from repository with fallback to default data
   useEffect(() => {
+    const useFirebase = isFirebaseConfigured();
     const loadRoutes = async () => {
       try {
         const data = await transportRepository.getPublished();
@@ -62,10 +63,15 @@ export default function BusTrackingPage() {
           if (published.length > 0) {
             setRoutes(published);
             setSelectedRouteId(published[0].id || 'route-1');
+          } else if (!useFirebase) {
+            setRoutes(defaultTransportRoutes);
           }
+        } else if (!useFirebase) {
+          setRoutes(defaultTransportRoutes);
         }
       } catch (err) {
         console.warn('Error loading transport routes for tracking:', err);
+        if (!useFirebase) setRoutes(defaultTransportRoutes);
       }
     };
     loadRoutes();
@@ -132,8 +138,29 @@ export default function BusTrackingPage() {
   }, []);
 
   const activeRoute = useMemo(() => {
-    return routes.find((r) => r.id === selectedRouteId) || routes[0] || defaultTransportRoutes[0];
+    return routes.find((r) => r.id === selectedRouteId) || routes[0] || null;
   }, [routes, selectedRouteId]);
+
+  if (!activeRoute) {
+    return (
+      <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+        <Header />
+        <main id="main-content" className="container-main flex flex-1 flex-col items-center justify-center py-20 text-center">
+          <Bus className="mb-5 h-12 w-12 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+          <h1 className="text-3xl font-extrabold">{isTa ? 'பேருந்து வழித்தட விவரங்கள் இல்லை' : 'Transport information unavailable'}</h1>
+          <p className="mt-4 max-w-xl text-slate-600 dark:text-slate-300">
+            {isTa
+              ? 'பள்ளி சரிபார்த்த வழித்தட விவரங்களை வெளியிட்டதும் இங்கே காணலாம். தற்போதைய தகவல்களுக்கு பள்ளி அலுவலகத்தைத் தொடர்புகொள்ளவும்.'
+              : 'Verified school routes have not been published here yet. Please contact the school office for current transport information.'}
+          </p>
+          <Link href="/transport" className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-blue-700 px-5 py-3 font-semibold text-white hover:bg-blue-800">
+            {isTa ? 'போக்குவரத்து தகவலுக்குத் திரும்பு' : 'Back to transport information'}
+          </Link>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const totalStops = activeRoute?.stops?.length || 0;
 

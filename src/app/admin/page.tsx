@@ -10,6 +10,8 @@ import {
   Plus,
   ArrowRight,
   School,
+  Cloud,
+  HardDrive,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -23,9 +25,13 @@ import {
   facultyRepository,
   enquiryRepository,
   galleryRepository,
+  schoolRepository,
+  isFirebaseConfigured,
 } from '@/lib/repositories';
 
 export default function AdminDashboardPage() {
+  const [schoolName, setSchoolName] = useState(defaultSchoolSettings.schoolName);
+  const [dataMode] = useState(() => isFirebaseConfigured() ? 'cloud' : 'local');
   const [stats, setStats] = useState({
     enquiriesCount: 0,
     newEnquiriesCount: 0,
@@ -51,7 +57,8 @@ export default function AdminDashboardPage() {
     let isMounted = true;
     const loadLiveStats = async () => {
       try {
-        const [enqs, anns, evts, facs, gals] = await Promise.all([
+        const [settings, enqs, anns, evts, facs, gals] = await Promise.all([
+          schoolRepository.get().catch(() => null),
           enquiryRepository.getAll().catch(() => []),
           announcementRepository.getAll().catch(() => []),
           eventRepository.getAll().catch(() => []),
@@ -60,6 +67,10 @@ export default function AdminDashboardPage() {
         ]);
 
         if (!isMounted) return;
+
+        if (settings?.schoolName) {
+          setSchoolName(settings.schoolName);
+        }
 
         const newCount = enqs.filter((e) => e.status === 'new').length;
         setStats({
@@ -150,11 +161,19 @@ export default function AdminDashboardPage() {
       {/* Welcome & Quick Action Header */}
       <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <div className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
-            School Administrative Portal
+          <div className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-1 flex items-center gap-2">
+            <span>School Administrative Portal</span>
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              dataMode === 'cloud'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+            }`}>
+              {dataMode === 'cloud' ? <Cloud className="w-3 h-3" /> : <HardDrive className="w-3 h-3" />}
+              {dataMode === 'cloud' ? 'Cloud Firestore' : 'Local Preview'}
+            </span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold font-heading">
-            {defaultSchoolSettings.schoolName}
+            {schoolName}
           </h2>
           <p className="text-sm text-slate-300 mt-1 max-w-xl">
             Welcome to the central management dashboard. Update school details, review admission applications, publish circulars, and manage public content in real time.

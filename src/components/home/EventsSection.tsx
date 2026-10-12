@@ -72,6 +72,11 @@ export function EventsSection({ events: initialEvents = defaultEvents }: { event
           </Link>
         </div>
 
+        {events.length === 0 && (
+          <p role="status" className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            {language === 'ta' ? 'புதிய நிகழ்வுகள் இன்னும் வெளியிடப்படவில்லை.' : 'No upcoming events have been published yet.'}
+          </p>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {events.slice(0, 2).map((ev) => {
             const dateObj = formatEventDate(ev.date);

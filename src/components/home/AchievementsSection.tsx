@@ -79,6 +79,11 @@ export function AchievementsSection({ achievements: initialAchievements = defaul
         </div>
 
         {/* Featured Student Spotlight Cards */}
+        {displaySpotlight.length === 0 && (
+          <p role="status" className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            {isTa ? 'சரிபார்க்கப்பட்ட சாதனைகள் இன்னும் வெளியிடப்படவில்லை.' : 'Verified school achievements have not been published yet.'}
+          </p>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {displaySpotlight.map((ach) => {
             const title = getLocalized(ach, 'title');

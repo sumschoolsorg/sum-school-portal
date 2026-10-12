@@ -22,6 +22,11 @@ export function TestimonialsSection({ testimonials = defaultTestimonials }: { te
           )}
         />
 
+        {testimonials.length === 0 && (
+          <p role="status" className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            {t('home.testimonials.empty', 'No verified testimonials have been published yet.')}
+          </p>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {testimonials.map((test) => {
             const name = getLocalized(test, 'name');

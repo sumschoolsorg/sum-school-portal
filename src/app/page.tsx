@@ -35,10 +35,33 @@ import {
   eventRepository,
   achievementRepository,
   testimonialRepository,
+  isFirebaseConfigured,
 } from '@/lib/repositories';
+import type {
+  HomepageContent,
+  AboutContent,
+  AcademicsContent,
+  Facility,
+  Announcement,
+  SchoolEvent,
+  Achievement,
+  Testimonial,
+} from '@/types';
+
+interface HomePageData {
+  homepage: HomepageContent;
+  about: AboutContent;
+  academics: AcademicsContent;
+  facilities: Facility[];
+  announcements: Announcement[];
+  events: SchoolEvent[];
+  achievements: Achievement[];
+  testimonials: Testimonial[];
+}
 
 export default function HomePage() {
-  const [data, setData] = useState({
+  // Use default data only as initial rendering state; real data replaces it once loaded
+  const [data, setData] = useState<HomePageData>({
     homepage: defaultHomepageContent,
     about: defaultAboutContent,
     academics: defaultAcademicsContent,
@@ -63,25 +86,31 @@ export default function HomePage() {
           achievementsList,
           testimonialsList,
         ] = await Promise.all([
-          homepageRepository.get(),
-          aboutRepository.get(),
-          academicsRepository.get(),
-          facilityRepository.getPublished(),
-          announcementRepository.getPublished(),
-          eventRepository.getPublished(),
-          achievementRepository.getPublished(),
-          testimonialRepository.getPublished(),
+          homepageRepository.get().catch(() => null),
+          aboutRepository.get().catch(() => null),
+          academicsRepository.get().catch(() => null),
+          facilityRepository.getPublished().catch(() => []),
+          announcementRepository.getPublished().catch(() => []),
+          eventRepository.getPublished().catch(() => []),
+          achievementRepository.getPublished().catch(() => []),
+          testimonialRepository.getPublished().catch(() => []),
         ]);
 
+        const useFirebase = isFirebaseConfigured();
+
+        // When Firebase is configured (production), use real data — empty arrays mean
+        // the collection genuinely has no published records, so show empty sections.
+        // When Firebase is NOT configured (local preview), fall back to default data
+        // so developers can see the UI with representative content.
         setData({
           homepage: homepageContent || defaultHomepageContent,
           about: aboutContent || defaultAboutContent,
           academics: academicsContent || defaultAcademicsContent,
-          facilities: facilitiesList && facilitiesList.length > 0 ? facilitiesList : defaultFacilities,
-          announcements: announcementsList && announcementsList.length > 0 ? announcementsList : defaultAnnouncements,
-          events: eventsList && eventsList.length > 0 ? eventsList : defaultEvents,
-          achievements: achievementsList && achievementsList.length > 0 ? achievementsList : defaultAchievements,
-          testimonials: testimonialsList && testimonialsList.length > 0 ? testimonialsList : defaultTestimonials,
+          facilities: useFirebase ? facilitiesList : (facilitiesList.length > 0 ? facilitiesList : defaultFacilities),
+          announcements: useFirebase ? announcementsList : (announcementsList.length > 0 ? announcementsList : defaultAnnouncements),
+          events: useFirebase ? eventsList : (eventsList.length > 0 ? eventsList : defaultEvents),
+          achievements: useFirebase ? achievementsList : (achievementsList.length > 0 ? achievementsList : defaultAchievements),
+          testimonials: useFirebase ? testimonialsList : (testimonialsList.length > 0 ? testimonialsList : defaultTestimonials),
         });
       } catch (error) {
         console.error('Error loading homepage data:', error);
@@ -114,12 +143,12 @@ export default function HomePage() {
         <AboutSection content={data.about} />
         <PrincipalMessageSection content={data.homepage.principalMessage} />
         <AcademicsPreviewSection content={data.academics} />
-        <FacilitiesPreviewSection facilities={data.facilities} />
-        <AnnouncementsSection announcements={data.announcements} />
-        <EventsSection events={data.events} />
-        <AchievementsSection achievements={data.achievements} />
+        {data.facilities.length > 0 && <FacilitiesPreviewSection facilities={data.facilities} />}
+        {data.announcements.length > 0 && <AnnouncementsSection announcements={data.announcements} />}
+        {data.events.length > 0 && <EventsSection events={data.events} />}
+        {data.achievements.length > 0 && <AchievementsSection achievements={data.achievements} />}
         <GalleryPreviewSection />
-        <TestimonialsSection testimonials={data.testimonials} />
+        {data.testimonials.length > 0 && <TestimonialsSection testimonials={data.testimonials} />}
         <AdmissionCtaSection content={data.homepage.admissionCta} />
         <ContactSection />
       </main>

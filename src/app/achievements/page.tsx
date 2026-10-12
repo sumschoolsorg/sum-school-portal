@@ -13,7 +13,7 @@ import {
   X,
   Share2,
 } from 'lucide-react';
-import { achievementRepository } from '@/lib/repositories';
+import { achievementRepository, isFirebaseConfigured } from '@/lib/repositories';
 import { defaultAchievements } from '@/lib/defaultData';
 import { Achievement } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -25,7 +25,7 @@ export default function AchievementsPage() {
   const { getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [achievements, setAchievements] = useState<Achievement[]>(defaultAchievements);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Filters
@@ -35,19 +35,20 @@ export default function AchievementsPage() {
   const [activeModalItem, setActiveModalItem] = useState<Achievement | null>(null);
 
   useEffect(() => {
+    const useFirebase = isFirebaseConfigured();
     const loadAchievements = async () => {
       try {
         setIsLoading(true);
         const data = await achievementRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
-          setAchievements(published.length > 0 ? published : defaultAchievements);
+          setAchievements(published.length > 0 ? published : (useFirebase ? [] : defaultAchievements));
         } else {
-          setAchievements(defaultAchievements);
+          setAchievements(useFirebase ? [] : defaultAchievements);
         }
       } catch (err) {
         console.warn('Error loading achievements from repository:', err);
-        setAchievements(defaultAchievements);
+        setAchievements(useFirebase ? [] : defaultAchievements);
       } finally {
         setIsLoading(false);
       }

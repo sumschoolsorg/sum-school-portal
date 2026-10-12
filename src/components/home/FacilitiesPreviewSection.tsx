@@ -59,6 +59,11 @@ export function FacilitiesPreviewSection({ facilities: initialFacilities = defau
           )}
         />
 
+        {facilities.length === 0 && (
+          <p role="status" className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-center text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+            {t('home.facilitiesPreview.empty', 'Verified facility information will appear here when published.')}
+          </p>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {facilities.slice(0, 6).map((fac) => {
             const facTitle = getLocalized(fac, 'title');
