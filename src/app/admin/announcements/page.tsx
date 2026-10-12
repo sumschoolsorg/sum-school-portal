@@ -11,7 +11,6 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { announcementRepository } from '@/lib/repositories';
-import { defaultAnnouncements } from '@/lib/defaultData';
 import { Announcement } from '@/types';
 import { Plus, Edit2, Trash2, Bell, Languages } from 'lucide-react';
 import { toast } from 'sonner';
