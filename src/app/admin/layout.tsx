@@ -54,11 +54,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col lg:flex-row w-full max-w-full overflow-x-hidden">
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 max-w-full">
         <AdminTopbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="p-4 sm:p-6 lg:p-8 flex-1 overflow-y-auto">
+        <main className="p-3 sm:p-6 lg:p-8 flex-1 overflow-y-auto min-w-0 max-w-full">
           {children}
         </main>
       </div>

@@ -78,18 +78,18 @@ export function ContactSection() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           {/* Contact Details (Col 5) */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <div className="lg:col-span-5 flex flex-col gap-6 min-w-0">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm min-w-0">
               <h3 className="text-xl font-bold font-heading text-slate-900 dark:text-white mb-6">
                 {t('contact.officeTitle', 'Administrative Campus Office')}
               </h3>
 
               <div className="space-y-6 text-sm text-slate-600 dark:text-slate-300">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                   <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                     <MapPin className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="font-bold text-slate-900 dark:text-white">
                       {t('contact.addressLabel', 'Address')}
                     </div>
@@ -100,11 +100,11 @@ export function ContactSection() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                   <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                     <Phone className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="font-bold text-slate-900 dark:text-white">
                       {t('contact.phoneLabel', 'Phone Numbers')}
                     </div>
@@ -113,23 +113,27 @@ export function ContactSection() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                   <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                     <Mail className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="font-bold text-slate-900 dark:text-white">
                       {t('contact.emailLabel', 'Official Email')}
                     </div>
-                    <div className="mt-1">{defaultSchoolSettings.email}</div>
+                    <div className="mt-1 break-all text-xs sm:text-sm">
+                      <a href={`mailto:${defaultSchoolSettings.email}`} className="hover:text-blue-600 transition break-all">
+                        {defaultSchoolSettings.email}
+                      </a>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                   <div className="w-10 h-10 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="font-bold text-slate-900 dark:text-white">
                       {t('contact.timingsLabel', 'Office Timings')}
                     </div>
@@ -142,11 +146,11 @@ export function ContactSection() {
             </div>
 
             {/* Google Map Card */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden space-y-3">
-              <div className="flex items-center justify-between px-2 pt-1">
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden space-y-3 min-w-0">
+              <div className="flex items-center justify-between px-2 pt-1 gap-2 flex-wrap">
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-rose-600" />
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">
+                  <MapPin className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
                     {isTa ? 'பள்ளி அமைவிடம் (ராயப்பன்பட்டி)' : 'Official Campus Map (Royappanpatti)'}
                   </span>
                 </div>
@@ -154,7 +158,7 @@ export function ContactSection() {
                   href={defaultSchoolSettings.googleMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 shrink-0"
                   title="Open live Google Maps"
                 >
                   <span>{isTa ? 'வழிகாட்டல் பார்க்க' : 'Open Directions'}</span>
@@ -176,13 +180,13 @@ export function ContactSection() {
                 />
               </div>
 
-              <div className="flex items-center justify-between text-[11px] text-slate-500 px-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-500 px-2 min-w-0">
                 <span>📍 GPS: 9.772386, 77.3412086</span>
                 <a
                   href={defaultSchoolSettings.googleMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline font-semibold"
+                  className="text-blue-600 hover:underline font-semibold break-all"
                 >
                   maps.app.goo.gl/Q1VbvDa2VjnwkAQh9
                 </a>
@@ -191,7 +195,7 @@ export function ContactSection() {
           </div>
 
           {/* Contact Form (Col 7) */}
-          <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-10 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-8 lg:p-10 border border-slate-200/80 dark:border-slate-800 shadow-sm min-w-0">
             <h3 className="text-xl font-bold font-heading text-slate-900 dark:text-white mb-2">
               {t('contact.formTitle', 'Send Us a Direct Message')}
             </h3>

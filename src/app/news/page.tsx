@@ -139,7 +139,7 @@ export default function NewsPage() {
                 />
               </div>
 
-              <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+              <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 min-w-0 max-w-full">
                 {categories.map((cat) => (
                   <button
                     key={cat.key}

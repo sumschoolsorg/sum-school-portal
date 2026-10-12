@@ -66,27 +66,27 @@ export function AdminTopbar({ onToggleSidebar, title }: AdminTopbarProps) {
   };
 
   return (
-    <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between sticky top-0 z-30">
-      <div className="flex items-center gap-3">
+    <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 z-30 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-2">
         <button
           onClick={onToggleSidebar}
-          className="lg:hidden min-w-[44px] min-h-[44px] flex items-center justify-center p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+          className="lg:hidden min-w-[40px] min-h-[40px] flex items-center justify-center p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0"
           aria-label="Open sidebar menu"
         >
           <Menu className="w-5 h-5" />
         </button>
-        <div className="flex flex-col">
+        <div className="flex flex-col min-w-0">
           <span className="hidden sm:block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
             S.U.M. School Portal
           </span>
-          <h1 className="text-base sm:text-xl font-bold font-heading text-slate-900 dark:text-white line-clamp-1">
+          <h1 className="text-sm sm:text-lg lg:text-xl font-bold font-heading text-slate-900 dark:text-white truncate">
             {displayTitle}
           </h1>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
             {user?.email ? user.email.charAt(0).toUpperCase() : 'A'}
           </div>

@@ -198,8 +198,8 @@ export default function GalleryPage() {
         <section className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 sticky top-16 z-20 shadow-sm backdrop-blur-md bg-opacity-95">
           <div className="container-main space-y-4">
             {/* Level 1: Academic Year Navigation Pills & Search Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0 max-w-full">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full w-full md:w-auto">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 shrink-0 mr-1">
                   <Calendar className="w-3.5 h-3.5" />
                   {isTa ? 'கல்வியாண்டு:' : 'Academic Year:'}
@@ -241,7 +241,7 @@ export default function GalleryPage() {
             </div>
 
             {/* Level 2: Month Navigation Bar */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1 border-t border-slate-200/60 dark:border-slate-800">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none pt-1 border-t border-slate-200/60 dark:border-slate-800 min-w-0 max-w-full w-full">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
                 {isTa ? 'மாதம்:' : 'Month:'}
               </span>
@@ -261,7 +261,7 @@ export default function GalleryPage() {
             </div>
 
             {/* Level 3: Event Category Filters */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full w-full">
               {categories.map((cat) => (
                 <button
                   key={cat.id}

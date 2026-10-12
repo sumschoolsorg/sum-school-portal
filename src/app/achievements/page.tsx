@@ -169,9 +169,9 @@ export default function AchievementsPage() {
         <section className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 sticky top-16 z-20 shadow-sm backdrop-blur-md bg-opacity-95">
           <div className="container-main space-y-4">
             {/* Top row: Year Selector Pills & Search Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0 max-w-full">
               {/* Academic Year Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full w-full md:w-auto">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 shrink-0 mr-1">
                   <Calendar className="w-3.5 h-3.5" />
                   {isTa ? 'கல்வியாண்டு:' : 'Academic Year:'}
@@ -213,7 +213,7 @@ export default function AchievementsPage() {
             </div>
 
             {/* Bottom row: Category Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full w-full">
               {categories.map((cat) => (
                 <button
                   key={cat.id}

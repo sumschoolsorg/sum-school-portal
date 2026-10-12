@@ -25,17 +25,17 @@ export function Footer() {
       <BottomAnnouncementTicker />
 
       {/* Subtle background glow */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 sm:w-96 max-w-full h-72 sm:h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-1/2 translate-x-1/2 w-72 sm:w-96 max-w-full h-72 sm:h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Main Footer Content */}
       <div className="container-main py-16 lg:py-20 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8">
           {/* Column 1: School Brand (Col 4) */}
           <div className="lg:col-span-4 flex flex-col gap-5">
-            <div className="flex items-center gap-3">
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-13 h-13 rounded-2xl bg-white p-1 flex items-center justify-center shadow-lg border border-white/20 group-hover:scale-105 transition duration-300">
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href="/" className="flex items-center gap-3 group min-w-0">
+                <div className="w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-white p-1 flex items-center justify-center shadow-lg border border-white/20 group-hover:scale-105 transition duration-300 shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/images/school-crest.png"
@@ -43,26 +43,26 @@ export function Footer() {
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-heading font-extrabold text-lg text-white tracking-tight leading-tight">
+                <div className="flex flex-col min-w-0">
+                  <span className="font-heading font-extrabold text-base sm:text-lg text-white tracking-tight leading-tight truncate">
                     {t('header.schoolTitle')}
                   </span>
-                  <span className="text-xs font-semibold text-amber-400 tracking-wider uppercase">
+                  <span className="text-xs font-semibold text-amber-400 tracking-wider uppercase truncate">
                     {t('header.schoolSubtitle')}
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-slate-400 truncate">
                     {t('common.location')}
                   </span>
                 </div>
               </Link>
 
               {/* Jubilee Emblem */}
-              <div className="pl-3 border-l border-slate-800">
+              <div className="pl-3 border-l border-slate-800 shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/images/diamond-jubilee-logo.png"
                   alt="Diamond Jubilee 60 Years"
-                  className="h-12 w-auto object-contain drop-shadow-md"
+                  className="h-10 sm:h-12 w-auto object-contain drop-shadow-md"
                 />
               </div>
             </div>
@@ -261,12 +261,12 @@ export function Footer() {
         </div>
 
         {/* Bottom Legal & Copyright Bar */}
-        <div className="mt-16 pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>
+        <div className="mt-16 pt-8 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 text-center sm:text-left">
+          <p className="max-w-full">
             {t('footer.copyright').replace('{year}', String(currentYear))}
           </p>
 
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
             <Link href="/privacy" className="hover:text-slate-300 transition">
               {t('footer.privacyPolicy')}
             </Link>

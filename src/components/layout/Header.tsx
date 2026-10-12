@@ -171,12 +171,12 @@ export function Header() {
     <>
       <header className="w-full z-40 relative bg-white dark:bg-slate-950 transition-all duration-300">
         {/* MAIN BRANDING & HERITAGE TRIBUTE BAR (Row 1) */}
-        <div className="w-full bg-gradient-to-b from-white via-slate-50/70 to-white dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-950 border-b border-slate-200/80 dark:border-slate-800 py-3 sm:py-3.5">
-          <div className="container-main flex items-center justify-between gap-3 lg:gap-6">
+        <div className="w-full bg-gradient-to-b from-white via-slate-50/70 to-white dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-950 border-b border-slate-200/80 dark:border-slate-800 py-2.5 sm:py-3.5 overflow-hidden">
+          <div className="container-main flex items-center justify-between gap-2 sm:gap-4 lg:gap-6 min-w-0">
             {/* FIRST: School Logo & School Name */}
-            <div className="flex items-center gap-3 shrink-0">
-              <Link href="/" className="flex items-center gap-3 group">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white dark:bg-slate-800 p-1 flex items-center justify-center shadow-md border-2 border-amber-400/30 group-hover:scale-105 group-hover:border-amber-400 transition-all duration-300">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <Link href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0 max-w-full">
+                <div className="w-10 h-10 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-800 p-0.5 sm:p-1 flex items-center justify-center shadow-md border-2 border-amber-400/30 group-hover:scale-105 group-hover:border-amber-400 transition-all duration-300 shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/images/school-crest.png"
@@ -184,14 +184,14 @@ export function Header() {
                     className="w-full h-full object-contain drop-shadow-xs"
                   />
                 </div>
-                <div className="flex flex-col text-left">
-                  <span className="font-heading font-black text-lg sm:text-xl lg:text-2xl text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-blue-600 transition">
+                <div className="flex flex-col text-left min-w-0 flex-1">
+                  <span className="font-heading font-black text-xs sm:text-lg lg:text-2xl text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-blue-600 transition truncate">
                     S.U.M. SCHOOL
                   </span>
-                  <span className="text-[11px] sm:text-xs font-black text-blue-700 dark:text-blue-400 tracking-wider uppercase leading-snug">
+                  <span className="text-[8px] sm:text-[11px] lg:text-xs font-black text-blue-700 dark:text-blue-400 tracking-normal sm:tracking-wider uppercase leading-snug truncate">
                     HIGHER SECONDARY &amp; PRIMARY
                   </span>
-                  <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[8px] sm:text-[10px] lg:text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1 sm:gap-1.5 mt-0.5 truncate">
                     <span>Royappanpatti</span>
                     <span className="text-amber-500 font-bold">•</span>
                     <span className="text-amber-600 dark:text-amber-400 font-bold">Estd. 1963</span>
@@ -201,7 +201,7 @@ export function Header() {
             </div>
 
             {/* SECOND: Four Historical Members / Founders Photos (Desktop & Tablet Tribute) */}
-            <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-xs">
+            <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-xs shrink-0">
               <div className="flex flex-col text-right pr-1 shrink-0">
                 <span className="text-[9px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center justify-end gap-1">
                   <Sparkles className="w-2.5 h-2.5" />
@@ -244,18 +244,18 @@ export function Header() {
             </div>
 
             {/* THIRD: Diamond Jubilee Logo & Mobile Controls */}
-            <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
               <Link
                 href="/about"
-                className="flex items-center gap-2 hover:opacity-95 transition group"
+                className="hidden sm:flex items-center gap-2 hover:opacity-95 transition group"
                 title="S.U.M. School Diamond Jubilee 60 Years (1963–2023)"
               >
-                <div className="h-13 sm:h-16 w-auto flex items-center justify-center group-hover:scale-105 transition duration-300">
+                <div className="h-10 sm:h-14 lg:h-16 w-auto flex items-center justify-center group-hover:scale-105 transition duration-300">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/images/diamond-jubilee-logo.png"
                     alt="S.U.M. School 60th Diamond Jubilee Anniversary Logo"
-                    className="h-12 sm:h-15 w-auto object-contain drop-shadow-xs"
+                    className="h-9 sm:h-12 lg:h-15 w-auto object-contain drop-shadow-xs"
                   />
                 </div>
                 <div className="hidden 2xl:flex flex-col text-left border-l border-slate-200 dark:border-slate-700 pl-2.5">
@@ -268,24 +268,24 @@ export function Header() {
                 </div>
               </Link>
 
-              {/* Mobile Founders Quick Button */}
+              {/* Mobile Founders Quick Button on Tablet */}
               <button
                 onClick={() => setFoundersModalOpen(true)}
-                className="lg:hidden p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold flex items-center gap-1 shadow-xs cursor-pointer"
+                className="hidden sm:flex lg:hidden p-1.5 sm:p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold items-center gap-1 shadow-xs cursor-pointer shrink-0"
                 title="View Founders"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                <span className="hidden sm:inline">{isTa ? 'நிறுவனர்கள்' : 'Founders'}</span>
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span className="hidden md:inline">{isTa ? 'நிறுவனர்கள்' : 'Founders'}</span>
               </button>
 
               {/* Mobile Hamburger Menu Button */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="xl:hidden p-2.5 rounded-2xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-200 dark:border-slate-700"
+                className="xl:hidden p-2 sm:p-2.5 rounded-xl sm:rounded-2xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-200 dark:border-slate-700 shrink-0 min-w-[40px] min-h-[40px] flex items-center justify-center"
                 aria-label={t('header.toggleMenu', 'Toggle navigation menu')}
                 aria-expanded={mobileMenuOpen}
               >
-                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
               </button>
             </div>
           </div>
@@ -297,7 +297,7 @@ export function Header() {
             isScrolled ? 'sticky top-0 shadow-xl bg-slate-950/95 backdrop-blur-md' : 'relative'
           }`}
         >
-          <div className="container-main flex items-center justify-between">
+          <div className="container-main flex items-center justify-end xl:justify-between min-w-0">
             {/* Scrolled Compact Brand Mark */}
             {isScrolled && (
               <Link href="/" className="hidden lg:flex items-center gap-2.5 py-2 mr-4 shrink-0 group">
@@ -486,12 +486,12 @@ export function Header() {
                   </div>
                 </div>
 
-                <div className="h-12 w-auto shrink-0">
+                <div className="w-12 h-12 shrink-0 flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/images/diamond-jubilee-logo.png"
                     alt="Diamond Jubilee 60 Years"
-                    className="h-12 w-auto object-contain"
+                    className="w-full h-full object-contain"
                   />
                 </div>
               </div>
@@ -514,7 +514,7 @@ export function Header() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                   {HISTORICAL_FOUNDERS.map((founder) => (
                     <div
                       key={founder.id}
@@ -523,9 +523,9 @@ export function Header() {
                         setMobileMenuOpen(false);
                         setFoundersModalOpen(true);
                       }}
-                      className="flex flex-col items-center text-center cursor-pointer group"
+                      className="flex flex-col items-center text-center cursor-pointer group min-w-0"
                     >
-                      <div className="w-14 h-16 rounded-xl overflow-hidden border-2 border-amber-300 dark:border-amber-500/70 shadow-xs bg-slate-950 group-hover:scale-105 transition">
+                      <div className="w-full max-w-[56px] aspect-[7/8] rounded-xl overflow-hidden border-2 border-amber-300 dark:border-amber-500/70 shadow-xs bg-slate-950 group-hover:scale-105 transition flex items-center justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={founder.imageUrl}
@@ -533,7 +533,7 @@ export function Header() {
                           className="w-full h-full object-cover object-top"
                         />
                       </div>
-                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 mt-1 line-clamp-1">
+                      <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 mt-1 truncate max-w-full">
                         {founder.name.split(' ')[0]}
                       </span>
                     </div>

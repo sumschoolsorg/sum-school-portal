@@ -247,9 +247,9 @@ export default function EventsPage() {
             </div>
 
             {/* Academic Year & Category Pills */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-200/60 dark:border-slate-800 min-w-0 max-w-full">
               {/* Year pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
                   {isTa ? 'கல்வியாண்டு:' : 'Academic Year:'}
                 </span>
@@ -269,7 +269,7 @@ export default function EventsPage() {
               </div>
 
               {/* Categories */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full">
                 {categories.map((cat) => (
                   <button
                     key={cat.id}

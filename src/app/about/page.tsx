@@ -112,16 +112,16 @@ export default function AboutPage() {
                 </div>
 
                 {/* 60th Diamond Jubilee Commemorative Box with Founder */}
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 dark:from-slate-800 dark:to-slate-800/80 border border-amber-200 dark:border-amber-900/40 flex items-center gap-4 shadow-sm">
-                  <div className="h-16 w-auto flex-shrink-0">
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 dark:from-slate-800 dark:to-slate-800/80 border border-amber-200 dark:border-amber-900/40 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 shadow-sm min-w-0">
+                  <div className="w-16 h-16 shrink-0 flex items-center justify-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/images/diamond-jubilee-logo.png"
                       alt="Diamond Jubilee 60 Years (1963–2023)"
-                      className="h-16 w-auto object-contain drop-shadow-md"
+                      className="w-full h-full object-contain drop-shadow-md"
                     />
                   </div>
-                  <div className="text-xs space-y-0.5">
+                  <div className="text-xs space-y-0.5 min-w-0 flex-1">
                     <div className="font-extrabold text-amber-950 dark:text-amber-300 text-sm">
                       {language === 'ta'
                         ? 'நிறுவனர் சவரியப்ப உடையார் & 60-ஆம் ஆண்டு வைர விழா (1963–2023)'

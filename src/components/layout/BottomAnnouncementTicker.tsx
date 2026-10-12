@@ -69,14 +69,14 @@ export function BottomAnnouncementTicker() {
       <div className="container-main py-2.5 px-4 sm:px-6">
         <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
           {/* Clean White Title Badge */}
-          <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-900 dark:text-blue-200 shadow-xs">
-            <span className="relative flex h-2 w-2">
+          <div className="shrink-0 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-900 dark:text-blue-200 shadow-xs">
+            <span className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
             </span>
-            <span className="font-heading font-black text-xs uppercase tracking-wider whitespace-nowrap text-blue-900 dark:text-blue-100 flex items-center gap-1.5">
-              <Bell className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              <span>{isTa ? 'சமீபத்திய அறிவிப்புகள்' : 'Latest Announcements'}</span>
+            <span className="font-heading font-black text-[11px] sm:text-xs uppercase tracking-wider whitespace-nowrap text-blue-900 dark:text-blue-100 flex items-center gap-1 sm:gap-1.5">
+              <Bell className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span>{isTa ? 'அறிவிப்புகள்' : 'Announcements'}</span>
             </span>
           </div>
 
