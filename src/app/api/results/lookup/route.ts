@@ -53,7 +53,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'PAYLOAD_TOO_LARGE', message: 'Invalid request.' }, { status: 413 });
     }
 
-    const body: unknown = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, error: 'INVALID_REQUEST', message: 'Enter a valid roll or registration number and date of birth.' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+    }
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ success: false, error: 'INVALID_REQUEST', message: 'Enter a valid roll or registration number and date of birth.' }, { status: 400 });
     }

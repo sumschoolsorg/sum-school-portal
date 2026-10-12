@@ -33,7 +33,12 @@ export async function POST(request: NextRequest) {
 
     const length = Number(request.headers.get('content-length') || 0);
     if (length > 2_000) return NextResponse.json({ success: false, message: 'Invalid request.' }, { status: 413 });
-    const body: unknown = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, message: 'Enter valid tracking details.' }, { status: 400, headers: { 'Cache-Control': 'no-store' } });
+    }
     if (!body || typeof body !== 'object') return NextResponse.json({ success: false, message: 'Enter valid tracking details.' }, { status: 400 });
     const input = body as Record<string, unknown>;
     const applicationNumber = typeof input.applicationNumber === 'string' ? input.applicationNumber.trim().toUpperCase() : '';

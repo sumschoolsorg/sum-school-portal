@@ -126,10 +126,19 @@ export default function HomePage() {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+        <main
+          id="main-content"
+          className="flex-1 flex flex-col items-center justify-center gap-4 px-4 text-center"
+          aria-busy="true"
+        >
+          <div
+            className="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-primary-600"
+            aria-hidden="true"
+          />
+          <p role="status" aria-live="polite" className="text-sm font-medium text-slate-600">
+            Loading school website content…
+          </p>
         </main>
-        <Footer />
       </div>
     );
   }
