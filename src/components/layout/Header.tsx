@@ -87,7 +87,10 @@ export const HISTORICAL_FOUNDERS: FounderMember[] = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileAcademicsOpen, setMobileAcademicsOpen] = useState(false);
   const [academicsDropdown, setAcademicsDropdown] = useState(false);
+  const academicsDropdownRef = React.useRef<HTMLDivElement>(null);
+  const academicsTriggerRef = React.useRef<HTMLButtonElement>(null);
   const [foundersModalOpen, setFoundersModalOpen] = useState(false);
   const [selectedFounder, setSelectedFounder] = useState<FounderMember | null>(null);
 
@@ -110,6 +113,7 @@ export function Header() {
       prevPathnameRef.current = pathname;
       setMobileMenuOpen(false);
       setAcademicsDropdown(false);
+      setMobileAcademicsOpen(false);
     }
   }, [pathname]);
 
@@ -118,7 +122,10 @@ export function Header() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (mobileMenuOpen) setMobileMenuOpen(false);
-        if (academicsDropdown) setAcademicsDropdown(false);
+        if (academicsDropdown) {
+          setAcademicsDropdown(false);
+          academicsTriggerRef.current?.focus();
+        }
       }
     };
 
@@ -136,6 +143,19 @@ export function Header() {
       };
     }
   }, [mobileMenuOpen, academicsDropdown]);
+
+  useEffect(() => {
+    if (!academicsDropdown) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!academicsDropdownRef.current?.contains(event.target as Node)) {
+        setAcademicsDropdown(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [academicsDropdown]);
 
   const navLinks = [
     { href: '/', label: t('nav.home', 'Home') },
@@ -321,28 +341,35 @@ export function Header() {
             )}
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden xl:flex items-center gap-0.5 2xl:gap-1.5 py-1.5 overflow-x-auto" aria-label="Main Navigation">
+            <nav className="hidden xl:flex items-center gap-0 py-1.5 overflow-visible" aria-label="Main Navigation">
               {navLinks.map((link, idx) => {
                 if (link.isDropdown) {
                   return (
                     <div
                       key={idx}
                       className="relative"
-                      onMouseEnter={() => setAcademicsDropdown(true)}
-                      onMouseLeave={() => setAcademicsDropdown(false)}
+                      ref={academicsDropdownRef}
                     >
                       <button
+                        ref={academicsTriggerRef}
                         type="button"
                         onClick={() => setAcademicsDropdown((prev) => !prev)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
+                          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            setAcademicsDropdown(true);
+                            requestAnimationFrame(() => {
+                              document.querySelector<HTMLElement>('#academics-navigation-menu [role="menuitem"]')?.focus();
+                            });
+                          } else if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             setAcademicsDropdown((prev) => !prev);
                           }
                         }}
                         aria-expanded={academicsDropdown}
                         aria-haspopup="true"
-                        className={`flex items-center gap-1 px-3 py-2 text-xs 2xl:text-sm font-semibold rounded-xl transition cursor-pointer min-h-[40px] ${
+                        aria-controls={academicsDropdown ? 'academics-navigation-menu' : undefined}
+                        className={`flex items-center gap-1 px-2 py-2 text-xs 2xl:text-sm font-semibold rounded-xl transition cursor-pointer min-h-[40px] ${
                           isActive('/academics') ||
                           isActive('/facilities') ||
                           isActive('/faculty') ||
@@ -357,13 +384,30 @@ export function Header() {
                       </button>
 
                       {academicsDropdown && (
-                        <div className="absolute top-full left-0 w-60 pt-2 z-50 animate-fadeIn">
+                        <div
+                          id="academics-navigation-menu"
+                          role="menu"
+                          onKeyDown={(event) => {
+                            const items = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]'));
+                            const activeIndex = items.indexOf(document.activeElement as HTMLElement);
+                            let nextIndex = activeIndex;
+                            if (event.key === 'ArrowDown') nextIndex = (activeIndex + 1) % items.length;
+                            else if (event.key === 'ArrowUp') nextIndex = (activeIndex - 1 + items.length) % items.length;
+                            else if (event.key === 'Home') nextIndex = 0;
+                            else if (event.key === 'End') nextIndex = items.length - 1;
+                            else return;
+                            event.preventDefault();
+                            items[nextIndex]?.focus();
+                          }}
+                          className="absolute top-full left-0 w-60 pt-2 z-50 animate-fadeIn"
+                        >
                           <div className="bg-slate-900 rounded-2xl shadow-2xl border border-slate-800 p-2 text-white">
                             {link.items?.map((sub, sIdx) => (
                               <Link
                                 key={sIdx}
                                 href={sub.href}
                                 onClick={() => setAcademicsDropdown(false)}
+                                role="menuitem"
                                 aria-current={isActive(sub.href) ? 'page' : undefined}
                                 className={`block px-3.5 py-2.5 text-xs font-semibold rounded-xl transition min-h-[38px] flex items-center ${
                                   isActive(sub.href)
@@ -386,7 +430,7 @@ export function Header() {
                     key={idx}
                     href={link.href}
                     aria-current={isActive(link.href) ? 'page' : undefined}
-                    className={`flex items-center gap-1.5 px-3 py-2 text-xs 2xl:text-sm font-semibold rounded-xl transition whitespace-nowrap min-h-[40px] ${
+                    className={`flex items-center gap-1.5 px-2 py-2 text-xs 2xl:text-sm font-semibold rounded-xl transition whitespace-nowrap min-h-[40px] ${
                       isActive(link.href)
                         ? 'bg-blue-600 text-white shadow-sm'
                         : 'text-slate-200 hover:text-white hover:bg-slate-800'
@@ -550,26 +594,38 @@ export function Header() {
                   if (link.isDropdown) {
                     return (
                       <div key={idx} className="space-y-1">
-                        <div className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <button
+                          type="button"
+                          onClick={() => setMobileAcademicsOpen((open) => !open)}
+                          aria-expanded={mobileAcademicsOpen}
+                          aria-controls={mobileAcademicsOpen ? 'mobile-academics-submenu' : undefined}
+                          className="w-full px-4 py-3 min-h-[44px] text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider rounded-xl flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                        >
                           {link.label}
-                        </div>
-                        <div className="pl-3 flex flex-col gap-1">
-                          {link.items?.map((sub, sIdx) => (
-                            <Link
-                              key={sIdx}
-                              href={sub.href}
-                              onClick={() => setMobileMenuOpen(false)}
-                              aria-current={isActive(sub.href) ? 'page' : undefined}
-                              className={`px-4 py-3 min-h-[44px] text-sm font-semibold rounded-xl flex items-center transition ${
-                                isActive(sub.href)
-                                  ? 'bg-blue-600 text-white font-bold'
-                                  : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                              }`}
-                            >
-                              {sub.label}
-                            </Link>
-                          ))}
-                        </div>
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform ${mobileAcademicsOpen ? 'rotate-180' : ''}`}
+                            aria-hidden="true"
+                          />
+                        </button>
+                        {mobileAcademicsOpen && (
+                          <div id="mobile-academics-submenu" className="pl-3 flex flex-col gap-1">
+                            {link.items?.map((sub, sIdx) => (
+                              <Link
+                                key={sIdx}
+                                href={sub.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                aria-current={isActive(sub.href) ? 'page' : undefined}
+                                className={`px-4 py-3 min-h-[44px] text-sm font-semibold rounded-xl flex items-center transition ${
+                                  isActive(sub.href)
+                                    ? 'bg-blue-600 text-white font-bold'
+                                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                }`}
+                              >
+                                {sub.label}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   }
