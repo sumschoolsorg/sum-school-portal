@@ -8,7 +8,6 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
-import { defaultTestimonials } from '@/lib/defaultData';
 import { Testimonial } from '@/types';
 import { testimonialRepository } from '@/lib/repositories';
 import { Plus, Edit2, Trash2, MessageSquareQuote, Star, Loader2 } from 'lucide-react';

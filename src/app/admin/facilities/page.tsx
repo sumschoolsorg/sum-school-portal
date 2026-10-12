@@ -10,7 +10,6 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
-import { defaultFacilities } from '@/lib/defaultData';
 import { Facility } from '@/types';
 import { facilityRepository } from '@/lib/repositories';
 import { Plus, Edit2, Trash2, Building2, Loader2 } from 'lucide-react';

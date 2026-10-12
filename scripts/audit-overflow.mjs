@@ -69,7 +69,7 @@ async function runAudit() {
         // small wait for layout
         await page.waitForTimeout(300);
 
-        const diagnostic = await page.evaluate((vpWidth) => {
+        const diagnostic = await page.evaluate(() => {
           const docEl = document.documentElement;
           const body = document.body;
 
@@ -83,7 +83,6 @@ async function runAudit() {
             while (parent && parent !== docEl && parent !== body) {
               const style = window.getComputedStyle(parent);
               const ox = style.overflowX;
-              const oy = style.overflowY;
               const o = style.overflow;
               if (['hidden', 'clip', 'scroll', 'auto'].includes(ox) || ['hidden', 'clip', 'scroll', 'auto'].includes(o)) {
                 const parentRect = parent.getBoundingClientRect();
