@@ -2742,7 +2742,7 @@ export const verifiedHeroBanners: HeroBanner[] = [
 ];
 
 export const defaultFaculty: Faculty[] = [];
-export const defaultFacilities: Facility[] = [];
+export const defaultFacilities: Facility[] = verifiedFacilities;
 export const defaultEvents: SchoolEvent[] = [];
 export const defaultAchievements: Achievement[] = verifiedAchievements;
 export const defaultGalleryImages: GalleryImage[] = verifiedGalleryImages;

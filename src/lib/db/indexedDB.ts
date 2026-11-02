@@ -145,7 +145,8 @@ async function seedInitialData(db: IDBDatabase): Promise<void> {
           storeName === STORES.ACHIEVEMENTS ||
           storeName === STORES.TIMELINE ||
           storeName === STORES.HERO_BANNERS ||
-          storeName === STORES.GALLERY
+          storeName === STORES.GALLERY ||
+          storeName === STORES.FACILITIES
         ) {
           defaultItems.forEach((item: unknown) => {
             const record = item as { id?: string };
