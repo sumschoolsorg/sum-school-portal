@@ -43,12 +43,16 @@ export async function signIn(
 }
 
 // --- Sign out ---
+// --- Sign out ---
 export async function signOut(): Promise<void> {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('sum_fast_login');
+    localStorage.removeItem('sum_admin_authenticated');
+  }
   try {
     await firebaseSignOut(auth);
   } catch (error) {
     console.error('Error signing out:', error);
-    throw error;
   }
 }
 

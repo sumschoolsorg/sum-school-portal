@@ -83,7 +83,7 @@ export default function SchoolInfoAdminPage() {
       id: 'item-4',
       field: 'principalName',
       label: 'Principal / Headmaster',
-      researchedValue: 'Rev. Fr. Headmaster, M.Sc., M.Ed.',
+      researchedValue: 'Thiru S. Thomas, M.Sc., M.Ed.',
       source: 'School Administration & Institutional Records',
       status: 'Officially Confirmed',
       isApproved: true,

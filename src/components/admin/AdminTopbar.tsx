@@ -3,7 +3,6 @@
 import React from 'react';
 import { Menu, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { signOut } from '@/lib/auth';
 import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -40,7 +39,7 @@ const ROUTE_TITLES: Record<string, string> = {
 };
 
 export function AdminTopbar({ onToggleSidebar, title }: AdminTopbarProps) {
-  const { user, isSuperAdmin, isSchoolAdmin, role } = useAuth();
+  const { user, isSuperAdmin, isSchoolAdmin, role, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -55,13 +54,8 @@ export function AdminTopbar({ onToggleSidebar, title }: AdminTopbarProps) {
         : 'Administrator';
 
   const handleLogout = async () => {
-    try {
-      await signOut();
-      toast.success('Signed out of Admin Portal.');
-    } catch {
-      toast.info('Signed out.');
-    }
-    localStorage.removeItem('sum_admin_authenticated');
+    await logout();
+    toast.success('Signed out of Admin Portal.');
     router.push('/admin/login');
   };
 

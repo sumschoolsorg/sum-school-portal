@@ -26,7 +26,7 @@ import {
 } from '@/lib/defaultData';
 
 const DB_NAME = 'sum_school_local_db';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 
 export const STORES = {
   SCHOOL_SETTINGS: 'school_settings',
@@ -140,6 +140,24 @@ async function seedInitialData(db: IDBDatabase): Promise<void> {
       countReq.onsuccess = () => {
         if (countReq.result === 0) {
           defaultItems.forEach((item) => store.put(item));
+        } else if (
+          storeName === STORES.ANNOUNCEMENTS ||
+          storeName === STORES.ACHIEVEMENTS ||
+          storeName === STORES.TIMELINE ||
+          storeName === STORES.HERO_BANNERS ||
+          storeName === STORES.GALLERY
+        ) {
+          defaultItems.forEach((item: unknown) => {
+            const record = item as { id?: string };
+            if (record && record.id) {
+              const checkReq = store.get(record.id);
+              checkReq.onsuccess = () => {
+                if (!checkReq.result) {
+                  store.put(record);
+                }
+              };
+            }
+          });
         }
         resolve();
       };

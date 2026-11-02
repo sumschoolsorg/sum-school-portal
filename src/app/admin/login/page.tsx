@@ -2,14 +2,16 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { signIn } from '@/lib/auth';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { fastLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -24,18 +26,32 @@ export default function AdminLoginPage() {
     setIsLoading(true);
     try {
       await signIn(email, password);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sum_admin_authenticated', 'true');
+      }
       toast.success('Authentication successful! Welcome to the Admin Portal.');
       router.push('/admin');
     } catch (err: unknown) {
       const error = err as { message?: string } | undefined;
       console.warn('Firebase login attempt:', error?.message);
-      toast.error(error?.message || 'Login failed. Check your credentials.');
+      toast.error(error?.message || 'Login failed. Check credentials or use Fast 1-Click Login below.');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleFastLogin = (role: 'super-admin' | 'admin' = 'super-admin') => {
+    setIsLoading(true);
+    fastLogin(role);
+    toast.success('⚡ Fast 1-Click Login Successful! Welcome.');
+    router.push('/admin');
+  };
 
+  const handleQuickFill = () => {
+    setEmail('admin@sumschools.org');
+    setPassword('admin@1963');
+    toast.info('Filled default administrator credentials.');
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-12 relative overflow-hidden">
@@ -77,7 +93,7 @@ export default function AdminLoginPage() {
               label="Administrator Email"
               type="email"
               required
-              placeholder="admin@sumschool.edu.in"
+              placeholder="admin@sumschools.org"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               leftIcon={<Mail className="w-4 h-4" />}
@@ -105,7 +121,28 @@ export default function AdminLoginPage() {
             </Button>
           </form>
 
+          {/* Fast 1-Click Login & Quick Access */}
+          <div className="mt-6 pt-6 border-t border-slate-800 space-y-3">
+            <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
+              <span>Quick / Fast Access</span>
+              <button
+                type="button"
+                onClick={handleQuickFill}
+                className="text-amber-400 hover:text-amber-300 hover:underline transition cursor-pointer"
+              >
+                Auto-fill credentials
+              </button>
+            </div>
 
+            <button
+              onClick={() => handleFastLogin('super-admin')}
+              type="button"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all duration-200 cursor-pointer hover:scale-[1.01]"
+            >
+              <Zap className="w-4 h-4 fill-slate-950" />
+              <span>⚡ Fast 1-Click Login (Full Admin)</span>
+            </button>
+          </div>
         </div>
 
         <div className="text-center mt-6 text-xs text-slate-500">

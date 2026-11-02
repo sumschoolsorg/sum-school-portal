@@ -145,8 +145,8 @@ export const en = {
 
     principalMessage: {
       badge: 'Message from the Headmaster',
-      name: 'Rev. Fr. Headmaster, M.Sc., M.Ed.',
-      role: 'Headmaster & Correspondent, S.U.M. School',
+      name: 'Thiru S. Thomas, M.Sc., M.Ed.',
+      role: 'Headmaster, S.U.M. Higher Secondary School',
       schoolTag: 'S.U.M. Higher Secondary & Primary School',
       quote:
         'Welcome to Savariyappa Udaiyar Memorial Higher Secondary & Primary School, Royappanpatti. For over six decades, our institution has been the cornerstone of academic enlightenment and moral formation for students across the Cumbum Valley and Theni district. We nurture individual talent with discipline, modern learning tools, and compassionate guidance.',
