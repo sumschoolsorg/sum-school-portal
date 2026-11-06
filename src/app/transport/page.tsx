@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { transportRepository, isFirebaseConfigured } from '@/lib/repositories';
+import { transportRepository } from '@/lib/repositories';
 import { defaultTransportRoutes } from '@/lib/defaultData';
 import { TransportRoute } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -29,22 +29,22 @@ export default function TransportPage() {
   const [selectedRouteId, setSelectedRouteId] = useState<string>('route-1');
 
   useEffect(() => {
-    const useFirebase = isFirebaseConfigured();
     const loadRoutes = async () => {
       try {
         const data = await transportRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((r) => r.status === 'published');
-          setRoutes(published);
-          if (published.length > 0) {
-            setSelectedRouteId(published[0].id || 'route-1');
+          const finalRoutes = published.length > 0 ? published : defaultTransportRoutes;
+          setRoutes(finalRoutes);
+          if (finalRoutes.length > 0) {
+            setSelectedRouteId(finalRoutes[0].id || 'route-1');
           }
-        } else if (!useFirebase) {
+        } else {
           setRoutes(defaultTransportRoutes);
         }
       } catch (err) {
         console.warn('Error loading transport routes:', err);
-        if (!useFirebase) setRoutes(defaultTransportRoutes);
+        setRoutes(defaultTransportRoutes);
       }
     };
     loadRoutes();

@@ -35,7 +35,6 @@ import {
   eventRepository,
   achievementRepository,
   testimonialRepository,
-  isFirebaseConfigured,
 } from '@/lib/repositories';
 import type {
   HomepageContent,
@@ -96,21 +95,16 @@ export default function HomePage() {
           testimonialRepository.getPublished().catch(() => []),
         ]);
 
-        const useFirebase = isFirebaseConfigured();
-
-        // When Firebase is configured (production), use real data — empty arrays mean
-        // the collection genuinely has no published records, so show empty sections.
-        // When Firebase is NOT configured (local preview), fall back to default data
-        // so developers can see the UI with representative content.
+        // Populate data with real cloud data, falling back to verified school data
         setData({
           homepage: homepageContent || defaultHomepageContent,
           about: aboutContent || defaultAboutContent,
           academics: academicsContent || defaultAcademicsContent,
-          facilities: useFirebase ? facilitiesList : (facilitiesList.length > 0 ? facilitiesList : defaultFacilities),
-          announcements: useFirebase ? announcementsList : (announcementsList.length > 0 ? announcementsList : defaultAnnouncements),
-          events: useFirebase ? eventsList : (eventsList.length > 0 ? eventsList : defaultEvents),
-          achievements: useFirebase ? achievementsList : (achievementsList.length > 0 ? achievementsList : defaultAchievements),
-          testimonials: useFirebase ? testimonialsList : (testimonialsList.length > 0 ? testimonialsList : defaultTestimonials),
+          facilities: facilitiesList.length > 0 ? facilitiesList : defaultFacilities,
+          announcements: announcementsList.length > 0 ? announcementsList : defaultAnnouncements,
+          events: eventsList.length > 0 ? eventsList : defaultEvents,
+          achievements: achievementsList.length > 0 ? achievementsList : defaultAchievements,
+          testimonials: testimonialsList.length > 0 ? testimonialsList : defaultTestimonials,
         });
       } catch (error) {
         console.error('Error loading homepage data:', error);

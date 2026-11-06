@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { eventRepository, isFirebaseConfigured } from '@/lib/repositories';
+import { eventRepository } from '@/lib/repositories';
 import { defaultEvents } from '@/lib/defaultData';
 import { SchoolEvent } from '@/types';
 import {
@@ -39,20 +39,19 @@ export default function EventsPage() {
   const [currentTime] = useState(() => Date.now());
 
   useEffect(() => {
-    const useFirebase = isFirebaseConfigured();
     const loadEvents = async (showLoading = false) => {
       try {
         if (showLoading) setIsLoading(true);
         const data = await eventRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
-          setEvents(published.length > 0 ? published : (useFirebase ? [] : defaultEvents));
+          setEvents(published.length > 0 ? published : defaultEvents);
         } else {
-          setEvents(useFirebase ? [] : defaultEvents);
+          setEvents(defaultEvents);
         }
       } catch (err) {
         console.warn('Error loading events:', err);
-        setEvents(useFirebase ? [] : defaultEvents);
+        setEvents(defaultEvents);
       } finally {
         setIsLoading(false);
       }

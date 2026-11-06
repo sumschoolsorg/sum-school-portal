@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Badge } from '@/components/ui/Badge';
 import { defaultFaculty } from '@/lib/defaultData';
-import { facultyRepository, isFirebaseConfigured } from '@/lib/repositories';
+import { facultyRepository } from '@/lib/repositories';
 import { Faculty } from '@/types';
 import { GraduationCap, Briefcase, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -18,17 +18,14 @@ export default function FacultyPage() {
   const [activeSection, setActiveSection] = useState<'all' | 'primary' | 'secondary' | 'higher-secondary'>('all');
 
   useEffect(() => {
-    const useFirebase = isFirebaseConfigured();
     let isMounted = true;
     facultyRepository.getPublished().then((items) => {
-      if (isMounted && items && items.length > 0) {
-        setFacultyList(items);
-      } else if (isMounted && !useFirebase) {
-        setFacultyList(defaultFaculty);
+      if (isMounted) {
+        setFacultyList(items && items.length > 0 ? items : defaultFaculty);
       }
     }).catch((err) => {
       console.warn('Failed to load faculty from repository:', err);
-      if (isMounted && !useFirebase) setFacultyList(defaultFaculty);
+      if (isMounted) setFacultyList(defaultFaculty);
     });
     return () => {
       isMounted = false;

@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Badge } from '@/components/ui/Badge';
 import { defaultAnnouncements } from '@/lib/defaultData';
-import { announcementRepository, isFirebaseConfigured } from '@/lib/repositories';
+import { announcementRepository } from '@/lib/repositories';
 import { Announcement } from '@/types';
 import { Calendar, Search, FileText } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -19,24 +19,25 @@ export default function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
-    const useFirebase = isFirebaseConfigured();
     let isMounted = true;
     announcementRepository.getPublished().then((items) => {
-      if (isMounted && items && items.length > 0) {
-        const seen = new Set();
-        const unique = items.filter((item) => {
-          const key = item.id || item.title;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
-        setAnnouncements(unique);
-      } else if (isMounted && !useFirebase) {
-        setAnnouncements(defaultAnnouncements);
+      if (isMounted) {
+        if (items && items.length > 0) {
+          const seen = new Set();
+          const unique = items.filter((item) => {
+            const key = item.id || item.title;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          setAnnouncements(unique);
+        } else {
+          setAnnouncements(defaultAnnouncements);
+        }
       }
     }).catch((err) => {
       console.warn('Failed to load announcements from repository:', err);
-      if (isMounted && !useFirebase) setAnnouncements(defaultAnnouncements);
+      if (isMounted) setAnnouncements(defaultAnnouncements);
     });
     return () => {
       isMounted = false;

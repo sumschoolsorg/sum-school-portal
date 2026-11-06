@@ -137,8 +137,8 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection);
-        // Authoritative cloud records: return even if empty array
-        if (Array.isArray(docs)) return docs;
+        // Return cloud records if available, otherwise fall back to local seed data
+        if (Array.isArray(docs) && docs.length > 0) return docs;
       } catch (err) {
         console.warn(`Firestore getDocuments fallback for ${this.firestoreCollection}:`, err);
       }
@@ -152,8 +152,8 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
-        // Authoritative cloud records: return even if empty array
-        if (Array.isArray(docs)) return docs;
+        // Return cloud records if available, otherwise fall back to local seed data
+        if (Array.isArray(docs) && docs.length > 0) return docs;
       } catch (err) {
         console.warn(`Firestore published query fallback for ${this.firestoreCollection}:`, err);
       }

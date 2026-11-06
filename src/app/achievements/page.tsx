@@ -13,7 +13,7 @@ import {
   X,
   Share2,
 } from 'lucide-react';
-import { achievementRepository, isFirebaseConfigured } from '@/lib/repositories';
+import { achievementRepository } from '@/lib/repositories';
 import { defaultAchievements } from '@/lib/defaultData';
 import { Achievement } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -35,20 +35,19 @@ export default function AchievementsPage() {
   const [activeModalItem, setActiveModalItem] = useState<Achievement | null>(null);
 
   useEffect(() => {
-    const useFirebase = isFirebaseConfigured();
     const loadAchievements = async () => {
       try {
         setIsLoading(true);
         const data = await achievementRepository.getPublished();
         if (data && data.length > 0) {
           const published = data.filter((item) => item.status === 'published');
-          setAchievements(published.length > 0 ? published : (useFirebase ? [] : defaultAchievements));
+          setAchievements(published.length > 0 ? published : defaultAchievements);
         } else {
-          setAchievements(useFirebase ? [] : defaultAchievements);
+          setAchievements(defaultAchievements);
         }
       } catch (err) {
         console.warn('Error loading achievements from repository:', err);
-        setAchievements(useFirebase ? [] : defaultAchievements);
+        setAchievements(defaultAchievements);
       } finally {
         setIsLoading(false);
       }

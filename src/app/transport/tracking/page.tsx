@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { transportRepository, isFirebaseConfigured } from '@/lib/repositories';
+import { transportRepository } from '@/lib/repositories';
 import { defaultTransportRoutes } from '@/lib/defaultData';
 import { TransportRoute, TransportStop } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -54,7 +54,6 @@ export default function BusTrackingPage() {
 
   // Load routes from repository with fallback to default data
   useEffect(() => {
-    const useFirebase = isFirebaseConfigured();
     const loadRoutes = async () => {
       try {
         const data = await transportRepository.getPublished();
@@ -63,15 +62,15 @@ export default function BusTrackingPage() {
           if (published.length > 0) {
             setRoutes(published);
             setSelectedRouteId(published[0].id || 'route-1');
-          } else if (!useFirebase) {
+          } else {
             setRoutes(defaultTransportRoutes);
           }
-        } else if (!useFirebase) {
+        } else {
           setRoutes(defaultTransportRoutes);
         }
       } catch (err) {
         console.warn('Error loading transport routes for tracking:', err);
-        if (!useFirebase) setRoutes(defaultTransportRoutes);
+        setRoutes(defaultTransportRoutes);
       }
     };
     loadRoutes();
