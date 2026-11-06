@@ -231,25 +231,27 @@ export default function HomepageAdminPage() {
           />
         </Card>
 
-        {/* Principal's Message */}
+        {/* Headmaster's Message */}
         <Card className="p-6 sm:p-8 space-y-4">
           <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
             <UserCheck className="w-5 h-5 text-amber-500" />
-            Principal / Headmaster Message
+            Headmaster Message (S. THOMAS M.Sc., M.Ed.)
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Principal Name (English)"
+              label="Headmaster Name (English)"
               name="name"
               value={formData.principalMessage.name}
               onChange={handlePrincipalChange}
+              placeholder="S. THOMAS M.Sc., M.Ed."
             />
             <Input
-              label="Principal Name (Tamil)"
+              label="Headmaster Name (Tamil)"
               name="name_ta"
               value={formData.principalMessage.name_ta || ''}
               onChange={handlePrincipalChange}
+              placeholder="எஸ். தாமஸ், M.Sc., M.Ed."
             />
           </div>
 
@@ -259,17 +261,19 @@ export default function HomepageAdminPage() {
               name="designation"
               value={formData.principalMessage.designation}
               onChange={handlePrincipalChange}
+              placeholder="HEADMASTER"
             />
             <Input
               label="Designation (Tamil)"
               name="designation_ta"
               value={formData.principalMessage.designation_ta || ''}
               onChange={handlePrincipalChange}
+              placeholder="தலைமை ஆசிரியர்"
             />
           </div>
 
           <ImageUpload
-            label="Principal Photograph"
+            label="Headmaster Photograph"
             folder="principal"
             value={formData.principalMessage.photoUrl}
             onChange={(url) =>

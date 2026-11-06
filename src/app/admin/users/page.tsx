@@ -311,7 +311,7 @@ export default function AdminUsersPage() {
         <form onSubmit={handleSave} className="space-y-4">
           <Input
             label="Full Name *"
-            placeholder="e.g. Rev. Fr. Correspondent / Principal"
+            placeholder="e.g. S. Thomas (Headmaster) / Administrator"
             value={formData.name || ''}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required

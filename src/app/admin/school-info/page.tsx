@@ -82,8 +82,8 @@ export default function SchoolInfoAdminPage() {
     {
       id: 'item-4',
       field: 'principalName',
-      label: 'Principal / Headmaster',
-      researchedValue: 'Thiru S. Thomas, M.Sc., M.Ed.',
+      label: 'Headmaster',
+      researchedValue: 'S. THOMAS M.Sc., M.Ed., HEADMASTER',
       source: 'School Administration & Institutional Records',
       status: 'Officially Confirmed',
       isApproved: true,
@@ -581,24 +581,25 @@ export default function SchoolInfoAdminPage() {
               </span>
             </div>
 
-            <div className="p-3 bg-amber-50/70 rounded-xl border border-amber-200 text-xs text-amber-900">
-              <strong>Admin Notice:</strong> Public directories do not list the current 2026 serving Headmaster / Principal name. Enter the official name below before public announcement.
+            <div className="p-3 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-900 dark:text-emerald-300">
+              <strong>Serving Headmaster:</strong> Official head of institution: S. THOMAS M.Sc., M.Ed., HEADMASTER.
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="Headmaster / Principal Official Full Name"
+                label="Headmaster Official Full Name"
                 name="principalName"
                 value={formData.principalName || ''}
                 onChange={handleChange}
-                placeholder="e.g. Rev. Fr. Principal / Thiru. Headmaster, M.A., M.Ed."
+                placeholder="e.g. S. THOMAS M.Sc., M.Ed."
                 helperText="Current serving institutional head"
               />
               <Input
                 label="Designation &amp; Qualification Title"
                 name="principalDesignation"
-                value={formData.principalDesignation || 'Headmaster & Correspondent, S.U.M. School'}
+                value={formData.principalDesignation || 'HEADMASTER'}
                 onChange={handleChange}
+                placeholder="e.g. HEADMASTER"
                 helperText="Official administrative role"
               />
             </div>
