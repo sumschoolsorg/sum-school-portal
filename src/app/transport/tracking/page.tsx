@@ -57,20 +57,14 @@ export default function BusTrackingPage() {
     const loadRoutes = async () => {
       try {
         const data = await transportRepository.getPublished();
-        if (data && data.length > 0) {
-          const published = data.filter((r) => r.status === 'published');
-          if (published.length > 0) {
-            setRoutes(published);
-            setSelectedRouteId(published[0].id || 'route-1');
-          } else {
-            setRoutes(defaultTransportRoutes);
-          }
-        } else {
-          setRoutes(defaultTransportRoutes);
+        const published = (data || []).filter((r) => r.status === 'published');
+        setRoutes(published);
+        if (published.length > 0) {
+          setSelectedRouteId(published[0].id || 'route-1');
         }
       } catch (err) {
         console.warn('Error loading transport routes for tracking:', err);
-        setRoutes(defaultTransportRoutes);
+        setRoutes([]);
       }
     };
     loadRoutes();

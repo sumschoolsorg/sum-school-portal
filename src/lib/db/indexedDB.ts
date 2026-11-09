@@ -27,6 +27,59 @@ import {
 
 const DB_NAME = 'sum_school_local_db';
 const DB_VERSION = 6;
+const SEED_STORAGE_KEY = 'sum_school_db_seeded_v2';
+const TOMBSTONES_STORAGE_KEY = 'sum_school_deleted_tombstones';
+
+// Tombstone tracking to prevent deleted records from ever resurrecting
+export function getDeletedTombstones(): Set<string> {
+  if (typeof window === 'undefined') return new Set();
+  try {
+    const raw = localStorage.getItem(TOMBSTONES_STORAGE_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+export function addDeletedTombstone(id: string): void {
+  if (typeof window === 'undefined' || !id) return;
+  try {
+    const set = getDeletedTombstones();
+    set.add(id);
+    localStorage.setItem(TOMBSTONES_STORAGE_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {
+    console.warn('Failed to record deletion tombstone:', e);
+  }
+}
+
+export function removeDeletedTombstone(id: string): void {
+  if (typeof window === 'undefined' || !id) return;
+  try {
+    const set = getDeletedTombstones();
+    set.delete(id);
+    localStorage.setItem(TOMBSTONES_STORAGE_KEY, JSON.stringify(Array.from(set)));
+  } catch (e) {
+    console.warn('Failed to remove deletion tombstone:', e);
+  }
+}
+
+export function clearAllTombstones(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(TOMBSTONES_STORAGE_KEY);
+  } catch (e) {
+    console.warn('Failed to clear tombstones:', e);
+  }
+}
+
+export function resetSeedFlag(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(SEED_STORAGE_KEY);
+  } catch (e) {
+    console.warn('Failed to reset seed flag:', e);
+  }
+}
 
 export const STORES = {
   SCHOOL_SETTINGS: 'school_settings',
@@ -107,6 +160,14 @@ export async function getDB(): Promise<IDBDatabase> {
 }
 
 async function seedInitialData(db: IDBDatabase): Promise<void> {
+  // If already seeded in this browser, never re-seed automatically!
+  // This ensures deletions made by administrators are permanently respected.
+  if (typeof window !== 'undefined' && localStorage.getItem(SEED_STORAGE_KEY) === 'true') {
+    return;
+  }
+
+  const tombstones = getDeletedTombstones();
+
   const seeds: Record<string, unknown[]> = {
     [STORES.SCHOOL_SETTINGS]: [{ id: 'default', ...defaultSchoolSettings }],
     [STORES.HOMEPAGE_CONTENT]: [{ id: 'default', ...defaultHomepageContent }],
@@ -128,35 +189,25 @@ async function seedInitialData(db: IDBDatabase): Promise<void> {
     [STORES.ALUMNI]: defaultAlumni,
     [STORES.TRANSPORT_ROUTES]: defaultTransportRoutes,
     [STORES.CONTACT_MESSAGES]: [],
+    [STORES.ENQUIRIES]: [],
+    [STORES.STUDENT_RESULTS]: [],
   };
 
   for (const [storeName, defaultItems] of Object.entries(seeds)) {
-    if (defaultItems.length === 0) continue;
+    if (!defaultItems || defaultItems.length === 0) continue;
     const tx = db.transaction(storeName, 'readwrite');
     const store = tx.objectStore(storeName);
     const countReq = store.count();
 
     await new Promise<void>((resolve) => {
       countReq.onsuccess = () => {
+        // Only seed when store is completely brand new / zero count on very first startup
         if (countReq.result === 0) {
-          defaultItems.forEach((item) => store.put(item));
-        } else if (
-          storeName === STORES.ANNOUNCEMENTS ||
-          storeName === STORES.ACHIEVEMENTS ||
-          storeName === STORES.TIMELINE ||
-          storeName === STORES.HERO_BANNERS ||
-          storeName === STORES.GALLERY ||
-          storeName === STORES.FACILITIES
-        ) {
-          defaultItems.forEach((item: unknown) => {
+          defaultItems.forEach((item) => {
             const record = item as { id?: string };
-            if (record && record.id) {
-              const checkReq = store.get(record.id);
-              checkReq.onsuccess = () => {
-                if (!checkReq.result) {
-                  store.put(record);
-                }
-              };
+            // Never insert an item that was previously deleted
+            if (!record?.id || !tombstones.has(record.id)) {
+              store.put(item);
             }
           });
         }
@@ -165,12 +216,20 @@ async function seedInitialData(db: IDBDatabase): Promise<void> {
       countReq.onerror = () => resolve();
     });
   }
+
+  // Mark as seeded permanently so subsequent getDB() calls never re-seed
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(SEED_STORAGE_KEY, 'true');
+  }
 }
 
 // Generic CRUD operations on IndexedDB with fallback
 export async function getLocalAll<T>(storeName: StoreName): Promise<T[]> {
+  const tombstones = getDeletedTombstones();
+
   if (!isBrowser()) {
-    return (memoryCache[storeName] as T[]) || [];
+    const rawList = (memoryCache[storeName] as Array<T & { id?: string }>) || [];
+    return rawList.filter((item) => !item.id || !tombstones.has(item.id));
   }
 
   try {
@@ -181,20 +240,30 @@ export async function getLocalAll<T>(storeName: StoreName): Promise<T[]> {
       const req = store.getAll();
 
       req.onsuccess = () => {
-        resolve((req.result as T[]) || []);
+        const results = (req.result as Array<T & { id?: string }>) || [];
+        // Filter out any tombstoned/deleted items
+        const filtered = results.filter((item) => !item.id || !tombstones.has(item.id));
+        resolve(filtered as T[]);
       };
       req.onerror = () => reject(req.error);
     });
   } catch (error) {
     console.warn(`Fallback getLocalAll for ${storeName}:`, error);
-    return (memoryCache[storeName] as T[]) || [];
+    const rawList = (memoryCache[storeName] as Array<T & { id?: string }>) || [];
+    return rawList.filter((item) => !item.id || !tombstones.has(item.id));
   }
 }
 
 export async function getLocalById<T>(storeName: StoreName, id: string): Promise<T | null> {
+  const tombstones = getDeletedTombstones();
+  if (tombstones.has(id)) {
+    return null;
+  }
+
   if (!isBrowser()) {
     const list = (memoryCache[storeName] as Array<{ id?: string }>) || [];
-    return ((list.find((x) => x.id === id) as unknown) as T) || null;
+    const found = list.find((x) => x.id === id);
+    return (found as unknown as T) || null;
   }
 
   try {
@@ -212,7 +281,8 @@ export async function getLocalById<T>(storeName: StoreName, id: string): Promise
   } catch (error) {
     console.warn(`Fallback getLocalById for ${storeName}/${id}:`, error);
     const list = (memoryCache[storeName] as Array<{ id?: string }>) || [];
-    return ((list.find((x) => x.id === id) as unknown) as T) || null;
+    const found = list.find((x) => x.id === id);
+    return (found as unknown as T) || null;
   }
 }
 
@@ -225,6 +295,11 @@ export async function putLocal<T extends { id?: string }>(
     id: data.id || `${storeName}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     updatedAt: new Date().toISOString(),
   };
+
+  // If this item ID was previously tombstoned, untombstone it on save
+  if (item.id) {
+    removeDeletedTombstone(item.id);
+  }
 
   if (!isBrowser()) {
     if (!memoryCache[storeName]) memoryCache[storeName] = [];
@@ -250,6 +325,9 @@ export async function putLocal<T extends { id?: string }>(
 }
 
 export async function deleteLocal(storeName: StoreName, id: string): Promise<void> {
+  // Mark as tombstone immediately so it can never reappear from cache or legacy seeds
+  addDeletedTombstone(id);
+
   if (!isBrowser()) {
     if (memoryCache[storeName]) {
       const list = memoryCache[storeName] as Array<{ id?: string }>;

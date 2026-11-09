@@ -98,11 +98,11 @@ export default function AdminResultsPage() {
     try {
       setIsLoading(true);
       const data = await studentResultRepository.getAll();
-      setResults(data && data.length > 0 ? data : defaultStudentResults);
+      setResults(data || []);
     } catch (err) {
       console.error('Error loading student results:', err);
       toast.error('Failed to load student results.');
-      setResults(defaultStudentResults);
+      setResults([]);
     } finally {
       setIsLoading(false);
     }
@@ -112,13 +112,13 @@ export default function AdminResultsPage() {
     let isMounted = true;
     studentResultRepository.getAll().then((data) => {
       if (isMounted) {
-        setResults(data && data.length > 0 ? data : defaultStudentResults);
+        setResults(data || []);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading student results:', err);
-        setResults(defaultStudentResults);
+        setResults([]);
         setIsLoading(false);
       }
     });
@@ -293,14 +293,16 @@ export default function AdminResultsPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await studentResultRepository.delete(deleteTargetId);
-      toast.success('Record deleted successfully.');
+      setResults((prev) => prev.filter((r) => r.id !== targetId));
       setDeleteTargetId(null);
-      loadData();
+      await studentResultRepository.delete(targetId);
+      toast.success('Record deleted permanently.');
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.error('Failed to delete student result.');
+      toast.error('Failed to delete student result. Rolling back.');
+      loadData();
     }
   };
 

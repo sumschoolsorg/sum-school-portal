@@ -59,11 +59,11 @@ export default function AdminTransportPage() {
     try {
       setIsLoading(true);
       const data = await transportRepository.getAll();
-      setRoutes(data && data.length > 0 ? data : defaultTransportRoutes);
+      setRoutes(data || []);
     } catch (err) {
       console.error('Error loading routes:', err);
       toast.error('Failed to load transport routes.');
-      setRoutes(defaultTransportRoutes);
+      setRoutes([]);
     } finally {
       setIsLoading(false);
     }
@@ -73,13 +73,13 @@ export default function AdminTransportPage() {
     let isMounted = true;
     transportRepository.getAll().then((data) => {
       if (isMounted) {
-        setRoutes(data && data.length > 0 ? data : defaultTransportRoutes);
+        setRoutes(data || []);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading routes:', err);
-        setRoutes(defaultTransportRoutes);
+        setRoutes([]);
         setIsLoading(false);
       }
     });
@@ -223,14 +223,16 @@ export default function AdminTransportPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await transportRepository.delete(deleteTargetId);
-      toast.success('Route deleted successfully.');
+      setRoutes((prev) => prev.filter((r) => r.id !== targetId));
       setDeleteTargetId(null);
-      loadData();
+      await transportRepository.delete(targetId);
+      toast.success('Route deleted permanently.');
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.error('Failed to delete route.');
+      toast.error('Failed to delete route. Rolling back.');
+      loadData();
     }
   };
 

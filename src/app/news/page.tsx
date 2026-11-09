@@ -32,12 +32,12 @@ export default function NewsPage() {
           });
           setAnnouncements(unique);
         } else {
-          setAnnouncements(defaultAnnouncements);
+          setAnnouncements([]);
         }
       }
     }).catch((err) => {
       console.warn('Failed to load announcements from repository:', err);
-      if (isMounted) setAnnouncements(defaultAnnouncements);
+      if (isMounted) setAnnouncements([]);
     });
     return () => {
       isMounted = false;

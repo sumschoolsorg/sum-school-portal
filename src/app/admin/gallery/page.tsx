@@ -50,11 +50,11 @@ export default function GalleryAdminPage() {
     try {
       setIsLoading(true);
       const data = await galleryRepository.getAll();
-      setImages(data && data.length > 0 ? data : defaultGalleryImages);
+      setImages(data || []);
     } catch (err) {
       console.error('Error loading gallery images:', err);
       toast.error('Failed to load gallery images from database.');
-      setImages(defaultGalleryImages);
+      setImages([]);
     } finally {
       setIsLoading(false);
     }
@@ -64,13 +64,13 @@ export default function GalleryAdminPage() {
     let isMounted = true;
     galleryRepository.getAll().then((data) => {
       if (isMounted) {
-        setImages(data && data.length > 0 ? data : defaultGalleryImages);
+        setImages(data || []);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading gallery images:', err);
-        setImages(defaultGalleryImages);
+        setImages([]);
         setIsLoading(false);
       }
     });
@@ -179,14 +179,16 @@ export default function GalleryAdminPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await galleryRepository.delete(deleteTargetId);
-      toast.success('Photo removed from gallery.');
+      setImages((prev) => prev.filter((img) => img.id !== targetId));
       setDeleteTargetId(null);
-      loadGallery();
+      await galleryRepository.delete(targetId);
+      toast.success('Photo removed permanently.');
     } catch (err) {
       console.error('Delete error:', err);
-      toast.error('Failed to delete photo.');
+      toast.error('Failed to delete photo. Rolling back.');
+      loadGallery();
     }
   };
 

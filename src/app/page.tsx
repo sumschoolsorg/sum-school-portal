@@ -20,11 +20,6 @@ import {
   defaultHomepageContent,
   defaultAboutContent,
   defaultAcademicsContent,
-  defaultFacilities,
-  defaultAnnouncements,
-  defaultEvents,
-  defaultAchievements,
-  defaultTestimonials,
 } from '@/lib/defaultData';
 import {
   homepageRepository,
@@ -64,11 +59,11 @@ export default function HomePage() {
     homepage: defaultHomepageContent,
     about: defaultAboutContent,
     academics: defaultAcademicsContent,
-    facilities: defaultFacilities,
-    announcements: defaultAnnouncements,
-    events: defaultEvents,
-    achievements: defaultAchievements,
-    testimonials: defaultTestimonials,
+    facilities: [],
+    announcements: [],
+    events: [],
+    achievements: [],
+    testimonials: [],
   });
   const [loading, setLoading] = useState(true);
 
@@ -95,16 +90,16 @@ export default function HomePage() {
           testimonialRepository.getPublished().catch(() => []),
         ]);
 
-        // Populate data with real cloud data, falling back to verified school data
+        // Populate data with real cloud data
         setData({
           homepage: homepageContent || defaultHomepageContent,
           about: aboutContent || defaultAboutContent,
           academics: academicsContent || defaultAcademicsContent,
-          facilities: facilitiesList.length > 0 ? facilitiesList : defaultFacilities,
-          announcements: announcementsList.length > 0 ? announcementsList : defaultAnnouncements,
-          events: eventsList.length > 0 ? eventsList : defaultEvents,
-          achievements: achievementsList.length > 0 ? achievementsList : defaultAchievements,
-          testimonials: testimonialsList.length > 0 ? testimonialsList : defaultTestimonials,
+          facilities: facilitiesList || [],
+          announcements: announcementsList || [],
+          events: eventsList || [],
+          achievements: achievementsList || [],
+          testimonials: testimonialsList || [],
         });
       } catch (error) {
         console.error('Error loading homepage data:', error);

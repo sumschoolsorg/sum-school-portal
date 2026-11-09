@@ -192,14 +192,16 @@ export default function TimelineAdminPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await timelineRepository.delete(deleteTargetId);
-      toast.success('Timeline milestone removed.');
+      setEntries((prev) => prev.filter((e) => e.id !== targetId));
       setDeleteTargetId(null);
-      loadEntries();
+      await timelineRepository.delete(targetId);
+      toast.success('Timeline milestone removed permanently.');
     } catch (err) {
       console.error('Delete error:', err);
-      toast.error('Failed to delete milestone.');
+      toast.error('Failed to delete milestone. Rolling back.');
+      loadEntries();
     }
   };
 

@@ -35,20 +35,20 @@ export default function AcademicsAdminPage() {
             primarySection: {
               ...defaultAcademicsContent.primarySection,
               ...(data.primarySection || {}),
-              subjects: data.primarySection?.subjects || defaultAcademicsContent.primarySection.subjects,
+              subjects: data.primarySection?.subjects ?? defaultAcademicsContent.primarySection.subjects,
             },
             secondarySection: {
               ...defaultAcademicsContent.secondarySection,
               ...(data.secondarySection || {}),
-              subjects: data.secondarySection?.subjects || defaultAcademicsContent.secondarySection.subjects,
+              subjects: data.secondarySection?.subjects ?? defaultAcademicsContent.secondarySection.subjects,
             },
             higherSecondarySection: {
               ...defaultAcademicsContent.higherSecondarySection,
               ...(data.higherSecondarySection || {}),
-              subjects: data.higherSecondarySection?.subjects || defaultAcademicsContent.higherSecondarySection.subjects,
+              subjects: data.higherSecondarySection?.subjects ?? defaultAcademicsContent.higherSecondarySection.subjects,
             },
-            academicActivities: data.academicActivities || defaultAcademicsContent.academicActivities,
-            coCurricularActivities: data.coCurricularActivities || defaultAcademicsContent.coCurricularActivities,
+            academicActivities: data.academicActivities ?? defaultAcademicsContent.academicActivities,
+            coCurricularActivities: data.coCurricularActivities ?? defaultAcademicsContent.coCurricularActivities,
           });
         }
       } catch (error) {

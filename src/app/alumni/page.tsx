@@ -28,7 +28,7 @@ export default function AlumniPage() {
   const { language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [alumniList, setAlumniList] = useState<AlumniMember[]>(defaultAlumni);
+  const [alumniList, setAlumniList] = useState<AlumniMember[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDecade, setSelectedDecade] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,11 +63,11 @@ export default function AlumniPage() {
             });
           setAlumniList(publicProfiles);
         } else {
-          setAlumniList(defaultAlumni);
+          setAlumniList([]);
         }
       } catch (err) {
         console.warn('Error loading alumni:', err);
-        setAlumniList(defaultAlumni);
+        setAlumniList([]);
       }
     };
     loadAlumni();

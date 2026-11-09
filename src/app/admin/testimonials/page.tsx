@@ -36,11 +36,11 @@ export default function TestimonialsAdminPage() {
     try {
       setIsLoading(true);
       const data = await testimonialRepository.getAll();
-      setTestimonials(data && data.length > 0 ? data : defaultTestimonials);
+      setTestimonials(data || []);
     } catch (error) {
       console.error('Failed to load testimonials:', error);
       toast.error('Failed to load testimonials.');
-      setTestimonials(defaultTestimonials);
+      setTestimonials([]);
     } finally {
       setIsLoading(false);
     }
@@ -50,13 +50,13 @@ export default function TestimonialsAdminPage() {
     let isMounted = true;
     testimonialRepository.getAll().then((data) => {
       if (isMounted) {
-        setTestimonials(data && data.length > 0 ? data : defaultTestimonials);
+        setTestimonials(data || []);
         setIsLoading(false);
       }
     }).catch((error) => {
       if (isMounted) {
         console.error('Failed to load testimonials:', error);
-        setTestimonials(defaultTestimonials);
+        setTestimonials([]);
         setIsLoading(false);
       }
     });
@@ -141,15 +141,16 @@ export default function TestimonialsAdminPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await testimonialRepository.delete(deleteTargetId);
-      toast.success('Testimonial removed.');
-      await loadTestimonials();
+      setTestimonials((prev) => prev.filter((t) => t.id !== targetId));
+      setDeleteTargetId(null);
+      await testimonialRepository.delete(targetId);
+      toast.success('Testimonial removed permanently.');
     } catch (error) {
       console.error(error);
-      toast.error('Failed to delete testimonial.');
-    } finally {
-      setDeleteTargetId(null);
+      toast.error('Failed to delete testimonial. Rolling back.');
+      await loadTestimonials();
     }
   };
 

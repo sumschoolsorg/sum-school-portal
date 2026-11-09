@@ -41,15 +41,11 @@ export default function GalleryPage() {
       try {
         setIsLoading(true);
         const data = await galleryRepository.getPublished();
-        if (data && data.length > 0) {
-          const published = data.filter((item) => item.status === 'published');
-          setImages(published.length > 0 ? published : defaultGalleryImages);
-        } else {
-          setImages(defaultGalleryImages);
-        }
+        const published = (data || []).filter((item) => item.status === 'published');
+        setImages(published);
       } catch (err) {
         console.warn('Error loading gallery images:', err);
-        setImages(defaultGalleryImages);
+        setImages([]);
       } finally {
         setIsLoading(false);
       }

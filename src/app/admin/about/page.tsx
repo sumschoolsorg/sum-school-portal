@@ -33,9 +33,9 @@ export default function AboutAdminPage() {
           setFormData({
             ...defaultAboutContent,
             ...data,
-            coreValues: data.coreValues || defaultAboutContent.coreValues,
-            management: filteredManagement || defaultAboutContent.management,
-            highlights: data.highlights || defaultAboutContent.highlights,
+            coreValues: data.coreValues ?? defaultAboutContent.coreValues,
+            management: filteredManagement ?? defaultAboutContent.management,
+            highlights: data.highlights ?? defaultAboutContent.highlights,
           });
         }
       } catch (error) {

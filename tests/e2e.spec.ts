@@ -103,7 +103,7 @@ test.describe('Announcement Integrity', () => {
 
   test('Unverified local seed announcements are not shown as official news', async ({ page }) => {
     await page.goto('/news', { waitUntil: 'domcontentloaded' });
-    await expect(page.getByText(/State Hackathon 2026/i)).toHaveCount(0);
+    await expect(page.getByText(/Parent-Teacher Association \(PTA\) General Meeting/i)).toHaveCount(0);
     await expect(page.getByText(/Tamil Nadu Robotics League/i)).toHaveCount(0);
   });
 });

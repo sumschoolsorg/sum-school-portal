@@ -17,6 +17,7 @@ import {
   Droplets,
   Sparkles,
   Cpu,
+  Building2,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -30,11 +31,11 @@ export default function FacilitiesPage() {
     let isMounted = true;
     facilityRepository.getPublished().then((items) => {
       if (isMounted) {
-        setFacilities(items && items.length > 0 ? items : defaultFacilities);
+        setFacilities(items || []);
       }
     }).catch((err) => {
       console.warn('Failed to load facilities from repository:', err);
-      if (isMounted) setFacilities(defaultFacilities);
+      if (isMounted) setFacilities([]);
     });
     return () => {
       isMounted = false;
@@ -84,6 +85,20 @@ export default function FacilitiesPage() {
         {/* Facilities Grid */}
         <section className="section-padding bg-white dark:bg-slate-950">
           <div className="container-main">
+            {facilities.length === 0 ? (
+              <div className="text-center py-16 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 max-w-xl mx-auto mb-12">
+                <Building2 className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">
+                  {isTa ? 'வளாக வசதிகள் விரைவில் பதிவேற்றப்படும்' : 'Campus Facilities Being Updated'}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                  {isTa
+                    ? 'பள்ளி ஆய்வகங்கள் மற்றும் கட்டமைப்பு விவரங்கள் விரைவில் புதுப்பிக்கப்படும்.'
+                    : 'Detailed specifications of our laboratories and academic infrastructure will be published soon.'}
+                </p>
+              </div>
+            ) : null}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {facilities.map((fac) => {
                 const title = getLocalized(fac, 'title');

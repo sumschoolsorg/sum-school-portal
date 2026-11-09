@@ -88,10 +88,10 @@ export default function AnnouncementsAdminPage() {
     try {
       setIsLoading(true);
       const data = await announcementRepository.getAll();
-      setAnnouncements(data && data.length > 0 ? data : defaultAnnouncements);
+      setAnnouncements(data || []);
     } catch (err) {
       console.warn('Error loading announcements:', err);
-      setAnnouncements(defaultAnnouncements);
+      setAnnouncements([]);
       toast.error('Failed to load announcements');
     } finally {
       setIsLoading(false);
@@ -102,13 +102,13 @@ export default function AnnouncementsAdminPage() {
     let isMounted = true;
     announcementRepository.getAll().then((data) => {
       if (isMounted) {
-        setAnnouncements(data && data.length > 0 ? data : defaultAnnouncements);
+        setAnnouncements(data || []);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.warn('Error loading announcements:', err);
-        setAnnouncements(defaultAnnouncements);
+        setAnnouncements([]);
         setIsLoading(false);
       }
     });
@@ -193,16 +193,16 @@ export default function AnnouncementsAdminPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await announcementRepository.delete(deleteTargetId);
-      toast.success('Announcement removed.');
+      setAnnouncements((prev) => prev.filter((a) => a.id !== targetId));
       setDeleteTargetId(null);
-      loadData();
+      await announcementRepository.delete(targetId);
+      toast.success('Announcement removed permanently.');
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.error('Failed to delete announcement from database. Removed locally only.');
-      setAnnouncements((prev) => prev.filter((a) => a.id !== deleteTargetId));
-      setDeleteTargetId(null);
+      toast.error('Failed to delete announcement. Rolling back.');
+      loadData();
     }
   };
 

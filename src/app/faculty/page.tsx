@@ -21,11 +21,11 @@ export default function FacultyPage() {
     let isMounted = true;
     facultyRepository.getPublished().then((items) => {
       if (isMounted) {
-        setFacultyList(items && items.length > 0 ? items : defaultFaculty);
+        setFacultyList(items || []);
       }
     }).catch((err) => {
       console.warn('Failed to load faculty from repository:', err);
-      if (isMounted) setFacultyList(defaultFaculty);
+      if (isMounted) setFacultyList([]);
     });
     return () => {
       isMounted = false;

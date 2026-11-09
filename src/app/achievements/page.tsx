@@ -39,15 +39,11 @@ export default function AchievementsPage() {
       try {
         setIsLoading(true);
         const data = await achievementRepository.getPublished();
-        if (data && data.length > 0) {
-          const published = data.filter((item) => item.status === 'published');
-          setAchievements(published.length > 0 ? published : defaultAchievements);
-        } else {
-          setAchievements(defaultAchievements);
-        }
+        const published = (data || []).filter((item) => item.status === 'published');
+        setAchievements(published);
       } catch (err) {
         console.warn('Error loading achievements from repository:', err);
-        setAchievements(defaultAchievements);
+        setAchievements([]);
       } finally {
         setIsLoading(false);
       }

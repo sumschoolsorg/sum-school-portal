@@ -28,10 +28,10 @@ export default function AdmissionsAdminPage() {
           setFormData({
             ...defaultAdmissionsContent,
             ...data,
-            classesAvailable: data.classesAvailable || defaultAdmissionsContent.classesAvailable,
-            procedure: data.procedure || defaultAdmissionsContent.procedure,
-            requiredDocuments: data.requiredDocuments || defaultAdmissionsContent.requiredDocuments,
-            importantDates: data.importantDates || defaultAdmissionsContent.importantDates,
+            classesAvailable: data.classesAvailable ?? defaultAdmissionsContent.classesAvailable,
+            procedure: data.procedure ?? defaultAdmissionsContent.procedure,
+            requiredDocuments: data.requiredDocuments ?? defaultAdmissionsContent.requiredDocuments,
+            importantDates: data.importantDates ?? defaultAdmissionsContent.importantDates,
           });
         }
       } catch (error) {

@@ -62,10 +62,11 @@ export default function FacultyAdminPage() {
     setIsLoading(true);
     try {
       const data = await facultyRepository.getAll();
-      setFacultyList(data && data.length > 0 ? (data as Faculty[]) : defaultFaculty);
-    } catch {
-      setFacultyList(defaultFaculty);
-      toast.error('Failed to load faculty from cloud; showing verified roster.');
+      setFacultyList((data as Faculty[]) || []);
+    } catch (err) {
+      console.error('Failed to load faculty:', err);
+      setFacultyList([]);
+      toast.error('Failed to load faculty from cloud.');
     } finally {
       setIsLoading(false);
     }
@@ -75,12 +76,13 @@ export default function FacultyAdminPage() {
     let isMounted = true;
     facultyRepository.getAll().then((data) => {
       if (isMounted) {
-        setFacultyList(data && data.length > 0 ? (data as Faculty[]) : defaultFaculty);
+        setFacultyList((data as Faculty[]) || []);
         setIsLoading(false);
       }
-    }).catch(() => {
+    }).catch((err) => {
       if (isMounted) {
-        setFacultyList(defaultFaculty);
+        console.error('Failed to load faculty:', err);
+        setFacultyList([]);
         setIsLoading(false);
       }
     });
@@ -145,13 +147,16 @@ export default function FacultyAdminPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await facultyRepository.delete(deleteTargetId);
-      toast.success('Faculty member removed.');
+      setFacultyList((prev) => prev.filter((f) => f.id !== targetId));
       setDeleteTargetId(null);
+      await facultyRepository.delete(targetId);
+      toast.success('Faculty member removed permanently.');
+    } catch (err) {
+      console.error('Failed to delete faculty:', err);
+      toast.error('Failed to delete faculty member. Rolling back.');
       await fetchFaculty();
-    } catch {
-      toast.error('Failed to delete faculty');
     }
   };
 

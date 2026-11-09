@@ -137,8 +137,23 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection);
-        // Return cloud records if available, otherwise fall back to local seed data
-        if (Array.isArray(docs) && docs.length > 0) return docs;
+        // When Firestore query succeeds, return docs directly (even if docs is []).
+        // A cloud query that returns 0 documents means there are legitimately 0 documents!
+        if (Array.isArray(docs)) {
+          // Sync with local cache: remove any local item not in cloud docs
+          try {
+            const localItems = await getLocalAll<T>(this.storeName);
+            const cloudIds = new Set(docs.map((d: any) => d.id).filter(Boolean));
+            for (const local of localItems) {
+              if (local.id && !cloudIds.has(local.id)) {
+                await deleteLocal(this.storeName, local.id);
+              }
+            }
+          } catch (syncErr) {
+            console.warn(`Local sync cleanup warning for ${this.firestoreCollection}:`, syncErr);
+          }
+          return docs;
+        }
       } catch (err) {
         console.warn(`Firestore getDocuments fallback for ${this.firestoreCollection}:`, err);
       }
@@ -152,8 +167,9 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
-        // Return cloud records if available, otherwise fall back to local seed data
-        if (Array.isArray(docs) && docs.length > 0) return docs;
+        if (Array.isArray(docs)) {
+          return docs;
+        }
       } catch (err) {
         console.warn(`Firestore published query fallback for ${this.firestoreCollection}:`, err);
       }
@@ -223,6 +239,15 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
       }
     }
     await deleteLocal(this.storeName, id);
+  }
+
+  async deleteAll(): Promise<void> {
+    const items = await this.getAll();
+    for (const item of items) {
+      if (item.id) {
+        await this.delete(item.id);
+      }
+    }
   }
 }
 

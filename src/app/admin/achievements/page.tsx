@@ -54,10 +54,10 @@ export default function AchievementsAdminPage() {
   const loadAchievements = useCallback(async () => {
     try {
       const data = await achievementRepository.getAll();
-      setAchievements(data && data.length > 0 ? data : defaultAchievements);
+      setAchievements(data || []);
     } catch (err) {
       console.error('Error loading achievements:', err);
-      setAchievements(defaultAchievements);
+      setAchievements([]);
       toast.error('Failed to load achievements from database.');
     } finally {
       setIsLoading(false);
@@ -68,13 +68,13 @@ export default function AchievementsAdminPage() {
     let isMounted = true;
     achievementRepository.getAll().then((data) => {
       if (isMounted) {
-        setAchievements(data && data.length > 0 ? data : defaultAchievements);
+        setAchievements(data || []);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading achievements:', err);
-        setAchievements(defaultAchievements);
+        setAchievements([]);
         toast.error('Failed to load achievements from database.');
         setIsLoading(false);
       }
@@ -204,14 +204,16 @@ export default function AchievementsAdminPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await achievementRepository.delete(deleteTargetId);
-      toast.success('Achievement removed.');
+      setAchievements((prev) => prev.filter((a) => a.id !== targetId));
       setDeleteTargetId(null);
-      loadAchievements();
+      await achievementRepository.delete(targetId);
+      toast.success('Achievement removed permanently.');
     } catch (err) {
       console.error('Delete error:', err);
-      toast.error('Failed to delete achievement.');
+      toast.error('Failed to delete achievement. Rolling back.');
+      loadAchievements();
     }
   };
 

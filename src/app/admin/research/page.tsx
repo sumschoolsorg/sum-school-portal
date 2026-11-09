@@ -70,13 +70,13 @@ export default function ResearchAdminPage() {
     let isMounted = true;
     researchRepository.getAll().then((data) => {
       if (isMounted) {
-        setRecords(data && data.length > 0 ? data : defaultResearchRecords);
+        setRecords(data || []);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading research records:', err);
-        setRecords(defaultResearchRecords);
+        setRecords([]);
         setIsLoading(false);
       }
     });
@@ -152,15 +152,16 @@ export default function ResearchAdminPage() {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await researchRepository.delete(deleteTargetId);
-      setRecords((prev) => prev.filter((r) => r.id !== deleteTargetId));
-      toast.success('Research record removed.');
+      setRecords((prev) => prev.filter((r) => r.id !== targetId));
+      setDeleteTargetId(null);
+      await researchRepository.delete(targetId);
+      toast.success('Research record removed permanently.');
     } catch (err) {
       console.error('Delete error:', err);
-      toast.error('Failed to delete record.');
-    } finally {
-      setDeleteTargetId(null);
+      toast.error('Failed to delete record. Rolling back.');
+      researchRepository.getAll().then((data) => setRecords(data || []));
     }
   };
 

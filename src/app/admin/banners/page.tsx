@@ -70,13 +70,13 @@ export default function BannersAdminPage() {
     try {
       setIsLoading(true);
       const data = await heroBannerRepository.getAll();
-      const list = data && data.length > 0 ? data : defaultHeroBanners;
+      const list = [...(data || [])];
       list.sort((a, b) => (a.order || 0) - (b.order || 0));
       setBanners(list);
     } catch (err) {
       console.error('Error loading banners:', err);
       toast.error('Failed to load hero banners.');
-      setBanners(defaultHeroBanners);
+      setBanners([]);
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +86,7 @@ export default function BannersAdminPage() {
     let isMounted = true;
     heroBannerRepository.getAll().then((data) => {
       if (isMounted) {
-        const list = data && data.length > 0 ? data : defaultHeroBanners;
+        const list = [...(data || [])];
         list.sort((a, b) => (a.order || 0) - (b.order || 0));
         setBanners(list);
         setIsLoading(false);
@@ -94,7 +94,7 @@ export default function BannersAdminPage() {
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading banners:', err);
-        setBanners(defaultHeroBanners);
+        setBanners([]);
         setIsLoading(false);
       }
     });
@@ -240,18 +240,22 @@ export default function BannersAdminPage() {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await heroBannerRepository.delete(deleteTargetId);
       const remaining = banners
-        .filter((b) => b.id !== deleteTargetId)
+        .filter((b) => b.id !== targetId)
         .map((b, i) => ({ ...b, order: i + 1 }));
       setBanners(remaining);
-      await Promise.all(remaining.map((b) => heroBannerRepository.save(b)));
-      toast.success('Banner deleted and order updated.');
       setDeleteTargetId(null);
+      await heroBannerRepository.delete(targetId);
+      if (remaining.length > 0) {
+        await Promise.all(remaining.map((b) => heroBannerRepository.save(b)));
+      }
+      toast.success('Banner deleted permanently.');
     } catch (err) {
       console.error('Error deleting banner:', err);
-      toast.error('Failed to delete banner.');
+      toast.error('Failed to delete banner. Rolling back.');
+      loadData();
     }
   };
 

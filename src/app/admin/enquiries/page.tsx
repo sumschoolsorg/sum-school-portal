@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import {
   Inbox,
@@ -13,6 +14,7 @@ import {
   Download,
   RefreshCw,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { enquiryRepository } from '@/lib/repositories';
@@ -23,6 +25,7 @@ export default function EnquiriesAdminPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [editNotes, setEditNotes] = useState('');
   const [isSeeding, setIsSeeding] = useState(false);
@@ -31,11 +34,11 @@ export default function EnquiriesAdminPage() {
     setLoading(true);
     try {
       const data = await enquiryRepository.getAll();
-      setEnquiries(data && data.length > 0 ? data : defaultEnquiries);
+      setEnquiries(data || []);
     } catch (err) {
       console.error('Failed to load enquiries:', err);
       toast.error('Failed to load admission applications');
-      setEnquiries(defaultEnquiries);
+      setEnquiries([]);
     } finally {
       setLoading(false);
     }
@@ -45,13 +48,13 @@ export default function EnquiriesAdminPage() {
     let isMounted = true;
     enquiryRepository.getAll().then((data) => {
       if (isMounted) {
-        setEnquiries(data && data.length > 0 ? data : defaultEnquiries);
+        setEnquiries(data || []);
         setLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Failed to load enquiries:', err);
-        setEnquiries(defaultEnquiries);
+        setEnquiries([]);
         setLoading(false);
       }
     });
@@ -59,6 +62,22 @@ export default function EnquiriesAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleDelete = async () => {
+    if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
+    try {
+      setEnquiries((prev) => prev.filter((e) => e.id !== targetId));
+      if (selectedEnquiry?.id === targetId) setSelectedEnquiry(null);
+      setDeleteTargetId(null);
+      await enquiryRepository.delete(targetId);
+      toast.success('Admission enquiry deleted permanently.');
+    } catch (err) {
+      console.error('Delete failed:', err);
+      toast.error('Failed to delete enquiry. Rolling back.');
+      loadEnquiries();
+    }
+  };
 
   const handleSeedDefaults = async () => {
     try {
@@ -307,6 +326,13 @@ export default function EnquiriesAdminPage() {
               <XCircle className="w-4 h-4" />
             </button>
           )}
+          <button
+            onClick={() => setDeleteTargetId(item.id!)}
+            title="Delete Application"
+            className="p-1.5 rounded-lg bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 dark:bg-slate-800 dark:hover:bg-red-950/40 dark:text-slate-400 dark:hover:text-red-400 transition cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       ),
     },
@@ -550,6 +576,15 @@ export default function EnquiriesAdminPage() {
           </div>
         </Modal>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDialog
+        isOpen={!!deleteTargetId}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={handleDelete}
+        title="Delete Admission Application"
+        message="Are you sure you want to permanently delete this admission enquiry? This action cannot be undone."
+      />
     </div>
   );
 }

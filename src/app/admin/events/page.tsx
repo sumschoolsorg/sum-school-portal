@@ -54,10 +54,10 @@ export default function EventsAdminPage() {
     try {
       setIsLoading(true);
       const data = await eventRepository.getAll();
-      setEvents(data && data.length > 0 ? data : defaultEvents);
+      setEvents(data || []);
     } catch (err) {
       console.error('Error loading events:', err);
-      setEvents(defaultEvents);
+      setEvents([]);
       toast.error('Failed to load events.');
     } finally {
       setIsLoading(false);
@@ -68,13 +68,13 @@ export default function EventsAdminPage() {
     let isMounted = true;
     eventRepository.getAll().then((data) => {
       if (isMounted) {
-        setEvents(data && data.length > 0 ? data : defaultEvents);
+        setEvents(data || []);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading events:', err);
-        setEvents(defaultEvents);
+        setEvents([]);
         setIsLoading(false);
       }
     });
@@ -201,14 +201,16 @@ export default function EventsAdminPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await eventRepository.delete(deleteTargetId);
-      toast.success('Event deleted.');
+      setEvents((prev) => prev.filter((ev) => ev.id !== targetId));
       setDeleteTargetId(null);
-      loadEvents();
+      await eventRepository.delete(targetId);
+      toast.success('Event deleted permanently.');
     } catch (err) {
       console.error('Delete error:', err);
-      toast.error('Failed to delete event.');
+      toast.error('Failed to delete event. Rolling back.');
+      loadEvents();
     }
   };
 

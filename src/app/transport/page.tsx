@@ -32,19 +32,14 @@ export default function TransportPage() {
     const loadRoutes = async () => {
       try {
         const data = await transportRepository.getPublished();
-        if (data && data.length > 0) {
-          const published = data.filter((r) => r.status === 'published');
-          const finalRoutes = published.length > 0 ? published : defaultTransportRoutes;
-          setRoutes(finalRoutes);
-          if (finalRoutes.length > 0) {
-            setSelectedRouteId(finalRoutes[0].id || 'route-1');
-          }
-        } else {
-          setRoutes(defaultTransportRoutes);
+        const published = (data || []).filter((r) => r.status === 'published');
+        setRoutes(published);
+        if (published.length > 0) {
+          setSelectedRouteId(published[0].id || 'route-1');
         }
       } catch (err) {
         console.warn('Error loading transport routes:', err);
-        setRoutes(defaultTransportRoutes);
+        setRoutes([]);
       }
     };
     loadRoutes();
@@ -166,55 +161,69 @@ export default function TransportPage() {
               </p>
             </div>
 
-            {/* Route Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
-              {routes.map((route) => {
-                const isSelected = route.id === selectedRouteId;
-                return (
-                  <button
-                    key={route.id}
-                    onClick={() => setSelectedRouteId(route.id || '')}
-                    className={`px-5 py-3 rounded-2xl font-bold text-sm transition flex items-center gap-2.5 cursor-pointer ${
-                      isSelected
-                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 ring-2 ring-blue-600/30'
-                        : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:border-blue-500'
-                    }`}
-                  >
-                    <Bus className={`w-4 h-4 ${isSelected ? 'text-amber-300' : 'text-blue-500'}`} />
-                    <span>{route.routeNumber}:</span>
-                    <span className="font-medium text-xs">
-                      {isTa && route.routeName_ta ? route.routeName_ta : route.routeName}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            {routes.length === 0 ? (
+              <div className="text-center py-16 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 max-w-xl mx-auto">
+                <Bus className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">
+                  {isTa ? 'பேருந்து வழித்தடங்கள் விரைவில் புதுப்பிக்கப்படும்' : 'Transport Schedules Being Updated'}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                  {isTa
+                    ? 'பள்ளி பேருந்து வழித்தடங்கள் மற்றும் நிறுத்த அட்டவணை விரைவில் வெளியிடப்படும்.'
+                    : 'School bus routes and neighborhood pickup schedules will be published soon.'}
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Route Tabs */}
+                <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
+                  {routes.map((route) => {
+                    const isSelected = route.id === selectedRouteId;
+                    return (
+                      <button
+                        key={route.id}
+                        onClick={() => setSelectedRouteId(route.id || '')}
+                        className={`px-5 py-3 rounded-2xl font-bold text-sm transition flex items-center gap-2.5 cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 ring-2 ring-blue-600/30'
+                            : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:border-blue-500'
+                        }`}
+                      >
+                        <Bus className={`w-4 h-4 ${isSelected ? 'text-amber-300' : 'text-blue-500'}`} />
+                        <span>{route.routeNumber}:</span>
+                        <span className="font-medium text-xs">
+                          {isTa && route.routeName_ta ? route.routeName_ta : route.routeName}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
 
-            {/* Active Route Details Card */}
-            {activeRoute && (
-              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
-                {/* Header Banner of Selected Route */}
-                <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 sm:p-8">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <span className="px-3 py-1 rounded-lg bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider">
-                          {activeRoute.routeNumber}
-                        </span>
-                        <span className="text-xs font-semibold text-blue-200">
-                          {isTa ? 'வாகன எண்:' : 'Bus Reg:'} {activeRoute.busRegistrationNumber}
-                        </span>
-                      </div>
-                      <h3 className="text-2xl sm:text-3xl font-extrabold font-heading text-white mt-2">
-                        {isTa && activeRoute.routeName_ta ? activeRoute.routeName_ta : activeRoute.routeName}
-                      </h3>
-                      <p className="text-xs text-blue-200 mt-1 flex items-center gap-2">
-                        <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                        <span>
-                          {activeRoute.startPoint} &rarr; {activeRoute.endPoint}
-                        </span>
-                      </p>
-                    </div>
+                {/* Active Route Details Card */}
+                {activeRoute && (
+                  <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+                    {/* Header Banner of Selected Route */}
+                    <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 sm:p-8">
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <span className="px-3 py-1 rounded-lg bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider">
+                              {activeRoute.routeNumber}
+                            </span>
+                            <span className="text-xs font-semibold text-blue-200">
+                              {isTa ? 'வாகன எண்:' : 'Bus Reg:'} {activeRoute.busRegistrationNumber}
+                            </span>
+                          </div>
+                          <h3 className="text-2xl sm:text-3xl font-extrabold font-heading text-white mt-2">
+                            {isTa && activeRoute.routeName_ta ? activeRoute.routeName_ta : activeRoute.routeName}
+                          </h3>
+                          <p className="text-xs text-blue-200 mt-1 flex items-center gap-2">
+                            <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            <span>
+                              {activeRoute.startPoint} &rarr; {activeRoute.endPoint}
+                            </span>
+                          </p>
+                        </div>
 
                     {/* Driver & In-Charge Contact Badge */}
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15 flex flex-col sm:flex-row items-start sm:items-center gap-4 shrink-0">
@@ -329,8 +338,10 @@ export default function TransportPage() {
                 </div>
               </div>
             )}
-          </div>
-        </section>
+          </>
+        )}
+      </div>
+    </section>
 
         {/* Transport Guidelines & Rules */}
         <section className="py-16 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">

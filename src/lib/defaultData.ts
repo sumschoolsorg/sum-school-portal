@@ -2456,7 +2456,7 @@ export const defaultStudentResults: StudentResult[] = [
     status: "published"
   }
 ];
-export const defaultEnquiries: Enquiry[] = [
+export const sampleEnquiriesSeed: Enquiry[] = [
   {
     id: "enq-01",
     applicationNumber: "SUM-ADM-2026-001",
@@ -2512,6 +2512,8 @@ export const defaultEnquiries: Enquiry[] = [
     applicationDate: "2026-05-20",
   }
 ];
+
+export const defaultEnquiries: Enquiry[] = [];
 
 // Seed records were not verified against school-provided source material. They are
 // retained for review but never seeded or rendered as current school records.

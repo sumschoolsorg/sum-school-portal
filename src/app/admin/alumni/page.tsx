@@ -56,10 +56,10 @@ export default function AdminAlumniPage() {
     try {
       setIsLoading(true);
       const data = await alumniRepository.getAll();
-      setAlumni(data && data.length > 0 ? data : defaultAlumni);
+      setAlumni(data || []);
     } catch (err) {
       console.error('Error loading alumni:', err);
-      setAlumni(defaultAlumni);
+      setAlumni([]);
       toast.error('Failed to load alumni records.');
     } finally {
       setIsLoading(false);
@@ -70,13 +70,13 @@ export default function AdminAlumniPage() {
     let isMounted = true;
     alumniRepository.getAll().then((data) => {
       if (isMounted) {
-        setAlumni(data && data.length > 0 ? data : defaultAlumni);
+        setAlumni(data || []);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading alumni:', err);
-        setAlumni(defaultAlumni);
+        setAlumni([]);
         toast.error('Failed to load alumni records.');
         setIsLoading(false);
       }
@@ -257,19 +257,21 @@ export default function AdminAlumniPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await alumniRepository.delete(deleteTargetId);
+      setAlumni((prev) => prev.filter((a) => a.id !== targetId));
+      setDeleteTargetId(null);
+      await alumniRepository.delete(targetId);
       try {
-        await alumniPrivateRepository.delete(deleteTargetId);
+        await alumniPrivateRepository.delete(targetId);
       } catch {
         // Best effort deletion of private contact record
       }
-      toast.success('Alumni record deleted.');
-      setDeleteTargetId(null);
-      loadData();
+      toast.success('Alumni record deleted permanently.');
     } catch (err) {
       console.error('Delete failed:', err);
-      toast.error('Failed to delete alumnus.');
+      toast.error('Failed to delete alumnus. Rolling back.');
+      loadData();
     }
   };
 

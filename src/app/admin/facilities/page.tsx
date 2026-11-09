@@ -37,11 +37,11 @@ export default function FacilitiesAdminPage() {
     try {
       setIsLoading(true);
       const data = await facilityRepository.getAll();
-      setFacilities(data && data.length > 0 ? data : defaultFacilities);
+      setFacilities(data || []);
     } catch (error) {
       console.error('Failed to load facilities:', error);
       toast.error('Failed to load facilities.');
-      setFacilities(defaultFacilities);
+      setFacilities([]);
     } finally {
       setIsLoading(false);
     }
@@ -51,13 +51,13 @@ export default function FacilitiesAdminPage() {
     let isMounted = true;
     facilityRepository.getAll().then((data) => {
       if (isMounted) {
-        setFacilities(data && data.length > 0 ? data : defaultFacilities);
+        setFacilities(data || []);
         setIsLoading(false);
       }
     }).catch((error) => {
       if (isMounted) {
         console.error('Failed to load facilities:', error);
-        setFacilities(defaultFacilities);
+        setFacilities([]);
         setIsLoading(false);
       }
     });
@@ -140,15 +140,16 @@ export default function FacilitiesAdminPage() {
 
   const handleDelete = async () => {
     if (!deleteTargetId) return;
+    const targetId = deleteTargetId;
     try {
-      await facilityRepository.delete(deleteTargetId);
-      toast.success('Facility deleted.');
-      await loadFacilities();
+      setFacilities((prev) => prev.filter((f) => f.id !== targetId));
+      setDeleteTargetId(null);
+      await facilityRepository.delete(targetId);
+      toast.success('Facility deleted permanently.');
     } catch (error) {
       console.error(error);
-      toast.error('Failed to delete facility.');
-    } finally {
-      setDeleteTargetId(null);
+      toast.error('Failed to delete facility. Rolling back.');
+      await loadFacilities();
     }
   };
 
