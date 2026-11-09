@@ -12,6 +12,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { heroBannerRepository } from '@/lib/repositories';
+import { defaultHeroBanners } from '@/lib/defaultData';
 import { HeroBanner, BannerAnimationStyle } from '@/types';
 import {
   Plus,
@@ -25,6 +26,7 @@ import {
   Layers,
   Globe,
   Languages,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 

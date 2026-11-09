@@ -11,8 +11,9 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { galleryRepository, announcementRepository } from '@/lib/repositories';
+import { defaultGalleryImages } from '@/lib/defaultData';
 import { GalleryImage, Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Image as ImageIcon, Bell } from 'lucide-react';
+import { Plus, Edit2, Trash2, Image as ImageIcon, Bell, Sparkles, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GalleryAdminPage() {
@@ -25,6 +26,7 @@ export default function GalleryAdminPage() {
   // Filters
   const [filterYear, setFilterYear] = useState('all');
   const [broadcastAnnouncement, setBroadcastAnnouncement] = useState(true);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState<Partial<GalleryImage>>({
@@ -48,10 +50,11 @@ export default function GalleryAdminPage() {
     try {
       setIsLoading(true);
       const data = await galleryRepository.getAll();
-      setImages(data || []);
+      setImages(data && data.length > 0 ? data : defaultGalleryImages);
     } catch (err) {
       console.error('Error loading gallery images:', err);
       toast.error('Failed to load gallery images from database.');
+      setImages(defaultGalleryImages);
     } finally {
       setIsLoading(false);
     }
@@ -61,13 +64,13 @@ export default function GalleryAdminPage() {
     let isMounted = true;
     galleryRepository.getAll().then((data) => {
       if (isMounted) {
-        setImages(data || []);
+        setImages(data && data.length > 0 ? data : defaultGalleryImages);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading gallery images:', err);
-        toast.error('Failed to load gallery images from database.');
+        setImages(defaultGalleryImages);
         setIsLoading(false);
       }
     });
@@ -75,6 +78,26 @@ export default function GalleryAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    try {
+      setIsSeeding(true);
+      for (const img of defaultGalleryImages) {
+        const existing = images.find((item) => item.title === img.title);
+        if (!existing) {
+          const { id, ...dataToCreate } = img;
+          await galleryRepository.create(dataToCreate as any);
+        }
+      }
+      toast.success('Successfully seeded verified photo albums!');
+      await loadGallery();
+    } catch (err) {
+      console.error('Error seeding gallery:', err);
+      toast.error('Failed to seed gallery images.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingImage(null);
@@ -184,13 +207,30 @@ export default function GalleryAdminPage() {
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenAdd}
-          variant="primary"
-          leftIcon={<Plus className="w-4 h-4" />}
-        >
-          Upload Photo / Album
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            onClick={handleSeedDefaults}
+            variant="secondary"
+            disabled={isSeeding}
+            leftIcon={
+              isSeeding ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
+              ) : (
+                <Sparkles className="w-4 h-4 text-amber-500" />
+              )
+            }
+          >
+            {isSeeding ? 'Seeding...' : 'Seed Verified Gallery'}
+          </Button>
+
+          <Button
+            onClick={handleOpenAdd}
+            variant="primary"
+            leftIcon={<Plus className="w-4 h-4" />}
+          >
+            Upload Photo / Album
+          </Button>
+        </div>
       </div>
 
       {/* Year Filter Pills */}

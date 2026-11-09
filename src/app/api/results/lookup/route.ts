@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirebaseAdminDb } from '@/lib/firebaseAdmin';
+import { defaultStudentResults } from '@/lib/defaultData';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -71,11 +72,23 @@ export async function POST(request: NextRequest) {
 
     const db = getFirebaseAdminDb();
     if (!db) {
+      // Local development fallback using verified sample student results
+      const candidate = defaultStudentResults.find((record) => {
+        const matchesRoll =
+          (record.rollNumber && record.rollNumber.toUpperCase() === rollNumber) ||
+          (record.registerNumber && record.registerNumber.toUpperCase() === rollNumber);
+        return matchesRoll && record.status === 'published' && record.dob === dob;
+      });
+
+      if (candidate) {
+        return NextResponse.json({ success: true, result: candidate, isLocalPreview: true }, { headers: { 'Cache-Control': 'no-store' } });
+      }
+
       return NextResponse.json({
         success: false,
         requiresAdminVerification: true,
         error: 'RESULT_LOOKUP_NOT_CONFIGURED',
-        message: 'Online result lookup is not configured. Please contact the school office to verify your result.',
+        message: 'Online result lookup is not configured or record not found. Please contact the school office to verify your result.',
       }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
     }
 

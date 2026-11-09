@@ -218,7 +218,50 @@ The data layer (`src/lib/repositories/index.ts`) abstracts storage operations be
 
 ## 4. Administrative Management Portal (`/admin`)
 
-The administrative portal is accessible via `/admin` and protected by authentication and role-based permissions (`super-admin`, `admin`, `content-manager`).
+### Admin Portal – Short Summary
+
+The **S.U.M. School Admin Portal (`/admin`)** is a centralized management system that allows school administrators to control and update the entire school website from one secure dashboard without coding.
+
+#### Main Features
+
+1. **Dashboard:** View total admissions, enquiries, faculty, events, announcements and system status.
+2. **School Profile:** Manage school details, logo, contact information and social media.
+3. **Admissions:** View applications, track enquiry status, contact parents and export records.
+4. **Academic Management:** Manage classes, departments, syllabus and academic information.
+5. **Student Results:** Add, edit, verify and publish 10th and 12th examination results.
+6. **Faculty Management:** Manage teachers, qualifications, profiles and photographs.
+7. **Transport Management:** Manage bus routes, drivers, vehicles and pickup points.
+8. **Alumni Management:** Review, approve and publish alumni registrations.
+9. **Website Content:** Manage homepage, banners, school history and announcements.
+10. **Events & Gallery:** Publish school events, photos, achievements and testimonials.
+11. **Theme & SEO:** Customize website colors, branding, SEO and analytics.
+12. **User Management:** Create admin accounts and assign permissions.
+13. **Backup & Migration:** Import/export database backups and synchronize cloud/local data.
+14. **Media Management:** Upload and select authentic school photographs (with 25MB client-side auto-compression).
+
+#### Admin Access Levels
+
+| Role | Permission |
+| :--- | :--- |
+| **Super Admin** | Complete system control |
+| **Admin** | School operations and management |
+| **Content Manager** | Website content and media management |
+
+#### My Own Creation – Admin Portal Vision
+
+A professional, all-in-one School Management & Website Control Center where:
+
+- Every website section is dynamically controlled.
+- All information can be added, edited, deleted and published.
+- Admission enquiries can be managed from one place.
+- Student results and alumni registrations can be verified.
+- Website updates appear automatically without manual coding.
+- Cloud and offline data remain synchronized.
+- Sensitive student and administrative data remain protected.
+
+**Goal:** One Admin Portal $\longrightarrow$ Complete School Website Management $\longrightarrow$ Full Administrative Control.
+
+---
 
 ### 4.1 Overview & Analytical Dashboard
 - **Live Metrics Counter:** Real-time counters displaying Total Enquiries, New Unreviewed Applications, Published Announcements, Scheduled Events, Faculty count, and Gallery media assets.
@@ -359,7 +402,7 @@ The administrative portal is accessible via `/admin` and protected by authentica
 
 ### Firebase Storage Security Rules (`storage.rules`)
 - **File Type Restrictions:** Restricts uploads strictly to valid image MIME types (`image/jpeg`, `image/png`, `image/webp`).
-- **File Size Restrictions:** Imposes a strict 5MB maximum file size limit per image asset to prevent storage abuse and optimize page load speeds.
+- **File Size Restrictions:** Imposes a 25MB maximum upload limit per image asset with intelligent client-side canvas auto-compression to optimize bandwidth, prevent storage abuse, and maintain instantaneous page rendering.
 
 ---
 

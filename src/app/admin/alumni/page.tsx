@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { alumniRepository, alumniPrivateRepository } from '@/lib/repositories';
+import { defaultAlumni } from '@/lib/defaultData';
 import { AlumniMember } from '@/types';
 import {
   Plus,
@@ -22,12 +23,14 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
+  History,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminAlumniPage() {
   const [alumni, setAlumni] = useState<AlumniMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSeeding, setIsSeeding] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAlumnus, setEditingAlumnus] = useState<AlumniMember | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -53,9 +56,10 @@ export default function AdminAlumniPage() {
     try {
       setIsLoading(true);
       const data = await alumniRepository.getAll();
-      setAlumni(data || []);
+      setAlumni(data && data.length > 0 ? data : defaultAlumni);
     } catch (err) {
       console.error('Error loading alumni:', err);
+      setAlumni(defaultAlumni);
       toast.error('Failed to load alumni records.');
     } finally {
       setIsLoading(false);
@@ -66,12 +70,13 @@ export default function AdminAlumniPage() {
     let isMounted = true;
     alumniRepository.getAll().then((data) => {
       if (isMounted) {
-        setAlumni(data || []);
+        setAlumni(data && data.length > 0 ? data : defaultAlumni);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading alumni:', err);
+        setAlumni(defaultAlumni);
         toast.error('Failed to load alumni records.');
         setIsLoading(false);
       }
@@ -80,6 +85,26 @@ export default function AdminAlumniPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    setIsSeeding(true);
+    try {
+      for (const al of defaultAlumni) {
+        const { id, ...dataWithoutId } = al;
+        await alumniRepository.create({
+          ...dataWithoutId,
+          createdAt: new Date(),
+        });
+      }
+      toast.success(`Seeded ${defaultAlumni.length} verified alumni heritage records into database!`);
+      loadData();
+    } catch (err) {
+      console.error('Seeding error:', err);
+      toast.error('Failed to seed alumni records to database.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingAlumnus(null);
@@ -368,16 +393,29 @@ export default function AdminAlumniPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold font-heading text-slate-900 dark:text-white flex items-center gap-2.5">
             <GraduationCap className="w-7 h-7 text-blue-600 dark:text-blue-400" />
-            <span>Alumni Directory Management</span>
+            <span>60+ Years Alumni Heritage Directory Manager</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Manage old student registrations, approve public submissions, and spotlight distinguished alumni.
+            Curate 60+ years of proud alumni records (1963–2026), approve community registrations, and spotlight distinguished Hall of Fame scholars.
           </p>
         </div>
 
-        <Button onClick={handleOpenAdd} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
-          Add Alumni Record
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {alumni.length <= defaultAlumni.length && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSeedDefaults}
+              isLoading={isSeeding}
+              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
+            >
+              Seed 60+ Years Heritage
+            </Button>
+          )}
+          <Button onClick={handleOpenAdd} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
+            Add Alumni Record
+          </Button>
+        </div>
       </div>
 
       {/* Filter Tabs */}

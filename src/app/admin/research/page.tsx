@@ -70,12 +70,13 @@ export default function ResearchAdminPage() {
     let isMounted = true;
     researchRepository.getAll().then((data) => {
       if (isMounted) {
-        setRecords(data);
+        setRecords(data && data.length > 0 ? data : defaultResearchRecords);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading research records:', err);
+        setRecords(defaultResearchRecords);
         setIsLoading(false);
       }
     });

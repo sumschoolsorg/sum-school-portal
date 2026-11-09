@@ -11,9 +11,10 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
-import { timelineRepository } from '@/lib/repositories';
+import { timelineRepository, aboutRepository } from '@/lib/repositories';
+import { defaultAboutContent, defaultTimelineEntries } from '@/lib/defaultData';
 import { TimelineEntry } from '@/types';
-import { Plus, Edit2, Trash2, Milestone } from 'lucide-react';
+import { Plus, Edit2, Trash2, Milestone, Save, Sparkles, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function TimelineAdminPage() {
@@ -22,6 +23,22 @@ export default function TimelineAdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TimelineEntry | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  // Timeline Section Header on About page
+  const [headerData, setHeaderData] = useState({
+    timelineTitle: defaultAboutContent.timelineTitle || 'Our Historic Journey (1963 – 2026)',
+    timelineTitle_ta: defaultAboutContent.timelineTitle_ta || 'எஸ்.யு.எம். பள்ளி வரலாற்று மைல்கற்கள்',
+    timelineSubtitle: defaultAboutContent.timelineSubtitle || '60+ Years of Excellence',
+    timelineSubtitle_ta: defaultAboutContent.timelineSubtitle_ta || 'வரலாற்றுப் பயணம்',
+    timelineDescription:
+      defaultAboutContent.timelineDescription ||
+      'From humble rural beginnings in 1963 to a premier higher secondary institution with smart classes and state board laurels.',
+    timelineDescription_ta:
+      defaultAboutContent.timelineDescription_ta ||
+      '1963-ல் தொடங்கப்பட்ட எளிய கல்விப் பணி முதல் இன்றைய நவீன டிஜிட்டல் வளாகம் வரையிலான வளர்ச்சிப் பாதை.',
+  });
+  const [isSavingHeader, setIsSavingHeader] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<TimelineEntry>>({
     year: '2026',
@@ -62,10 +79,68 @@ export default function TimelineAdminPage() {
         setIsLoading(false);
       }
     });
+
+    aboutRepository.get().then((about) => {
+      if (isMounted && about) {
+        setHeaderData({
+          timelineTitle: about.timelineTitle || defaultAboutContent.timelineTitle || 'Our Historic Journey (1963 – 2026)',
+          timelineTitle_ta: about.timelineTitle_ta || defaultAboutContent.timelineTitle_ta || 'எஸ்.யு.எம். பள்ளி வரலாற்று மைல்கற்கள்',
+          timelineSubtitle: about.timelineSubtitle || defaultAboutContent.timelineSubtitle || '60+ Years of Excellence',
+          timelineSubtitle_ta: about.timelineSubtitle_ta || defaultAboutContent.timelineSubtitle_ta || 'வரலாற்றுப் பயணம்',
+          timelineDescription:
+            about.timelineDescription ||
+            defaultAboutContent.timelineDescription ||
+            'From humble rural beginnings in 1963 to a premier higher secondary institution with smart classes and state board laurels.',
+          timelineDescription_ta:
+            about.timelineDescription_ta ||
+            defaultAboutContent.timelineDescription_ta ||
+            '1963-ல் தொடங்கப்பட்ட எளிய கல்விப் பணி முதல் இன்றைய நவீன டிஜிட்டல் வளாகம் வரையிலான வளர்ச்சிப் பாதை.',
+        });
+      }
+    }).catch(() => null);
+
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const handleSaveHeader = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingHeader(true);
+    try {
+      const existing = (await aboutRepository.get()) || defaultAboutContent;
+      await aboutRepository.save({
+        ...existing,
+        ...headerData,
+      });
+      toast.success('Historic Journey section headers updated in database!');
+    } catch (err) {
+      console.error('Error saving header:', err);
+      toast.error('Failed to update timeline headers in database.');
+    } finally {
+      setIsSavingHeader(false);
+    }
+  };
+
+  const handleSeedDefaults = async () => {
+    setIsSeeding(true);
+    try {
+      for (const entry of defaultTimelineEntries) {
+        const { id, ...dataWithoutId } = entry;
+        await timelineRepository.create({
+          ...dataWithoutId,
+          createdAt: new Date(),
+        });
+      }
+      toast.success(`Seeded ${defaultTimelineEntries.length} verified school journey milestones!`);
+      loadEntries();
+    } catch (err) {
+      console.error('Seeding error:', err);
+      toast.error('Failed to seed timeline milestones.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingItem(null);
@@ -197,10 +272,90 @@ export default function TimelineAdminPage() {
           </p>
         </div>
 
-        <Button onClick={handleOpenAdd} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
-          Add Timeline Milestone
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {entries.length === 0 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSeedDefaults}
+              isLoading={isSeeding}
+              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
+            >
+              Seed 10 Verified Milestones
+            </Button>
+          )}
+          <Button onClick={handleOpenAdd} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
+            Add Timeline Milestone
+          </Button>
+        </div>
       </div>
+
+      {/* Historic Journey Section Header Database Form */}
+      <Card className="p-6 sm:p-7 space-y-4 border border-indigo-100 dark:border-indigo-950/60 bg-gradient-to-r from-white via-indigo-50/20 to-white dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
+        <form onSubmit={handleSaveHeader} className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <h3 className="text-base font-bold font-heading text-slate-900 dark:text-white flex items-center gap-2">
+                <Milestone className="w-4 h-4 text-indigo-600" />
+                Historic Journey Header Settings (Database Access)
+              </h3>
+              <p className="text-xs text-slate-500">
+                Directly configure the section title, subtitle, and intro text displayed above the timeline.
+              </p>
+            </div>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              isLoading={isSavingHeader}
+              leftIcon={<Save className="w-3.5 h-3.5" />}
+            >
+              Save Section Header
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Timeline Title (English)"
+              value={headerData.timelineTitle}
+              onChange={(e) => setHeaderData({ ...headerData, timelineTitle: e.target.value })}
+            />
+            <Input
+              label="Timeline Title (Tamil)"
+              value={headerData.timelineTitle_ta}
+              onChange={(e) => setHeaderData({ ...headerData, timelineTitle_ta: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Timeline Subtitle (English)"
+              value={headerData.timelineSubtitle}
+              onChange={(e) => setHeaderData({ ...headerData, timelineSubtitle: e.target.value })}
+            />
+            <Input
+              label="Timeline Subtitle (Tamil)"
+              value={headerData.timelineSubtitle_ta}
+              onChange={(e) => setHeaderData({ ...headerData, timelineSubtitle_ta: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Textarea
+              label="Timeline Description (English)"
+              rows={2}
+              value={headerData.timelineDescription}
+              onChange={(e) => setHeaderData({ ...headerData, timelineDescription: e.target.value })}
+            />
+            <Textarea
+              label="Timeline Description (Tamil)"
+              rows={2}
+              value={headerData.timelineDescription_ta}
+              onChange={(e) => setHeaderData({ ...headerData, timelineDescription_ta: e.target.value })}
+            />
+          </div>
+        </form>
+      </Card>
 
       <Card>
         <DataTable

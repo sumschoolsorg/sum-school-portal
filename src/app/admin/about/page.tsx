@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -9,7 +10,7 @@ import { ImageUpload } from '@/components/ui/ImageUpload';
 import { defaultAboutContent } from '@/lib/defaultData';
 import { aboutRepository } from '@/lib/repositories';
 import { AboutContent, ManagementMember, SchoolHighlight } from '@/types';
-import { Save, Info, Plus, Trash2, Loader2, Users, Award, Shield } from 'lucide-react';
+import { Save, Info, Plus, Trash2, Loader2, Users, Award, Shield, Milestone, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AboutAdminPage() {
@@ -23,11 +24,17 @@ export default function AboutAdminPage() {
       try {
         const data = await aboutRepository.get();
         if (data) {
+          const filteredManagement = data.management?.filter(
+            (m) =>
+              m.name !== 'Secretary, School Administrative Board' &&
+              m.name_en !== 'Secretary, School Administrative Board' &&
+              !m.message?.includes('proud of our teachers')
+          );
           setFormData({
             ...defaultAboutContent,
             ...data,
             coreValues: data.coreValues || defaultAboutContent.coreValues,
-            management: data.management || defaultAboutContent.management,
+            management: filteredManagement || defaultAboutContent.management,
             highlights: data.highlights || defaultAboutContent.highlights,
           });
         }
@@ -460,6 +467,78 @@ export default function AboutAdminPage() {
               </div>
             ))}
           </div>
+        </Card>
+
+        {/* Historic Journey Timeline Section Controls */}
+        <Card className="p-6 sm:p-8 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white flex items-center gap-2">
+                <Milestone className="w-5 h-5 text-indigo-600" />
+                Our Historic Journey (1963 – 2026) Header
+              </h3>
+              <p className="text-xs text-slate-500">
+                Database controls for the timeline section title, subtitle, and description on the About page.
+              </p>
+            </div>
+            <Link href="/admin/timeline">
+              <Button type="button" variant="outline" size="sm" rightIcon={<ArrowRight className="w-4 h-4" />}>
+                Manage Milestones &amp; Photos
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Timeline Title (English)"
+              name="timelineTitle"
+              value={formData.timelineTitle || 'Our Historic Journey (1963 – 2026)'}
+              onChange={handleChange}
+            />
+            <Input
+              label="Timeline Title (Tamil)"
+              name="timelineTitle_ta"
+              value={formData.timelineTitle_ta || 'எஸ்.யு.எம். பள்ளி வரலாற்று மைல்கற்கள்'}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Timeline Subtitle (English)"
+              name="timelineSubtitle"
+              value={formData.timelineSubtitle || '60+ Years of Excellence'}
+              onChange={handleChange}
+            />
+            <Input
+              label="Timeline Subtitle (Tamil)"
+              name="timelineSubtitle_ta"
+              value={formData.timelineSubtitle_ta || 'வரலாற்றுப் பயணம்'}
+              onChange={handleChange}
+            />
+          </div>
+
+          <Textarea
+            label="Timeline Description (English)"
+            name="timelineDescription"
+            rows={2}
+            value={
+              formData.timelineDescription ||
+              'From humble rural beginnings in 1963 to a premier higher secondary institution with smart classes and state board laurels.'
+            }
+            onChange={handleChange}
+          />
+
+          <Textarea
+            label="Timeline Description (Tamil)"
+            name="timelineDescription_ta"
+            rows={2}
+            value={
+              formData.timelineDescription_ta ||
+              '1963-ல் தொடங்கப்பட்ட எளிய கல்விப் பணி முதல் இன்றைய நவீன டிஜிட்டல் வளாகம் வரையிலான வளர்ச்சிப் பாதை.'
+            }
+            onChange={handleChange}
+          />
         </Card>
 
         <div className="flex justify-end">

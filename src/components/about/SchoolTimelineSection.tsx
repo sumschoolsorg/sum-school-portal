@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { timelineRepository } from '@/lib/repositories';
-import { defaultTimelineEntries } from '@/lib/defaultData';
-import { TimelineEntry } from '@/types';
+import { timelineRepository, aboutRepository } from '@/lib/repositories';
+import { defaultTimelineEntries, defaultAboutContent } from '@/lib/defaultData';
+import { TimelineEntry, AboutContent } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Award, Sparkles, Building, Landmark, GraduationCap } from 'lucide-react';
@@ -13,21 +13,48 @@ export function SchoolTimelineSection() {
   const isTa = language === 'ta';
 
   const [timeline, setTimeline] = useState<TimelineEntry[]>(defaultTimelineEntries);
+  const [aboutContent, setAboutContent] = useState<AboutContent>(defaultAboutContent);
 
   useEffect(() => {
+    let isMounted = true;
     const loadTimeline = async () => {
       try {
-        const data = await timelineRepository.getPublished();
-        if (data && data.length > 0) {
-          const published = data.filter((item) => item.status === 'published');
-          setTimeline(published.length > 0 ? published : defaultTimelineEntries);
+        const [timelineData, aboutData] = await Promise.all([
+          timelineRepository.getPublished(),
+          aboutRepository.get().catch(() => null),
+        ]);
+        if (isMounted) {
+          if (timelineData && timelineData.length > 0) {
+            const published = timelineData.filter((item) => item.status === 'published');
+            setTimeline(published.length > 0 ? published : defaultTimelineEntries);
+          }
+          if (aboutData) {
+            setAboutContent(aboutData);
+          }
         }
       } catch (err) {
         console.warn('Error loading timeline entries:', err);
       }
     };
     loadTimeline();
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  const sectionSubtitle =
+    getLocalized(aboutContent, 'timelineSubtitle') ||
+    (isTa ? 'வரலாற்றுப் பயணம்' : '60+ Years of Excellence');
+
+  const sectionTitle =
+    getLocalized(aboutContent, 'timelineTitle') ||
+    (isTa ? 'எஸ்.யு.எம். பள்ளி வரலாற்று மைல்கற்கள்' : 'Our Historic Journey (1963 – 2026)');
+
+  const sectionDescription =
+    getLocalized(aboutContent, 'timelineDescription') ||
+    (isTa
+      ? '1963-ல் தொடங்கப்பட்ட எளிய கல்விப் பணி முதல் இன்றைய நவீன டிஜிட்டல் வளாகம் வரையிலான வளர்ச்சிப் பாதை.'
+      : 'From humble rural beginnings in 1963 to a premier higher secondary institution with smart classes and state board laurels.');
 
   const getCategoryIcon = (category?: string) => {
     switch (category) {
@@ -48,13 +75,9 @@ export function SchoolTimelineSection() {
     <section className="section-padding bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900/60 dark:via-slate-950 dark:to-slate-900/60 relative overflow-hidden">
       <div className="container-main relative z-10">
         <SectionHeading
-          subtitle={isTa ? 'வரலாற்றுப் பயணம்' : '60+ Years of Excellence'}
-          title={isTa ? 'எஸ்.யு.எம். பள்ளி வரலாற்று மைல்கற்கள்' : 'Our Historic Journey (1963 – 2026)'}
-          description={
-            isTa
-              ? '1963-ல் தொடங்கப்பட்ட எளிய கல்விப் பணி முதல் இன்றைய நவீன டிஜிட்டல் வளாகம் வரையிலான வளர்ச்சிப் பாதை.'
-              : 'From humble rural beginnings in 1963 to a premier higher secondary institution with smart classes and state board laurels.'
-          }
+          subtitle={sectionSubtitle}
+          title={sectionTitle}
+          description={sectionDescription}
         />
 
         {/* Timeline Line & Milestones Container */}

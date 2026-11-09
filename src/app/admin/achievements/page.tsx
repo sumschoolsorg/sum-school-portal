@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -12,8 +12,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { achievementRepository, announcementRepository } from '@/lib/repositories';
+import { defaultAchievements } from '@/lib/defaultData';
 import { Achievement, Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Trophy, Star, Bell } from 'lucide-react';
+import { Plus, Edit2, Trash2, Trophy, Star, Bell, Sparkles, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AchievementsAdminPage() {
@@ -47,13 +48,16 @@ export default function AchievementsAdminPage() {
   });
 
   const [broadcastAnnouncement, setBroadcastAnnouncement] = useState(true);
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [filterCategory, setFilterCategory] = useState<string>('all');
 
   const loadAchievements = useCallback(async () => {
     try {
       const data = await achievementRepository.getAll();
-      setAchievements(data || []);
+      setAchievements(data && data.length > 0 ? data : defaultAchievements);
     } catch (err) {
       console.error('Error loading achievements:', err);
+      setAchievements(defaultAchievements);
       toast.error('Failed to load achievements from database.');
     } finally {
       setIsLoading(false);
@@ -64,12 +68,13 @@ export default function AchievementsAdminPage() {
     let isMounted = true;
     achievementRepository.getAll().then((data) => {
       if (isMounted) {
-        setAchievements(data || []);
+        setAchievements(data && data.length > 0 ? data : defaultAchievements);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading achievements:', err);
+        setAchievements(defaultAchievements);
         toast.error('Failed to load achievements from database.');
         setIsLoading(false);
       }
@@ -78,6 +83,31 @@ export default function AchievementsAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    setIsSeeding(true);
+    try {
+      for (const ach of defaultAchievements) {
+        const { id, ...dataWithoutId } = ach;
+        await achievementRepository.create({
+          ...dataWithoutId,
+          date: new Date(),
+        });
+      }
+      toast.success(`Seeded ${defaultAchievements.length} verified student honors & toppers into database!`);
+      loadAchievements();
+    } catch (err) {
+      console.error('Seeding error:', err);
+      toast.error('Failed to seed achievements to database.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  const filteredAchievements = useMemo(() => {
+    if (filterCategory === 'all') return achievements;
+    return achievements.filter((a) => a.category === filterCategory);
+  }, [achievements, filterCategory]);
 
   const handleMarksChange = (obtained: number, max: number) => {
     const pct = max > 0 ? parseFloat(((obtained / max) * 100).toFixed(2)) : 0;
@@ -278,29 +308,70 @@ export default function AchievementsAdminPage() {
         <div>
           <h2 className="text-2xl font-bold font-heading text-slate-900 dark:text-white flex items-center gap-2">
             <Trophy className="w-6 h-6 text-amber-500" />
-            Student Achievements & Toppers Manager
+            Student Honors &amp; Toppers Directory Manager
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Publish verified top rankers, marks, percentages, hometowns, and academic laurels with admin approval.
+            Curate and publish verified board examination toppers, centum scorers, state-level athletic champions, and cultural laureates.
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenAdd}
-          variant="primary"
-          leftIcon={<Plus className="w-4 h-4" />}
-        >
-          Add Student Achievement
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {achievements.length <= defaultAchievements.length && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSeedDefaults}
+              isLoading={isSeeding}
+              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
+            >
+              Seed Verified Toppers &amp; Honors
+            </Button>
+          )}
+          <Button
+            onClick={handleOpenAdd}
+            variant="primary"
+            leftIcon={<Plus className="w-4 h-4" />}
+          >
+            Add Student Honor / Topper
+          </Button>
+        </div>
+      </div>
+
+      {/* Category Filter Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
+        {[
+          { id: 'all', label: 'All Honors' },
+          { id: 'topper', label: 'Board Exam Toppers' },
+          { id: 'academic', label: 'Centum Scorers' },
+          { id: 'sports', label: 'Sports & Athletics' },
+          { id: 'cultural', label: 'Kalai Thiruvizha & Arts' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setFilterCategory(tab.id)}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition cursor-pointer ${
+              filterCategory === tab.id
+                ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+            }`}
+          >
+            {tab.label} (
+            {tab.id === 'all'
+              ? achievements.length
+              : achievements.filter((a) => a.category === tab.id).length}
+            )
+          </button>
+        ))}
       </div>
 
       {/* Table */}
       <Card>
         <DataTable
           columns={columns}
-          data={achievements}
+          data={filteredAchievements}
           searchKey="studentName"
-          searchPlaceholder="Search by student name or class..."
+          searchPlaceholder="Search by student name, roll, or class..."
           isLoading={isLoading}
         />
       </Card>

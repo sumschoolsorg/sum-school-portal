@@ -69,7 +69,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     { href: '/admin/faculty', label: 'Faculty & Staff', icon: <Users className="w-4 h-4" />, category: 'Student Services' },
     { href: '/admin/facilities', label: 'Campus Facilities', icon: <Building2 className="w-4 h-4" />, category: 'Student Services' },
     { href: '/admin/transport', label: 'Bus & Transport', icon: <Bus className="w-4 h-4" />, category: 'Student Services' },
-    { href: '/admin/alumni', label: 'Alumni Network', icon: <UserCheck className="w-4 h-4" />, category: 'Student Services' },
+    { href: '/admin/alumni', label: 'Alumni Heritage', icon: <UserCheck className="w-4 h-4" />, category: 'Student Services' },
 
     { href: '/admin/banners', label: 'Hero Banners', icon: <Layers className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/homepage', label: 'Homepage Content', icon: <Home className="w-4 h-4" />, category: 'Media & Content' },
@@ -77,7 +77,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     { href: '/admin/announcements', label: 'Announcements', icon: <Bell className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/events', label: 'Events & Calendar', icon: <Calendar className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/gallery', label: 'Photo Gallery', icon: <ImageIcon className="w-4 h-4" />, category: 'Media & Content' },
-    { href: '/admin/achievements', label: 'Achievements', icon: <Trophy className="w-4 h-4" />, category: 'Media & Content' },
+    { href: '/admin/achievements', label: 'Honors & Toppers', icon: <Trophy className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/timeline', label: 'School Milestones', icon: <Milestone className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/testimonials', label: 'Testimonials', icon: <MessageSquareQuote className="w-4 h-4" />, category: 'Media & Content' },
 

@@ -11,8 +11,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { facultyRepository } from '@/lib/repositories';
+import { defaultFaculty } from '@/lib/defaultData';
 import { Faculty } from '@/types';
-import { Plus, Edit2, Trash2, Users } from 'lucide-react';
+import { Plus, Edit2, Trash2, Users, Sparkles, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FacultyAdminPage() {
@@ -21,6 +22,7 @@ export default function FacultyAdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState<Faculty | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Faculty>>({
     name: '',
@@ -60,9 +62,10 @@ export default function FacultyAdminPage() {
     setIsLoading(true);
     try {
       const data = await facultyRepository.getAll();
-      setFacultyList(data as Faculty[]);
+      setFacultyList(data && data.length > 0 ? (data as Faculty[]) : defaultFaculty);
     } catch {
-      toast.error('Failed to load faculty');
+      setFacultyList(defaultFaculty);
+      toast.error('Failed to load faculty from cloud; showing verified roster.');
     } finally {
       setIsLoading(false);
     }
@@ -72,12 +75,12 @@ export default function FacultyAdminPage() {
     let isMounted = true;
     facultyRepository.getAll().then((data) => {
       if (isMounted) {
-        setFacultyList(data as Faculty[]);
+        setFacultyList(data && data.length > 0 ? (data as Faculty[]) : defaultFaculty);
         setIsLoading(false);
       }
     }).catch(() => {
       if (isMounted) {
-        toast.error('Failed to load faculty');
+        setFacultyList(defaultFaculty);
         setIsLoading(false);
       }
     });
@@ -85,6 +88,26 @@ export default function FacultyAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    try {
+      setIsSeeding(true);
+      for (const fac of defaultFaculty) {
+        const existing = facultyList.find((f) => f.name === fac.name);
+        if (!existing) {
+          const { id, ...dataToCreate } = fac;
+          await facultyRepository.create(dataToCreate as any);
+        }
+      }
+      toast.success('Successfully seeded faculty members!');
+      await fetchFaculty();
+    } catch (err) {
+      console.error('Error seeding faculty:', err);
+      toast.error('Failed to seed faculty members.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -207,13 +230,30 @@ export default function FacultyAdminPage() {
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenAdd}
-          variant="primary"
-          leftIcon={<Plus className="w-4 h-4" />}
-        >
-          Add Faculty Member
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            onClick={handleSeedDefaults}
+            variant="secondary"
+            disabled={isSeeding}
+            leftIcon={
+              isSeeding ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
+              ) : (
+                <Sparkles className="w-4 h-4 text-amber-500" />
+              )
+            }
+          >
+            {isSeeding ? 'Seeding...' : 'Seed Faculty Roster'}
+          </Button>
+
+          <Button
+            onClick={handleOpenAdd}
+            variant="primary"
+            leftIcon={<Plus className="w-4 h-4" />}
+          >
+            Add Faculty Member
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (

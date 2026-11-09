@@ -10,6 +10,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { studentResultRepository, announcementRepository } from '@/lib/repositories';
+import { defaultStudentResults } from '@/lib/defaultData';
 import { StudentResult, SubjectScore } from '@/types';
 import {
   Award,
@@ -23,6 +24,8 @@ import {
   FileSpreadsheet,
   AlertCircle,
   Check,
+  Sparkles,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -67,6 +70,7 @@ export default function AdminResultsPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [broadcastAnnouncement, setBroadcastAnnouncement] = useState(true);
   const [uploadMode, setUploadMode] = useState<'file' | 'text'>('file');
+  const [isSeeding, setIsSeeding] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<Partial<StudentResult>>({
@@ -94,10 +98,11 @@ export default function AdminResultsPage() {
     try {
       setIsLoading(true);
       const data = await studentResultRepository.getAll();
-      setResults(data || []);
+      setResults(data && data.length > 0 ? data : defaultStudentResults);
     } catch (err) {
       console.error('Error loading student results:', err);
       toast.error('Failed to load student results.');
+      setResults(defaultStudentResults);
     } finally {
       setIsLoading(false);
     }
@@ -107,13 +112,13 @@ export default function AdminResultsPage() {
     let isMounted = true;
     studentResultRepository.getAll().then((data) => {
       if (isMounted) {
-        setResults(data || []);
+        setResults(data && data.length > 0 ? data : defaultStudentResults);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading student results:', err);
-        toast.error('Failed to load student results.');
+        setResults(defaultStudentResults);
         setIsLoading(false);
       }
     });
@@ -121,6 +126,26 @@ export default function AdminResultsPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    try {
+      setIsSeeding(true);
+      for (const res of defaultStudentResults) {
+        const existing = results.find((r) => r.rollNumber === res.rollNumber);
+        if (!existing) {
+          const { id, ...dataToCreate } = res;
+          await studentResultRepository.create(dataToCreate as any);
+        }
+      }
+      toast.success('Successfully seeded sample examination marksheets!');
+      await loadData();
+    } catch (err) {
+      console.error('Error seeding student results:', err);
+      toast.error('Failed to seed examination marksheets.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingResult(null);
@@ -674,6 +699,21 @@ export default function AdminResultsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            onClick={handleSeedDefaults}
+            variant="secondary"
+            disabled={isSeeding}
+            leftIcon={
+              isSeeding ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
+              ) : (
+                <Sparkles className="w-4 h-4 text-amber-500" />
+              )
+            }
+          >
+            {isSeeding ? 'Seeding...' : 'Seed Sample Board Results'}
+          </Button>
+
           <Button
             onClick={handleDownloadTemplate}
             variant="secondary"

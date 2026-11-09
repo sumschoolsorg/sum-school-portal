@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Loader2, Camera, ShieldCheck, Search } from 'lucide-react';
+import { X, Loader2, Camera, ShieldCheck, Search, HardDrive, Sparkles } from 'lucide-react';
 import { uploadImageWithUniqueId } from '@/lib/storage';
 import { RealImagePickerModal } from './RealImagePickerModal';
 import { toast } from 'sonner';
@@ -11,10 +11,85 @@ export interface ImageUploadProps {
   folder?: string;
   currentImageUrl?: string;
   value?: string;
+  maxSizeMB?: number;
+  autoCompress?: boolean;
   onImageUploaded?: (url: string) => void;
   onImageSelect?: (url: string) => void;
   onChange?: (url: string) => void;
   className?: string;
+}
+
+// Client-side image optimizer using HTML5 canvas
+async function optimizeImageForUpload(
+  file: File,
+  maxDimension = 2400,
+  quality = 0.88
+): Promise<{ file: File; originalSize: number; optimizedSize: number }> {
+  // If file is already smaller than 1.2MB or is vector SVG/GIF, pass as is
+  if (file.size <= 1.2 * 1024 * 1024 || file.type === 'image/svg+xml' || file.type === 'image/gif') {
+    return { file, originalSize: file.size, optimizedSize: file.size };
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let { width, height } = img;
+
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve({ file, originalSize: file.size, optimizedSize: file.size });
+        return;
+      }
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      canvas.toBlob(
+        (blob) => {
+          if (!blob || blob.size >= file.size) {
+            resolve({ file, originalSize: file.size, optimizedSize: file.size });
+            return;
+          }
+          const optimizedFile = new File(
+            [blob],
+            file.name.replace(/\.[^.]+$/, mimeType === 'image/png' ? '.png' : '.jpg'),
+            {
+              type: mimeType,
+              lastModified: Date.now(),
+            }
+          );
+          resolve({ file: optimizedFile, originalSize: file.size, optimizedSize: blob.size });
+        },
+        mimeType,
+        quality
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve({ file, originalSize: file.size, optimizedSize: file.size });
+    };
+
+    img.src = objectUrl;
+  });
 }
 
 export function ImageUpload({
@@ -22,6 +97,8 @@ export function ImageUpload({
   folder = 'uploads',
   currentImageUrl,
   value,
+  maxSizeMB = 25,
+  autoCompress = true,
   onImageUploaded,
   onImageSelect,
   onChange,
@@ -31,6 +108,7 @@ export function ImageUpload({
   const [preview, setPreview] = useState<string>(initialUrl);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [isPickerOpen, setIsPickerOpen] = useState<boolean>(false);
+  const [sizeStats, setSizeStats] = useState<{ original: number; uploaded: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const propUrl = value ?? currentImageUrl ?? '';
@@ -49,31 +127,57 @@ export function ImageUpload({
     if (onImageUploaded) onImageUploaded(url);
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const formatBytes = (bytes: number) => {
+    if (bytes >= 1024 * 1024) {
+      return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    }
+    return `${Math.round(bytes / 1024)} KB`;
+  };
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file.');
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
+
+    if (!rawFile.type.startsWith('image/')) {
+      toast.error('Please select a valid image file (JPEG, PNG, WebP).');
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB.');
+    if (rawFile.size > maxSizeMB * 1024 * 1024) {
+      toast.error(`Photo size (${formatBytes(rawFile.size)}) exceeds the ${maxSizeMB}MB admin limit.`);
       return;
     }
 
     // Local preview immediately
-    const objectUrl = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(rawFile);
     setPreview(objectUrl);
-
     setIsUploading(true);
+
     try {
-      const { url } = await uploadImageWithUniqueId(file, folder);
+      // Auto-compress large camera photos if enabled
+      let fileToUpload = rawFile;
+      let originalBytes = rawFile.size;
+      let finalBytes = rawFile.size;
+
+      if (autoCompress) {
+        const optimized = await optimizeImageForUpload(rawFile);
+        fileToUpload = optimized.file;
+        originalBytes = optimized.originalSize;
+        finalBytes = optimized.optimizedSize;
+      }
+
+      setSizeStats({ original: originalBytes, uploaded: finalBytes });
+
+      const { url } = await uploadImageWithUniqueId(fileToUpload, folder);
       URL.revokeObjectURL(objectUrl);
       setPreview(url);
       notifyChange(url);
-      toast.success('Real photograph uploaded successfully!');
+
+      if (originalBytes > finalBytes && originalBytes > 1024 * 1024) {
+        toast.success(`Photo uploaded! (${formatBytes(originalBytes)} → ${formatBytes(finalBytes)})`);
+      } else {
+        toast.success(`Photo uploaded successfully! (${formatBytes(finalBytes)})`);
+      }
     } catch (error) {
       console.warn('Firebase Storage upload failed:', error);
       URL.revokeObjectURL(objectUrl);
@@ -89,6 +193,7 @@ export function ImageUpload({
   const handleRemove = (e: React.MouseEvent) => {
     e.stopPropagation();
     setPreview('');
+    setSizeStats(null);
     notifyChange('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -97,17 +202,29 @@ export function ImageUpload({
 
   const handlePickRealImage = (url: string) => {
     setPreview(url);
+    setSizeStats(null);
     notifyChange(url);
   };
 
   return (
     <div className={`w-full ${className} space-y-2`}>
-      <div className="flex items-center justify-between">
-        {label && (
-          <label className="block text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
-            {label}
-          </label>
-        )}
+      <div className="flex flex-wrap items-center justify-between gap-1.5">
+        <div className="flex items-center gap-2">
+          {label && (
+            <label className="block text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+              {label}
+            </label>
+          )}
+          {/* Upload Size Control Badge */}
+          <span
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+            title={`Max photo upload limit: ${maxSizeMB}MB with auto-optimization`}
+          >
+            <HardDrive className="w-2.5 h-2.5 text-blue-500" />
+            Max {maxSizeMB}MB
+          </span>
+        </div>
+
         <button
           type="button"
           onClick={() => setIsPickerOpen(true)}
@@ -146,11 +263,21 @@ export function ImageUpload({
               alt="Uploaded real preview"
               className="max-h-28 max-w-full rounded-xl object-contain shadow-xs"
             />
-            <div className="mt-1 flex items-center gap-2">
+            <div className="mt-1 flex flex-wrap items-center justify-center gap-2">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
                 <ShieldCheck className="w-3 h-3 text-emerald-700" />
-                Verified Real Photography
+                Verified Real Photo
               </span>
+
+              {sizeStats && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-blue-800 border border-blue-200">
+                  <Sparkles className="w-2.5 h-2.5 text-blue-600" />
+                  {sizeStats.original > sizeStats.uploaded
+                    ? `${formatBytes(sizeStats.original)} → ${formatBytes(sizeStats.uploaded)}`
+                    : formatBytes(sizeStats.uploaded)}
+                </span>
+              )}
+
               <button
                 type="button"
                 onClick={(e) => {
@@ -174,7 +301,12 @@ export function ImageUpload({
         ) : isUploading ? (
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="w-7 h-7 text-emerald-600 animate-spin" />
-            <span className="text-xs text-slate-500">Uploading real photo...</span>
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Optimizing &amp; Uploading photo...
+            </span>
+            <span className="text-[11px] text-slate-400">
+              Smart auto-compression enabled (up to {maxSizeMB}MB supported)
+            </span>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-1.5 text-slate-500 dark:text-slate-400">
@@ -188,7 +320,7 @@ export function ImageUpload({
               or drag &amp; drop
             </div>
             <p className="text-[11px] text-slate-400">
-              Only authentic real-world photography (PNG, JPG, WebP up to 5MB)
+              Real-world photography (PNG, JPG, WebP up to {maxSizeMB}MB with auto-optimization)
             </p>
             <div className="pt-1">
               <button

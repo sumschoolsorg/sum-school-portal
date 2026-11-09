@@ -11,8 +11,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { announcementRepository } from '@/lib/repositories';
+import { defaultAnnouncements } from '@/lib/defaultData';
 import { Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Bell, Languages } from 'lucide-react';
+import { Plus, Edit2, Trash2, Bell, Languages, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -81,14 +82,16 @@ export default function AnnouncementsAdminPage() {
   };
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await announcementRepository.getAll();
-      setAnnouncements(data || []);
+      setAnnouncements(data && data.length > 0 ? data : defaultAnnouncements);
     } catch (err) {
       console.warn('Error loading announcements:', err);
+      setAnnouncements(defaultAnnouncements);
       toast.error('Failed to load announcements');
     } finally {
       setIsLoading(false);
@@ -99,13 +102,13 @@ export default function AnnouncementsAdminPage() {
     let isMounted = true;
     announcementRepository.getAll().then((data) => {
       if (isMounted) {
-        setAnnouncements(data || []);
+        setAnnouncements(data && data.length > 0 ? data : defaultAnnouncements);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.warn('Error loading announcements:', err);
-        toast.error('Failed to load announcements');
+        setAnnouncements(defaultAnnouncements);
         setIsLoading(false);
       }
     });
@@ -113,6 +116,26 @@ export default function AnnouncementsAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    setIsSeeding(true);
+    try {
+      for (const ann of defaultAnnouncements) {
+        const { id, ...dataWithoutId } = ann;
+        await announcementRepository.create({
+          ...dataWithoutId,
+          date: new Date(),
+        });
+      }
+      toast.success(`Seeded ${defaultAnnouncements.length} official school announcements!`);
+      loadData();
+    } catch (err) {
+      console.error('Seeding error:', err);
+      toast.error('Failed to seed announcements to database.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -279,10 +302,23 @@ export default function AnnouncementsAdminPage() {
             Create, manage, and publish school circulars with bilingual English and Tamil text.
           </p>
         </div>
-        <Button onClick={handleOpenAdd} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Publish Notice
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {announcements.length <= defaultAnnouncements.length && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSeedDefaults}
+              isLoading={isSeeding}
+              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
+            >
+              Seed Official Notices
+            </Button>
+          )}
+          <Button onClick={handleOpenAdd} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Publish Notice
+          </Button>
+        </div>
       </div>
 
       <DataTable

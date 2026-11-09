@@ -10,6 +10,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { transportRepository } from '@/lib/repositories';
+import { defaultTransportRoutes } from '@/lib/defaultData';
 import { TransportRoute, TransportStop } from '@/types';
 import {
   Bus,
@@ -20,6 +21,8 @@ import {
   MapPin,
   PlusCircle,
   X,
+  Sparkles,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -29,6 +32,8 @@ export default function AdminTransportPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRoute, setEditingRoute] = useState<TransportRoute | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<TransportRoute>>({
     routeNumber: 'Route 01',
@@ -54,10 +59,11 @@ export default function AdminTransportPage() {
     try {
       setIsLoading(true);
       const data = await transportRepository.getAll();
-      setRoutes(data || []);
+      setRoutes(data && data.length > 0 ? data : defaultTransportRoutes);
     } catch (err) {
       console.error('Error loading routes:', err);
       toast.error('Failed to load transport routes.');
+      setRoutes(defaultTransportRoutes);
     } finally {
       setIsLoading(false);
     }
@@ -67,13 +73,13 @@ export default function AdminTransportPage() {
     let isMounted = true;
     transportRepository.getAll().then((data) => {
       if (isMounted) {
-        setRoutes(data || []);
+        setRoutes(data && data.length > 0 ? data : defaultTransportRoutes);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading routes:', err);
-        toast.error('Failed to load transport routes.');
+        setRoutes(defaultTransportRoutes);
         setIsLoading(false);
       }
     });
@@ -81,6 +87,26 @@ export default function AdminTransportPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    try {
+      setIsSeeding(true);
+      for (const route of defaultTransportRoutes) {
+        const existing = routes.find((r) => r.routeNumber === route.routeNumber);
+        if (!existing) {
+          const { id, ...dataToCreate } = route;
+          await transportRepository.create(dataToCreate as any);
+        }
+      }
+      toast.success('Successfully seeded bus routes & schedules!');
+      await loadData();
+    } catch (err) {
+      console.error('Error seeding transport routes:', err);
+      toast.error('Failed to seed transport routes.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingRoute(null);
@@ -303,9 +329,26 @@ export default function AdminTransportPage() {
           </p>
         </div>
 
-        <Button onClick={handleOpenAdd} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
-          Add Transport Route
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            onClick={handleSeedDefaults}
+            variant="secondary"
+            disabled={isSeeding}
+            leftIcon={
+              isSeeding ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
+              ) : (
+                <Sparkles className="w-4 h-4 text-amber-500" />
+              )
+            }
+          >
+            {isSeeding ? 'Seeding...' : 'Seed Bus Routes'}
+          </Button>
+
+          <Button onClick={handleOpenAdd} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
+            Add Transport Route
+          </Button>
+        </div>
       </div>
 
       {/* Table */}

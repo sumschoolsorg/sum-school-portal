@@ -143,6 +143,15 @@ export interface AboutContent extends FirestoreDoc {
   coreValues_ta?: string[];
   educationalPhilosophy_en?: string;
   educationalPhilosophy_ta?: string;
+  timelineSubtitle?: string;
+  timelineSubtitle_en?: string;
+  timelineSubtitle_ta?: string;
+  timelineTitle?: string;
+  timelineTitle_en?: string;
+  timelineTitle_ta?: string;
+  timelineDescription?: string;
+  timelineDescription_en?: string;
+  timelineDescription_ta?: string;
 }
 
 export interface ManagementMember {
@@ -500,6 +509,8 @@ export interface WebsiteSettings extends FirestoreDoc {
   termsAndConditions: string;
   maintenanceMode: boolean;
   maintenanceMessage: string;
+  maxPhotoUploadSizeMB?: number;
+  autoCompressLargePhotos?: boolean;
 }
 
 // --- Homepage Hero Banners (multiple docs) ---

@@ -62,9 +62,12 @@ export default function AlumniPage() {
               return copy;
             });
           setAlumniList(publicProfiles);
+        } else {
+          setAlumniList(defaultAlumni);
         }
       } catch (err) {
         console.warn('Error loading alumni:', err);
+        setAlumniList(defaultAlumni);
       }
     };
     loadAlumni();

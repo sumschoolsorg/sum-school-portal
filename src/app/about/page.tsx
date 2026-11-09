@@ -20,7 +20,16 @@ export default function AboutPage() {
     let isMounted = true;
     aboutRepository.get().then((data) => {
       if (isMounted && data) {
-        setContent(data);
+        const filteredManagement = data.management?.filter(
+          (m) =>
+            m.name !== 'Secretary, School Administrative Board' &&
+            m.name_en !== 'Secretary, School Administrative Board' &&
+            !m.message?.includes('proud of our teachers')
+        );
+        setContent({
+          ...data,
+          management: filteredManagement ?? data.management,
+        });
       }
     }).catch((err) => {
       console.warn('Failed to load about content from repository:', err);
@@ -240,7 +249,7 @@ export default function AboutPage() {
               }
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            <div className={`grid gap-8 mx-auto ${content.management.length === 1 ? 'max-w-3xl' : 'grid-cols-1 md:grid-cols-2 max-w-5xl'}`}>
               {content.management.map((mem, idx) => (
                 <div
                   key={idx}

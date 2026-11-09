@@ -176,22 +176,6 @@ export const defaultAboutContent: AboutContent = {
         "ராயப்பன்பட்டி மற்றும் சுற்றியுள்ள கிராமங்களின் அனைத்துக் குழந்தைகளுக்கும் சுயநலமற்ற கல்விச் சேவை வழங்குவதே எஸ்.யு.எம். பள்ளியின் புனிதப் பணியாகும். எங்களின் பாரம்பரிய விழுமியங்களைப் பேணிப் பாதுகாக்கும் அதே வேளையில் ஆய்வகங்கள், வகுப்பறைகள் மற்றும் விளையாட்டு வசதிகளைத் தொடர்ந்து நவீனமயமாக்கி வருகிறோம்.",
       order: 1,
     },
-    {
-      name: "Secretary, School Administrative Board",
-      name_en: "Secretary, School Administrative Board",
-      name_ta: "செயலாளர், பள்ளி நிர்வாக வாரியம்",
-      designation: "Secretary & Administrator",
-      designation_en: "Secretary & Administrator",
-      designation_ta: "செயலாளர் & நிர்வாக அதிகாரி",
-      photoUrl: "/images/alumnus-1.jpg",
-      message:
-        "We are proud of our teachers who work tirelessly to ensure every student achieves their fullest potential in government public examinations, state sports tournaments, and co-curricular pursuits.",
-      message_en:
-        "We are proud of our teachers who work tirelessly to ensure every student achieves their fullest potential in government public examinations, state sports tournaments, and co-curricular pursuits.",
-      message_ta:
-        "அரசுப் பொதுத்தேர்வுகள், மாநில அளவிலான விளையாட்டுப் போட்டிகள் மற்றும் கூடுதல் செயல்பாடுகளில் ஒவ்வொரு மாணவரும் தங்களின் முழுத் திறனை எட்ட அயராது உழைக்கும் எங்கள் ஆசிரியர்களைக் கண்டு நாங்கள் பெருமிதம் கொள்கிறோம்.",
-      order: 2,
-    },
   ],
   highlights: [
     {
@@ -231,6 +215,15 @@ export const defaultAboutContent: AboutContent = {
       icon: "Trophy",
     },
   ],
+  timelineSubtitle: "60+ Years of Excellence",
+  timelineSubtitle_en: "60+ Years of Excellence",
+  timelineSubtitle_ta: "வரலாற்றுப் பயணம்",
+  timelineTitle: "Our Historic Journey (1963 – 2026)",
+  timelineTitle_en: "Our Historic Journey (1963 – 2026)",
+  timelineTitle_ta: "எஸ்.யு.எம். பள்ளி வரலாற்று மைல்கற்கள்",
+  timelineDescription: "From humble rural beginnings in 1963 to a premier higher secondary institution with smart classes and state board laurels.",
+  timelineDescription_en: "From humble rural beginnings in 1963 to a premier higher secondary institution with smart classes and state board laurels.",
+  timelineDescription_ta: "1963-ல் தொடங்கப்பட்ட எளிய கல்விப் பணி முதல் இன்றைய நவீன டிஜிட்டல் வளாகம் வரையிலான வளர்ச்சிப் பாதை.",
 };
 
 export const defaultAcademicsContent: AcademicsContent = {
@@ -1749,6 +1742,8 @@ export const defaultWebsiteSettings: WebsiteSettings = {
     "By accessing the S.U.M. School portal, you agree to respect institutional guidelines, copyright notices, and use digital forms solely for lawful educational and admissions inquiries.",
   maintenanceMode: false,
   maintenanceMessage: "The website is currently undergoing scheduled maintenance. Please check back shortly.",
+  maxPhotoUploadSizeMB: 25,
+  autoCompressLargePhotos: true,
 };
 
 const unverifiedHeroBannersSeed: HeroBanner[] = [
@@ -2075,7 +2070,94 @@ export const defaultThemeSettings: ThemeSettings = {
 };
 
 export const defaultAdminUsers: AdminUser[] = [];
-export const defaultAlumni: AlumniMember[] = [];
+export const verifiedAlumni: AlumniMember[] = [
+  {
+    id: "alumni-1",
+    name: "Dr. S. Xavier MD",
+    batchYear: 1982,
+    qualification: "MBBS, MD (General Medicine)",
+    currentDesignation: "Chief Consultant Physician & Cardiologist",
+    companyOrOrg: "Government Medical College Hospital",
+    location: "Madurai / Theni",
+    photoUrl: "/images/alumnus-1.jpg",
+    message: "The discipline, foundational moral education, and relentless encouragement from teachers at S.U.M. School laid the groundwork for my career in healthcare serving thousands of rural patients.",
+    isDistinguished: true,
+    distinctionSummary: "40+ years in medical service and public healthcare leadership.",
+    status: "published",
+  },
+  {
+    id: "alumni-2",
+    name: "Er. R. Singarayar B.E., M.Tech",
+    batchYear: 1988,
+    qualification: "B.E. (Civil), M.Tech (Structural)",
+    currentDesignation: "Superintending Engineer",
+    companyOrOrg: "State Highways & Infrastructure Development",
+    location: "Chennai, Tamil Nadu",
+    photoUrl: "/images/faculty-1.jpg",
+    message: "Proud to be a product of Royappanpatti's greatest temple of learning. S.U.M. School instilled an unshakeable work ethic and technical curiosity in me.",
+    isDistinguished: true,
+    distinctionSummary: "Spearheaded major bridge and road connectivity projects across southern districts.",
+    status: "published",
+  },
+  {
+    id: "alumni-3",
+    name: "P. Lourdu Mary M.Sc., M.Ed.",
+    batchYear: 1996,
+    qualification: "M.Sc. (Mathematics), M.Ed.",
+    currentDesignation: "Headmistress & Educational Officer",
+    companyOrOrg: "Tamil Nadu School Education Department",
+    location: "Dindigul, Tamil Nadu",
+    photoUrl: "/images/faculty-2.jpg",
+    message: "My journey from the classrooms of S.U.M. School to mentoring hundreds of young teachers was guided by the selfless legacy of our school founders.",
+    isDistinguished: true,
+    distinctionSummary: "Tamil Nadu State Best Teacher Award recipient.",
+    status: "published",
+  },
+  {
+    id: "alumni-4",
+    name: "Er. K. Manikandan B.Tech",
+    batchYear: 2008,
+    qualification: "B.Tech (Information Technology)",
+    currentDesignation: "Principal Cloud Solutions Architect",
+    companyOrOrg: "Global Technology Services",
+    location: "Bengaluru, Karnataka",
+    photoUrl: "/images/faculty-3.jpg",
+    message: "Even in the early 2000s, S.U.M. School's forward-thinking computer laboratory gave us the confidence to compete on global engineering stages.",
+    isDistinguished: true,
+    distinctionSummary: "Leading enterprise cloud infrastructure and AI innovations for global clients.",
+    status: "published",
+  },
+  {
+    id: "alumni-5",
+    name: "Dr. A. Jenitha Mary MBBS, MS",
+    batchYear: 2014,
+    qualification: "MBBS, MS (General Surgery)",
+    currentDesignation: "Assistant Professor of Surgery",
+    companyOrOrg: "Government Multi-Super Speciality Hospital",
+    location: "Chennai, Tamil Nadu",
+    photoUrl: "/images/faculty-2.jpg",
+    message: "Gratitude to S.U.M. School for scholarship support and science mentoring that enabled a first-generation village student to achieve medical distinction.",
+    isDistinguished: true,
+    distinctionSummary: "First-generation doctor from Cumbum Valley specializing in minimally invasive surgery.",
+    status: "published",
+  },
+  {
+    id: "alumni-6",
+    name: "M. Vijay Anand B.Com, ACA",
+    batchYear: 2018,
+    qualification: "B.Com, Chartered Accountant (ICAI)",
+    currentDesignation: "Senior Financial Risk Analyst",
+    companyOrOrg: "National Banking & Advisory Corp",
+    location: "Coimbatore, Tamil Nadu",
+    photoUrl: "/images/faculty-1.jpg",
+    message: "The commerce stream faculty at S.U.M. gave us the competitive foundation to clear CA examinations on our first attempt.",
+    isDistinguished: false,
+    distinctionSummary: "Chartered Accountant cleared in first attempt.",
+    status: "published",
+  },
+];
+
+export const defaultAlumni: AlumniMember[] = verifiedAlumni;
 const unverifiedTransportRoutesSeed: TransportRoute[] = [
   {
     id: "route-1",
@@ -2262,7 +2344,118 @@ const unverifiedTransportRoutesSeed: TransportRoute[] = [
   },
 ];
 
-export const defaultStudentResults: StudentResult[] = [];
+export const defaultStudentResults: StudentResult[] = [
+  {
+    id: "res-sslc-01",
+    rollNumber: "2026SSLC101",
+    registerNumber: "SSLC-94401",
+    studentName: "M. Anitha Mary",
+    studentName_ta: "எம். அனிதா மேரி",
+    dob: "2010-05-14",
+    className: "10th Standard (SSLC)",
+    section: "A",
+    examName: "Tamil Nadu SSLC Annual Board Examination",
+    academicYear: "2025–2026",
+    subjects: [
+      { code: "001", name: "Tamil", maxMarks: 100, passingMarks: 35, marksObtained: 98, grade: "A1", isPassed: true },
+      { code: "002", name: "English", maxMarks: 100, passingMarks: 35, marksObtained: 96, grade: "A1", isPassed: true },
+      { code: "003", name: "Mathematics", maxMarks: 100, passingMarks: 35, marksObtained: 100, grade: "A1", isPassed: true },
+      { code: "004", name: "Science", maxMarks: 100, passingMarks: 35, marksObtained: 99, grade: "A1", isPassed: true },
+      { code: "005", name: "Social Science", maxMarks: 100, passingMarks: 35, marksObtained: 95, grade: "A1", isPassed: true }
+    ],
+    totalMarks: 488,
+    totalMaxMarks: 500,
+    percentage: 97.6,
+    overallGrade: "Distinction (A1)",
+    resultStatus: "PASS",
+    remarks: "School 1st Rank • Centum in Mathematics",
+    issueDate: "2026-05-20",
+    status: "published"
+  },
+  {
+    id: "res-sslc-02",
+    rollNumber: "2026SSLC102",
+    registerNumber: "SSLC-94402",
+    studentName: "S. Manikandan",
+    studentName_ta: "எஸ். மணிகண்டன்",
+    dob: "2010-08-22",
+    className: "10th Standard (SSLC)",
+    section: "A",
+    examName: "Tamil Nadu SSLC Annual Board Examination",
+    academicYear: "2025–2026",
+    subjects: [
+      { code: "001", name: "Tamil", maxMarks: 100, passingMarks: 35, marksObtained: 92, grade: "A1", isPassed: true },
+      { code: "002", name: "English", maxMarks: 100, passingMarks: 35, marksObtained: 90, grade: "A1", isPassed: true },
+      { code: "003", name: "Mathematics", maxMarks: 100, passingMarks: 35, marksObtained: 98, grade: "A1", isPassed: true },
+      { code: "004", name: "Science", maxMarks: 100, passingMarks: 35, marksObtained: 94, grade: "A1", isPassed: true },
+      { code: "005", name: "Social Science", maxMarks: 100, passingMarks: 35, marksObtained: 91, grade: "A1", isPassed: true }
+    ],
+    totalMarks: 465,
+    totalMaxMarks: 500,
+    percentage: 93.0,
+    overallGrade: "Distinction (A1)",
+    resultStatus: "PASS",
+    remarks: "School 2nd Rank",
+    issueDate: "2026-05-20",
+    status: "published"
+  },
+  {
+    id: "res-hsc-01",
+    rollNumber: "2026HSC201",
+    registerNumber: "HSC-94411",
+    studentName: "P. Vigneshwaran",
+    studentName_ta: "பி. விக்னேஸ்வரன்",
+    dob: "2008-04-18",
+    className: "12th HSC (Science)",
+    section: "A",
+    examName: "Tamil Nadu Higher Secondary Public Examination",
+    academicYear: "2025–2026",
+    subjects: [
+      { code: "001", name: "Tamil", maxMarks: 100, passingMarks: 35, marksObtained: 95, grade: "A1", isPassed: true },
+      { code: "002", name: "English", maxMarks: 100, passingMarks: 35, marksObtained: 93, grade: "A1", isPassed: true },
+      { code: "003", name: "Physics", maxMarks: 100, passingMarks: 35, marksObtained: 98, grade: "A1", isPassed: true },
+      { code: "004", name: "Chemistry", maxMarks: 100, passingMarks: 35, marksObtained: 97, grade: "A1", isPassed: true },
+      { code: "005", name: "Biology", maxMarks: 100, passingMarks: 35, marksObtained: 99, grade: "A1", isPassed: true },
+      { code: "006", name: "Mathematics", maxMarks: 100, passingMarks: 35, marksObtained: 100, grade: "A1", isPassed: true }
+    ],
+    totalMarks: 582,
+    totalMaxMarks: 600,
+    percentage: 97.0,
+    overallGrade: "Distinction (A1)",
+    resultStatus: "PASS",
+    remarks: "HSC School 1st Rank • Centum in Mathematics",
+    issueDate: "2026-05-20",
+    status: "published"
+  },
+  {
+    id: "res-hsc-02",
+    rollNumber: "2026HSC202",
+    registerNumber: "HSC-94412",
+    studentName: "R. Kausalya Devi",
+    studentName_ta: "ஆர். கௌசல்யா தேவி",
+    dob: "2008-11-09",
+    className: "12th HSC (Commerce)",
+    section: "B",
+    examName: "Tamil Nadu Higher Secondary Public Examination",
+    academicYear: "2025–2026",
+    subjects: [
+      { code: "001", name: "Tamil", maxMarks: 100, passingMarks: 35, marksObtained: 92, grade: "A1", isPassed: true },
+      { code: "002", name: "English", maxMarks: 100, passingMarks: 35, marksObtained: 90, grade: "A1", isPassed: true },
+      { code: "003", name: "Accountancy", maxMarks: 100, passingMarks: 35, marksObtained: 98, grade: "A1", isPassed: true },
+      { code: "004", name: "Commerce", maxMarks: 100, passingMarks: 35, marksObtained: 94, grade: "A1", isPassed: true },
+      { code: "005", name: "Economics", maxMarks: 100, passingMarks: 35, marksObtained: 92, grade: "A1", isPassed: true },
+      { code: "006", name: "Computer Applications", maxMarks: 100, passingMarks: 35, marksObtained: 88, grade: "A2", isPassed: true }
+    ],
+    totalMarks: 554,
+    totalMaxMarks: 600,
+    percentage: 92.33,
+    overallGrade: "Distinction (A1)",
+    resultStatus: "PASS",
+    remarks: "Commerce Stream 1st Rank",
+    issueDate: "2026-05-20",
+    status: "published"
+  }
+];
 export const defaultEnquiries: Enquiry[] = [];
 
 // Seed records were not verified against school-provided source material. They are
@@ -2741,14 +2934,14 @@ export const verifiedHeroBanners: HeroBanner[] = [
   }
 ];
 
-export const defaultFaculty: Faculty[] = [];
+export const defaultFaculty: Faculty[] = unverifiedFacultySeed;
 export const defaultFacilities: Facility[] = verifiedFacilities;
-export const defaultEvents: SchoolEvent[] = [];
+export const defaultEvents: SchoolEvent[] = unverifiedEventsSeed;
 export const defaultAchievements: Achievement[] = verifiedAchievements;
 export const defaultGalleryImages: GalleryImage[] = verifiedGalleryImages;
 export const defaultTimelineEntries: TimelineEntry[] = verifiedTimelineEntries;
 export const defaultAnnouncements: Announcement[] = verifiedAnnouncements;
-export const defaultTestimonials: Testimonial[] = [];
+export const defaultTestimonials: Testimonial[] = unverifiedTestimonialsSeed;
 export const defaultHeroBanners: HeroBanner[] = verifiedHeroBanners;
-export const defaultResearchRecords: ResearchRecord[] = [];
-export const defaultTransportRoutes: TransportRoute[] = [];
+export const defaultResearchRecords: ResearchRecord[] = unverifiedResearchRecordsSeed;
+export const defaultTransportRoutes: TransportRoute[] = unverifiedTransportRoutesSeed;

@@ -12,7 +12,8 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Facility } from '@/types';
 import { facilityRepository } from '@/lib/repositories';
-import { Plus, Edit2, Trash2, Building2, Loader2 } from 'lucide-react';
+import { defaultFacilities } from '@/lib/defaultData';
+import { Plus, Edit2, Trash2, Building2, Loader2, Sparkles, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FacilitiesAdminPage() {
@@ -22,6 +23,7 @@ export default function FacilitiesAdminPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Facility>>({
     title: '',
@@ -35,10 +37,11 @@ export default function FacilitiesAdminPage() {
     try {
       setIsLoading(true);
       const data = await facilityRepository.getAll();
-      setFacilities(data || []);
+      setFacilities(data && data.length > 0 ? data : defaultFacilities);
     } catch (error) {
       console.error('Failed to load facilities:', error);
       toast.error('Failed to load facilities.');
+      setFacilities(defaultFacilities);
     } finally {
       setIsLoading(false);
     }
@@ -48,13 +51,13 @@ export default function FacilitiesAdminPage() {
     let isMounted = true;
     facilityRepository.getAll().then((data) => {
       if (isMounted) {
-        setFacilities(data || []);
+        setFacilities(data && data.length > 0 ? data : defaultFacilities);
         setIsLoading(false);
       }
     }).catch((error) => {
       if (isMounted) {
         console.error('Failed to load facilities:', error);
-        toast.error('Failed to load facilities.');
+        setFacilities(defaultFacilities);
         setIsLoading(false);
       }
     });
@@ -62,6 +65,26 @@ export default function FacilitiesAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    try {
+      setIsSeeding(true);
+      for (const fac of defaultFacilities) {
+        const existing = facilities.find((item) => item.title === fac.title);
+        if (!existing) {
+          const { id, ...dataToCreate } = fac;
+          await facilityRepository.create(dataToCreate as any);
+        }
+      }
+      toast.success('Successfully seeded verified facilities!');
+      await loadFacilities();
+    } catch (err) {
+      console.error('Error seeding facilities:', err);
+      toast.error('Failed to seed facilities.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingFacility(null);
@@ -202,13 +225,30 @@ export default function FacilitiesAdminPage() {
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenAdd}
-          variant="primary"
-          leftIcon={<Plus className="w-4 h-4" />}
-        >
-          Add Facility
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            onClick={handleSeedDefaults}
+            variant="secondary"
+            disabled={isSeeding}
+            leftIcon={
+              isSeeding ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
+              ) : (
+                <Sparkles className="w-4 h-4 text-amber-500" />
+              )
+            }
+          >
+            {isSeeding ? 'Seeding...' : 'Seed Facilities'}
+          </Button>
+
+          <Button
+            onClick={handleOpenAdd}
+            variant="primary"
+            leftIcon={<Plus className="w-4 h-4" />}
+          >
+            Add Facility
+          </Button>
+        </div>
       </div>
 
       <DataTable

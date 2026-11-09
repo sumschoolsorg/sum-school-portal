@@ -10,7 +10,8 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Testimonial } from '@/types';
 import { testimonialRepository } from '@/lib/repositories';
-import { Plus, Edit2, Trash2, MessageSquareQuote, Star, Loader2 } from 'lucide-react';
+import { defaultTestimonials } from '@/lib/defaultData';
+import { Plus, Edit2, Trash2, MessageSquareQuote, Star, Loader2, Sparkles, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function TestimonialsAdminPage() {
@@ -20,6 +21,7 @@ export default function TestimonialsAdminPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Testimonial>>({
     name: '',
@@ -34,10 +36,11 @@ export default function TestimonialsAdminPage() {
     try {
       setIsLoading(true);
       const data = await testimonialRepository.getAll();
-      setTestimonials(data || []);
+      setTestimonials(data && data.length > 0 ? data : defaultTestimonials);
     } catch (error) {
       console.error('Failed to load testimonials:', error);
       toast.error('Failed to load testimonials.');
+      setTestimonials(defaultTestimonials);
     } finally {
       setIsLoading(false);
     }
@@ -47,13 +50,13 @@ export default function TestimonialsAdminPage() {
     let isMounted = true;
     testimonialRepository.getAll().then((data) => {
       if (isMounted) {
-        setTestimonials(data || []);
+        setTestimonials(data && data.length > 0 ? data : defaultTestimonials);
         setIsLoading(false);
       }
     }).catch((error) => {
       if (isMounted) {
         console.error('Failed to load testimonials:', error);
-        toast.error('Failed to load testimonials.');
+        setTestimonials(defaultTestimonials);
         setIsLoading(false);
       }
     });
@@ -61,6 +64,26 @@ export default function TestimonialsAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    try {
+      setIsSeeding(true);
+      for (const t of defaultTestimonials) {
+        const existing = testimonials.find((item) => item.name === t.name);
+        if (!existing) {
+          const { id, ...dataToCreate } = t;
+          await testimonialRepository.create(dataToCreate as any);
+        }
+      }
+      toast.success('Successfully seeded testimonials!');
+      await loadTestimonials();
+    } catch (err) {
+      console.error('Error seeding testimonials:', err);
+      toast.error('Failed to seed testimonials.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingItem(null);
@@ -210,13 +233,30 @@ export default function TestimonialsAdminPage() {
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenAdd}
-          variant="primary"
-          leftIcon={<Plus className="w-4 h-4" />}
-        >
-          Add Testimonial
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            onClick={handleSeedDefaults}
+            variant="secondary"
+            disabled={isSeeding}
+            leftIcon={
+              isSeeding ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
+              ) : (
+                <Sparkles className="w-4 h-4 text-amber-500" />
+              )
+            }
+          >
+            {isSeeding ? 'Seeding...' : 'Seed Testimonials'}
+          </Button>
+
+          <Button
+            onClick={handleOpenAdd}
+            variant="primary"
+            leftIcon={<Plus className="w-4 h-4" />}
+          >
+            Add Testimonial
+          </Button>
+        </div>
       </div>
 
       <DataTable

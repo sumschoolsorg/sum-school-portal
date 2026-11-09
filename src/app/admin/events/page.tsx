@@ -12,8 +12,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { eventRepository, announcementRepository } from '@/lib/repositories';
+import { defaultEvents } from '@/lib/defaultData';
 import { SchoolEvent, Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Calendar, Star, Bell, MapPin, Clock, UserCheck } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calendar, Star, Bell, MapPin, Clock, UserCheck, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function EventsAdminPage() {
@@ -47,13 +48,16 @@ export default function EventsAdminPage() {
   );
   const [broadcastAnnouncement, setBroadcastAnnouncement] = useState(true);
 
+  const [isSeeding, setIsSeeding] = useState(false);
+
   const loadEvents = useCallback(async () => {
     try {
       setIsLoading(true);
       const data = await eventRepository.getAll();
-      setEvents(data || []);
+      setEvents(data && data.length > 0 ? data : defaultEvents);
     } catch (err) {
       console.error('Error loading events:', err);
+      setEvents(defaultEvents);
       toast.error('Failed to load events.');
     } finally {
       setIsLoading(false);
@@ -64,13 +68,13 @@ export default function EventsAdminPage() {
     let isMounted = true;
     eventRepository.getAll().then((data) => {
       if (isMounted) {
-        setEvents(data || []);
+        setEvents(data && data.length > 0 ? data : defaultEvents);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading events:', err);
-        toast.error('Failed to load events.');
+        setEvents(defaultEvents);
         setIsLoading(false);
       }
     });
@@ -78,6 +82,26 @@ export default function EventsAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    setIsSeeding(true);
+    try {
+      for (const ev of defaultEvents) {
+        const { id, ...dataWithoutId } = ev;
+        await eventRepository.create({
+          ...dataWithoutId,
+          createdAt: new Date(),
+        });
+      }
+      toast.success(`Seeded ${defaultEvents.length} official school events & historical archives!`);
+      loadEvents();
+    } catch (err) {
+      console.error('Seeding error:', err);
+      toast.error('Failed to seed events to database.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingEvent(null);
@@ -280,13 +304,26 @@ export default function EventsAdminPage() {
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenAdd}
-          variant="primary"
-          leftIcon={<Plus className="w-4 h-4" />}
-        >
-          Add School Event
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {events.length <= defaultEvents.length && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSeedDefaults}
+              isLoading={isSeeding}
+              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
+            >
+              Seed Verified Events &amp; Archives
+            </Button>
+          )}
+          <Button
+            onClick={handleOpenAdd}
+            variant="primary"
+            leftIcon={<Plus className="w-4 h-4" />}
+          >
+            Add School Event
+          </Button>
+        </div>
       </div>
 
       {/* Table */}
