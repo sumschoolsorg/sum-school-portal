@@ -12,9 +12,11 @@ import {
   XCircle,
   Download,
   RefreshCw,
+  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { enquiryRepository } from '@/lib/repositories';
+import { defaultEnquiries } from '@/lib/defaultData';
 import { Enquiry } from '@/types';
 
 export default function EnquiriesAdminPage() {
@@ -23,15 +25,17 @@ export default function EnquiriesAdminPage() {
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [editNotes, setEditNotes] = useState('');
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const loadEnquiries = useCallback(async () => {
     setLoading(true);
     try {
       const data = await enquiryRepository.getAll();
-      setEnquiries(data);
+      setEnquiries(data && data.length > 0 ? data : defaultEnquiries);
     } catch (err) {
       console.error('Failed to load enquiries:', err);
       toast.error('Failed to load admission applications');
+      setEnquiries(defaultEnquiries);
     } finally {
       setLoading(false);
     }
@@ -41,13 +45,13 @@ export default function EnquiriesAdminPage() {
     let isMounted = true;
     enquiryRepository.getAll().then((data) => {
       if (isMounted) {
-        setEnquiries(data);
+        setEnquiries(data && data.length > 0 ? data : defaultEnquiries);
         setLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Failed to load enquiries:', err);
-        toast.error('Failed to load admission applications');
+        setEnquiries(defaultEnquiries);
         setLoading(false);
       }
     });
@@ -55,6 +59,26 @@ export default function EnquiriesAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    try {
+      setIsSeeding(true);
+      for (const enq of defaultEnquiries) {
+        const existing = enquiries.find((e) => e.studentName === enq.studentName);
+        if (!existing) {
+          const { id, ...dataToCreate } = enq;
+          await enquiryRepository.create(dataToCreate as any);
+        }
+      }
+      toast.success('Successfully seeded admission applications!');
+      await loadEnquiries();
+    } catch (err) {
+      console.error('Error seeding enquiries:', err);
+      toast.error('Failed to seed admission applications.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleUpdateStatus = async (id: string, newStatus: Enquiry['status'], defaultNote?: string) => {
     try {
@@ -302,7 +326,23 @@ export default function EnquiriesAdminPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={handleSeedDefaults}
+            variant="secondary"
+            size="sm"
+            disabled={isSeeding}
+            leftIcon={
+              isSeeding ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600" />
+              ) : (
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              )
+            }
+          >
+            {isSeeding ? 'Seeding...' : 'Seed Sample Applications'}
+          </Button>
+
           <Button
             onClick={loadEnquiries}
             variant="outline"

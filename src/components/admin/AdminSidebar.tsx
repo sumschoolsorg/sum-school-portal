@@ -31,6 +31,8 @@ import {
   Award,
   UserCheck,
   Milestone,
+  Sparkles,
+  Cpu,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
@@ -80,6 +82,9 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     { href: '/admin/achievements', label: 'Honors & Toppers', icon: <Trophy className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/timeline', label: 'School Milestones', icon: <Milestone className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/testimonials', label: 'Testimonials', icon: <MessageSquareQuote className="w-4 h-4" />, category: 'Media & Content' },
+
+    { href: '/admin/ai-assistant', label: 'AI Copilot & Studio', icon: <Sparkles className="w-4 h-4 text-amber-400" />, category: 'AI & Intelligence' },
+    { href: '/admin/ai-settings', label: 'Multi-AI Providers', icon: <Cpu className="w-4 h-4 text-blue-400" />, category: 'AI & Intelligence' },
 
     { href: '/admin/theme', label: 'Theme & Branding', icon: <Palette className="w-4 h-4" />, category: 'System & Settings' },
     { href: '/admin/settings', label: 'Website Settings', icon: <Settings className="w-4 h-4" />, category: 'System & Settings' },

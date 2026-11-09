@@ -40,6 +40,7 @@ export default function BannersAdminPage() {
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [formTab, setFormTab] = useState<'en' | 'ta' | 'settings'>('en');
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<HeroBanner>>({
     title: '',
@@ -69,11 +70,13 @@ export default function BannersAdminPage() {
     try {
       setIsLoading(true);
       const data = await heroBannerRepository.getAll();
-      data.sort((a, b) => (a.order || 0) - (b.order || 0));
-      setBanners(data);
+      const list = data && data.length > 0 ? data : defaultHeroBanners;
+      list.sort((a, b) => (a.order || 0) - (b.order || 0));
+      setBanners(list);
     } catch (err) {
       console.error('Error loading banners:', err);
       toast.error('Failed to load hero banners.');
+      setBanners(defaultHeroBanners);
     } finally {
       setIsLoading(false);
     }
@@ -83,14 +86,15 @@ export default function BannersAdminPage() {
     let isMounted = true;
     heroBannerRepository.getAll().then((data) => {
       if (isMounted) {
-        data.sort((a, b) => (a.order || 0) - (b.order || 0));
-        setBanners(data);
+        const list = data && data.length > 0 ? data : defaultHeroBanners;
+        list.sort((a, b) => (a.order || 0) - (b.order || 0));
+        setBanners(list);
         setIsLoading(false);
       }
     }).catch((err) => {
       if (isMounted) {
         console.error('Error loading banners:', err);
-        toast.error('Failed to load hero banners.');
+        setBanners(defaultHeroBanners);
         setIsLoading(false);
       }
     });
@@ -98,6 +102,26 @@ export default function BannersAdminPage() {
       isMounted = false;
     };
   }, []);
+
+  const handleSeedDefaults = async () => {
+    try {
+      setIsSeeding(true);
+      for (const banner of defaultHeroBanners) {
+        const existing = banners.find((b) => b.title === banner.title);
+        if (!existing) {
+          const { id, ...dataToCreate } = banner;
+          await heroBannerRepository.create(dataToCreate as any);
+        }
+      }
+      toast.success('Successfully seeded verified hero banners!');
+      await loadData();
+    } catch (err) {
+      console.error('Error seeding banners:', err);
+      toast.error('Failed to seed hero banners.');
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingBanner(null);
@@ -273,10 +297,27 @@ export default function BannersAdminPage() {
             Manage animated homepage carousel banners with dedicated English and Tamil content.
           </p>
         </div>
-        <Button onClick={handleOpenAdd} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add New Banner
-        </Button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            onClick={handleSeedDefaults}
+            variant="secondary"
+            disabled={isSeeding}
+            leftIcon={
+              isSeeding ? (
+                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
+              ) : (
+                <Sparkles className="w-4 h-4 text-amber-500" />
+              )
+            }
+          >
+            {isSeeding ? 'Seeding...' : 'Seed Verified Banners'}
+          </Button>
+
+          <Button onClick={handleOpenAdd} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add New Banner
+          </Button>
+        </div>
       </div>
 
       {/* Banner Cards List */}

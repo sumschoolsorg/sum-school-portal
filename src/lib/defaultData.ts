@@ -2456,7 +2456,62 @@ export const defaultStudentResults: StudentResult[] = [
     status: "published"
   }
 ];
-export const defaultEnquiries: Enquiry[] = [];
+export const defaultEnquiries: Enquiry[] = [
+  {
+    id: "enq-01",
+    applicationNumber: "SUM-ADM-2026-001",
+    parentName: "Thiru K. Muthuramalingam",
+    studentName: "M. Saravanan",
+    dob: "2010-06-12",
+    gender: "male",
+    phone: "+91 94431 82741",
+    email: "muthu.ramalingam@gmail.com",
+    address: "14/B West Street, Uthamapalayam, Theni District",
+    classApplyingFor: "11th Standard (Bio-Maths)",
+    previousSchool: "Government High School, Uthamapalayam",
+    message: "Seeking admission for Higher Secondary Bio-Maths stream with hostel facility.",
+    source: "admission",
+    status: "new",
+    notes: "Awaiting academic certificates from 10th standard board exams.",
+    applicationDate: "2026-05-18",
+  },
+  {
+    id: "enq-02",
+    applicationNumber: "SUM-ADM-2026-002",
+    parentName: "Tmt. S. Banumathi",
+    studentName: "S. Divyashree",
+    dob: "2015-03-24",
+    gender: "female",
+    phone: "+91 98421 99012",
+    email: "banumathi.s@yahoo.com",
+    address: "42 Cumbum Road, Royappanpatti, Theni",
+    classApplyingFor: "6th Standard (English Medium)",
+    previousSchool: "S.U.M. Primary School, Royappanpatti",
+    message: "Requesting bus route pickup from Cumbum Clock Tower.",
+    source: "admission",
+    status: "contacted",
+    notes: "Parent contacted via phone. Confirmed Route 01 pickup time at 07:45 AM.",
+    applicationDate: "2026-05-19",
+  },
+  {
+    id: "enq-03",
+    applicationNumber: "SUM-ADM-2026-003",
+    parentName: "Thiru A. Joseph",
+    studentName: "J. Christopher",
+    dob: "2010-09-15",
+    gender: "male",
+    phone: "+91 97890 44321",
+    email: "joseph.anthony@outlook.com",
+    address: "Lourdu Nagar, Royappanpatti, PIN 625526",
+    classApplyingFor: "11th Standard (Computer Science)",
+    previousSchool: "St. Aloysius High School, Royappanpatti",
+    message: "Interested in Atal Tinkering Lab robotics program and computer science group.",
+    source: "admission",
+    status: "approved",
+    notes: "Document verification completed. Admission fee received. Enrolled into +2 CS Section A.",
+    applicationDate: "2026-05-20",
+  }
+];
 
 // Seed records were not verified against school-provided source material. They are
 // retained for review but never seeded or rendered as current school records.
