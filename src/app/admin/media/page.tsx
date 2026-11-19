@@ -45,7 +45,6 @@ import {
   Edit,
   RefreshCw,
   AlertTriangle,
-  Info,
   Tag,
   CheckCircle2,
   ExternalLink,
@@ -166,7 +165,6 @@ export default function AdminMediaPage() {
 
   // Upload category selection
   const [uploadCategory, setUploadCategory] = useState<SchoolImageCategory>('General');
-  const [uploadFolder, setUploadFolder] = useState<string>('general');
 
   // Preview / Inspector Modal
   const [previewAsset, setPreviewAsset] = useState<MediaAsset | null>(null);
@@ -182,7 +180,6 @@ export default function AdminMediaPage() {
 
   // Replace Image Modal
   const [replaceAsset, setReplaceAsset] = useState<MediaAsset | null>(null);
-  const [isReplacing, setIsReplacing] = useState(false);
   const replaceFileInputRef = useRef<HTMLInputElement>(null);
 
   // Delete with Usage Warning Modal
@@ -427,7 +424,7 @@ export default function AdminMediaPage() {
       return;
     }
 
-    setIsReplacing(true);
+    const toastId = toast.loading('Replacing image in Firebase Storage & updating Firestore...');
     try {
       let fileToUpload = newFile;
       let originalBytes = newFile.size;
@@ -465,14 +462,13 @@ export default function AdminMediaPage() {
         await deleteImageByUrl(replaceAsset.url).catch(() => {});
       }
 
-      toast.success('Image successfully replaced in Firebase Storage & Firestore reference updated!');
+      toast.success('Image successfully replaced in Firebase Storage & Firestore reference updated!', { id: toastId });
       setReplaceAsset(null);
       await loadMedia();
     } catch (err) {
       console.error('Replace image error:', err);
-      toast.error((err as Error)?.message || 'Failed to replace image.');
+      toast.error((err as Error)?.message || 'Failed to replace image.', { id: toastId });
     } finally {
-      setIsReplacing(false);
       if (replaceFileInputRef.current) replaceFileInputRef.current.value = '';
     }
   };
@@ -732,7 +728,6 @@ export default function AdminMediaPage() {
                   onChange={(e) => {
                     const cat = e.target.value as SchoolImageCategory;
                     setUploadCategory(cat);
-                    setUploadFolder(cat.toLowerCase().replace(/[^a-z0-9]/g, '_'));
                   }}
                   className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-medium cursor-pointer focus:ring-2 focus:ring-blue-500"
                 >

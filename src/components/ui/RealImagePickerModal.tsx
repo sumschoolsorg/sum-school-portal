@@ -11,7 +11,6 @@ import {
   Filter,
   Ban,
   Link as LinkIcon,
-  UploadCloud,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeImageUrl, isValidImageUrl } from '@/lib/storage';

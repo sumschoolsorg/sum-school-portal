@@ -27,6 +27,7 @@ const adminRoutes = [
   '/admin/migration',
   '/admin/ai-settings',
   '/admin/ai-assistant',
+  '/admin/media',
 ];
 
 test.describe('Admin Portal Routes Full Audit & Integrity', () => {

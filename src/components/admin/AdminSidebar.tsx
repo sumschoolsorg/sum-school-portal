@@ -126,7 +126,15 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       {/* Mobile Backdrop Overlay - Clean solid alpha scrim without GPU blur distortion */}
       {isOpen && (
         <div
+          role="button"
+          tabIndex={0}
           onClick={onClose}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClose();
+            }
+          }}
           className="fixed inset-0 bg-slate-950/70 z-40 lg:hidden cursor-pointer transition-opacity duration-200"
           aria-label="Close sidebar overlay"
         />
