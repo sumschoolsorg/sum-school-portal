@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Input } from '@/components/ui/Input';
@@ -23,6 +24,7 @@ import {
   Phone,
   Clock,
   ArrowRight,
+  Mail,
   ShieldCheck,
   GraduationCap,
 } from 'lucide-react';
@@ -560,14 +562,14 @@ export default function AdmissionsPage() {
                       </div>
                       <div>
                         <div className="text-xs text-slate-500 font-bold uppercase">
-                          Admissions Office Helpline
+                          Admissions Campus Office
                         </div>
-                        <a
-                          href="tel:+914554265225"
+                        <Link
+                          href="/contact"
                           className="text-base font-extrabold text-slate-900 dark:text-white hover:text-blue-600 transition"
                         >
-                          +91 4554 265225
-                        </a>
+                          Royappanpatti Campus
+                        </Link>
                       </div>
                     </div>
                     <div className="mt-3 text-xs text-slate-600 dark:text-slate-400">
@@ -735,13 +737,13 @@ export default function AdmissionsPage() {
                       <span className="text-slate-500">
                         Need assistance or clarification on your admission?
                       </span>
-                      <a
-                        href="tel:+914554265225"
+                      <Link
+                        href="/contact"
                         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
                       >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>Call School Office (+91 4554 265225)</span>
-                      </a>
+                        <Mail className="w-3.5 h-3.5" />
+                        <span>Contact School Office</span>
+                      </Link>
                     </div>
                   </div>
                 )}

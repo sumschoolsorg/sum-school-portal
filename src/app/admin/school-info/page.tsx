@@ -93,12 +93,12 @@ export default function SchoolInfoAdminPage() {
       id: 'item-5',
       field: 'phone',
       label: 'Landline Phone Contact',
-      researchedValue: '04554-253224',
-      source: 'Uthamapalayam Telecommunication Exchange & TNEA Directory',
-      sourceUrl: 'https://static.tneaonline.org',
+      researchedValue: '',
+      source: 'School Administrative Records',
+      sourceUrl: '',
       status: 'Verify',
-      isApproved: true,
-      notes: 'STD Code 04554 belongs to Royappanpatti / Uthamapalayam exchange.',
+      isApproved: false,
+      notes: 'Telephone contact field may be configured or left empty.',
     },
     {
       id: 'item-6',
@@ -198,7 +198,7 @@ export default function SchoolInfoAdminPage() {
     } else if (item.field === 'phone') {
       setFormData((prev) => ({
         ...prev,
-        phone: '04554-253224',
+        phone: '',
         phone2: '',
       }));
     } else if (item.field === 'educationBoard') {
@@ -233,7 +233,7 @@ export default function SchoolInfoAdminPage() {
       educationBoard: 'Tamil Nadu State Board (DGE Tamil Nadu)',
       mediumOfInstruction: 'Tamil & English Medium',
       classesOffered: 'Classes 1 to 12 (Primary Wing: 1–5 | High School & Higher Secondary: 6–12)',
-      phone: '04554-253224',
+      phone: '',
       phone2: '',
       address: '105/W-2, Savarimuthu Lourdu Nagar / East Street, Royappanpatti',
       city: 'Royappanpatti, Uthamapalayam Taluk',
@@ -684,10 +684,9 @@ export default function SchoolInfoAdminPage() {
               <Input
                 label="Primary Phone Number"
                 name="phone"
-                required
                 value={formData.phone}
                 onChange={handleChange}
-                helperText="Office Landline: 04554-253224"
+                helperText="Leave empty if not displaying a public telephone number"
               />
               <Input
                 label="Alternate Phone Number"
@@ -880,7 +879,7 @@ export default function SchoolInfoAdminPage() {
                 name="whatsapp"
                 value={formData.socialMedia.whatsapp || ''}
                 onChange={handleSocialChange}
-                placeholder="https://wa.me/914554253224"
+                placeholder="https://wa.me/91..."
               />
             </div>
           </Card>

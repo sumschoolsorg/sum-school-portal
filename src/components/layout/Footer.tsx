@@ -252,10 +252,12 @@ export function Footer() {
                   </a>
                 </div>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-amber-400 shrink-0" />
-                <span>{defaultSchoolSettings.phone}</span>
-              </li>
+              {defaultSchoolSettings.phone ? (
+                <li className="flex items-center gap-3">
+                  <Phone className="w-5 h-5 text-amber-400 shrink-0" />
+                  <span>{defaultSchoolSettings.phone}</span>
+                </li>
+              ) : null}
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-amber-400 shrink-0" />
                 <span>{defaultSchoolSettings.email}</span>

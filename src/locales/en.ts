@@ -44,7 +44,7 @@ export const en = {
   },
 
   header: {
-    topPhone: '04554-253224',
+    topPhone: '',
     topHours: 'Mon – Sat: 8:30 AM – 4:00 PM',
     affiliationNotice: 'Affiliated to State Board Education',
     adminLogin: 'Admin Portal',

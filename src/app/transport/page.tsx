@@ -136,9 +136,9 @@ export default function TransportPage() {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase">
-                  {isTa ? 'நேரடி உதவி எண்' : 'Emergency Hotline'}
+                  {isTa ? 'பள்ளி அலுவலகம்' : 'Campus Transport Desk'}
                 </h4>
-                <p className="text-[11px] text-slate-500">04554-253224</p>
+                <p className="text-[11px] text-slate-500">{isTa ? 'நேரடித் தொடர்பு' : 'School Office'}</p>
               </div>
             </div>
           </div>
@@ -372,7 +372,7 @@ export default function TransportPage() {
                 <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
                   <li>&bull; {isTa ? 'ஒவ்வொரு கல்வியாண்டு தொடக்கத்திலும் பள்ளி அலுவலகத்தில் பாஸ் பெறலாம்.' : 'Collect your semester transport pass from the administrative office.'}</li>
                   <li>&bull; {isTa ? 'வழித்தட மாற்றம் தேவைப்பட்டால் தலைமை ஆசிரியரின் அனுமதி பெறவேண்டும்.' : 'Route changes require prior written intimation from parents.'}</li>
-                  <li>&bull; {isTa ? 'அவசர உதவிக்கு பள்ளி அலுவலகத்தை நேரடியாகத் தொடர்பு கொள்ளலாம்.' : 'For urgent assistance, contact school office: 04554-253224.'}</li>
+                  <li>&bull; {isTa ? 'அவசர உதவிக்கு பள்ளி அலுவலகத்தை நேரடியாகத் தொடர்பு கொள்ளலாம்.' : 'For urgent assistance, contact the school administrative office.'}</li>
                 </ul>
               </div>
             </div>

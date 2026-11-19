@@ -7,13 +7,31 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { defaultSchoolSettings } from '@/lib/defaultData';
-import { contactMessageRepository } from '@/lib/repositories';
+import { contactMessageRepository, schoolRepository } from '@/lib/repositories';
+import { SchoolSettings } from '@/types';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function ContactSection() {
   const { t, language } = useLanguage();
   const isTa = language === 'ta';
+
+  const [settings, setSettings] = useState<SchoolSettings>(defaultSchoolSettings);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    schoolRepository
+      .get()
+      .then((live) => {
+        if (isMounted && live) {
+          setSettings((prev) => ({ ...prev, ...live }));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -94,26 +112,28 @@ export function ContactSection() {
                       {t('contact.addressLabel', 'Address')}
                     </div>
                     <div className="mt-1 leading-relaxed">
-                      {defaultSchoolSettings.address}, {defaultSchoolSettings.city},{' '}
-                      {defaultSchoolSettings.state} – {defaultSchoolSettings.pincode}
+                      {settings.address}, {settings.city},{' '}
+                      {settings.state} – {settings.pincode}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 sm:gap-4 min-w-0">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-bold text-slate-900 dark:text-white">
-                      {t('contact.phoneLabel', 'Phone Numbers')}
+                {settings.phone ? (
+                  <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                      <Phone className="w-5 h-5" />
                     </div>
-                    <div className="mt-1">{defaultSchoolSettings.phone}</div>
-                    {defaultSchoolSettings.phone2 ? (
-                      <div className="text-slate-400">{defaultSchoolSettings.phone2}</div>
-                    ) : null}
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-slate-900 dark:text-white">
+                        {t('contact.phoneLabel', 'Telephone Contacts')}
+                      </div>
+                      <div className="mt-1">{settings.phone}</div>
+                      {settings.phone2 ? (
+                        <div className="text-slate-400">{settings.phone2}</div>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
+                ) : null}
 
                 <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                   <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
@@ -124,8 +144,8 @@ export function ContactSection() {
                       {t('contact.emailLabel', 'Official Email')}
                     </div>
                     <div className="mt-1 break-all text-xs sm:text-sm">
-                      <a href={`mailto:${defaultSchoolSettings.email}`} className="hover:text-blue-600 transition break-all">
-                        {defaultSchoolSettings.email}
+                      <a href={`mailto:${settings.email}`} className="hover:text-blue-600 transition break-all">
+                        {settings.email}
                       </a>
                     </div>
                   </div>
@@ -140,7 +160,7 @@ export function ContactSection() {
                       {t('contact.timingsLabel', 'Office Timings')}
                     </div>
                     <div className="mt-1">
-                      {isTa ? 'திங்கள் - வெள்ளி: காலை 9:00 - மாலை 4:30' : defaultSchoolSettings.schoolTimings}
+                      {isTa ? 'திங்கள் - வெள்ளி: காலை 9:00 - மாலை 4:30' : settings.schoolTimings}
                     </div>
                   </div>
                 </div>
@@ -236,11 +256,11 @@ export function ContactSection() {
                   />
 
                   <Input
-                    label={t('contact.phoneLabel', 'Phone Number *')}
+                    label={t('contact.formPhoneLabel', isTa ? 'கைபேசி / தொடர்பு எண் *' : 'Mobile / Contact Number *')}
                     name="phone"
                     type="tel"
                     required
-                    placeholder={t('contact.phonePlaceholder', 'Enter 10-digit mobile number')}
+                    placeholder={t('contact.phonePlaceholder', isTa ? '10 இலக்க மொபைல் எண்' : 'Enter 10-digit mobile number')}
                     value={formData.phone}
                     onChange={handleChange}
                   />

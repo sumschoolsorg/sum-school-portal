@@ -49,7 +49,7 @@ export const defaultSchoolSettings: SchoolSettings = {
   primaryUdiseCode: '33250800105',
   secondaryUdiseCode: '33250800109',
   researchVerifiedDate: '',
-  phone: '04554-253224',
+  phone: '',
   phone2: '',
   email: 'sumschool.royappanpatti@gmail.com',
   address: '105/W-2, Savarimuthu Lourdu Nagar / East Street, Royappanpatti',

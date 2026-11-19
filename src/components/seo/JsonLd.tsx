@@ -26,7 +26,6 @@ export function SchoolJsonLd() {
     description:
       'Savariyappa Udaiyar Memorial (S.U.M.) Higher Secondary & Primary School is a premier, government-aided co-educational school established in 1963 in Royappanpatti, Theni District, Tamil Nadu. Affiliated with Tamil Nadu State Board (DGE) with UDISE 33250800109.',
     foundingDate: '1963',
-    telephone: '+91-4554-253224',
     email: 'sumschool.royappanpatti@gmail.com',
     address: {
       '@type': 'PostalAddress',

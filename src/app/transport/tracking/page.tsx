@@ -167,8 +167,8 @@ export default function BusTrackingPage() {
     const stopName = isTa && targetStop?.name_ta ? targetStop.name_ta : targetStop?.name || 'Selected Stop';
     setNotifSuccessMessage(
       isTa
-        ? `பேருந்து விவரக் குறிப்பு: ${activeRoute.busRegistrationNumber} பேருந்து "${stopName}" நிறுத்தத்திற்கான போக்குவரத்துத் தகவல்களுக்கு உங்கள் எண் (${notifPhone}) பள்ளி அலுவலகப் பதிவேட்டில் இணைக்க பள்ளி அலுவலகத்தை (04554-293450) தொடர்பு கொள்ளவும்.`
-        : `Transport Notice: To link mobile number ${notifPhone} for verified route alerts on bus ${activeRoute.busRegistrationNumber} at "${stopName}", please confirm registration with the school transport desk at 04554-293450.`
+        ? `பேருந்து விவரக் குறிப்பு: ${activeRoute.busRegistrationNumber} பேருந்து "${stopName}" நிறுத்தத்திற்கான போக்குவரத்துத் தகவல்களுக்கு உங்கள் எண் (${notifPhone}) பள்ளி அலுவலகப் பதிவேட்டில் இணைக்க பள்ளி அலுவலகத்தைத் தொடர்பு கொள்ளவும்.`
+        : `Transport Notice: To link mobile number ${notifPhone} for verified route alerts on bus ${activeRoute.busRegistrationNumber} at "${stopName}", please confirm registration with the school transport desk.`
     );
   };
 
@@ -717,16 +717,16 @@ export default function BusTrackingPage() {
                   <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between">
                     <div>
                       <div className="text-[10px] text-slate-300 uppercase font-bold">
-                        {isTa ? 'அவசர உதவி எண்' : 'Transport SOS Desk'}
+                        {isTa ? 'போக்குவரத்து உதவிப் பிரிவு' : 'Transport Desk'}
                       </div>
-                      <div className="text-sm font-extrabold text-amber-300">04554-253224</div>
+                      <div className="text-sm font-extrabold text-amber-300">{isTa ? 'பள்ளி அலுவலகம்' : 'Campus Office'}</div>
                     </div>
-                    <a
-                      href="tel:04554253224"
-                      className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition"
+                    <Link
+                      href="/contact"
+                      className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition"
                     >
-                      {isTa ? 'உதவி எண்' : 'Call SOS'}
-                    </a>
+                      {isTa ? 'தொடர்புக்கு' : 'Contact Office'}
+                    </Link>
                   </div>
                 </div>
               </div>

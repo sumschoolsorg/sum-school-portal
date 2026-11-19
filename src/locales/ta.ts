@@ -47,7 +47,7 @@ export const ta: TranslationDictionary = {
   },
 
   header: {
-    topPhone: '04554-253224',
+    topPhone: '',
     topHours: 'திங்கள் – சனி: காலை 8:30 – மாலை 4:00',
     affiliationNotice: 'தமிழ்நாடு அரசு கல்வித்துறை அங்கீகாரம் பெற்றது',
     adminLogin: 'நிர்வாகப் பக்கம்',

@@ -2,16 +2,15 @@ import type { Metadata } from 'next';
 import { BreadcrumbJsonLd } from '@/components/seo/JsonLd';
 
 export const metadata: Metadata = {
-  title: 'Contact Campus Office | Address, Phone & Map Location',
+  title: 'Contact Campus Office | Address, Email & Map Location',
   description:
-    'Get in touch with S.U.M. Higher Secondary & Primary School, Royappanpatti, Theni District. Phone: 04554-253224. Email: sumschool.royappanpatti@gmail.com. Office hours, campus address, and Google Maps location.',
+    'Get in touch with S.U.M. Higher Secondary & Primary School, Royappanpatti, Theni District. Email: sumschool.royappanpatti@gmail.com. Office hours, campus address, and Google Maps location.',
   keywords: [
     'Contact S.U.M. School',
-    'S.U.M. School Royappanpatti phone number',
+    'S.U.M. School Royappanpatti communication',
     'Royappanpatti school address',
     'Theni school contact office',
     'SUM school campus directions',
-    '04554-253224 school contact',
   ],
   alternates: {
     canonical: 'https://www.sumschools.org/contact',
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Contact S.U.M. School | Royappanpatti Campus Office',
     description:
-      'We welcome parents, alumni, and prospective students to reach out. Call 04554-253224 or visit our Royappanpatti campus.',
+      'We welcome parents, alumni, and prospective students to reach out or visit our Royappanpatti campus.',
     url: 'https://www.sumschools.org/contact',
     siteName: 'S.U.M. Higher Secondary & Primary School',
     locale: 'en_IN',
