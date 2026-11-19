@@ -13,12 +13,10 @@ import {
   XCircle,
   Download,
   RefreshCw,
-  Sparkles,
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { enquiryRepository } from '@/lib/repositories';
-import { defaultEnquiries } from '@/lib/defaultData';
 import { Enquiry } from '@/types';
 
 export default function EnquiriesAdminPage() {
@@ -28,7 +26,6 @@ export default function EnquiriesAdminPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [editNotes, setEditNotes] = useState('');
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const loadEnquiries = useCallback(async () => {
     setLoading(true);
@@ -76,26 +73,6 @@ export default function EnquiriesAdminPage() {
       console.error('Delete failed:', err);
       toast.error('Failed to delete enquiry. Rolling back.');
       loadEnquiries();
-    }
-  };
-
-  const handleSeedDefaults = async () => {
-    try {
-      setIsSeeding(true);
-      for (const enq of defaultEnquiries) {
-        const existing = enquiries.find((e) => e.studentName === enq.studentName);
-        if (!existing) {
-          const { id, ...dataToCreate } = enq;
-          await enquiryRepository.create(dataToCreate as any);
-        }
-      }
-      toast.success('Successfully seeded admission applications!');
-      await loadEnquiries();
-    } catch (err) {
-      console.error('Error seeding enquiries:', err);
-      toast.error('Failed to seed admission applications.');
-    } finally {
-      setIsSeeding(false);
     }
   };
 
@@ -353,22 +330,6 @@ export default function EnquiriesAdminPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button
-            onClick={handleSeedDefaults}
-            variant="secondary"
-            size="sm"
-            disabled={isSeeding}
-            leftIcon={
-              isSeeding ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600" />
-              ) : (
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              )
-            }
-          >
-            {isSeeding ? 'Seeding...' : 'Seed Sample Applications'}
-          </Button>
-
           <Button
             onClick={loadEnquiries}
             variant="outline"

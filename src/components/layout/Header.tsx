@@ -85,7 +85,6 @@ export const HISTORICAL_FOUNDERS: FounderMember[] = [
 ];
 
 export function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAcademicsOpen, setMobileAcademicsOpen] = useState(false);
   const [academicsDropdown, setAcademicsDropdown] = useState(false);
@@ -97,14 +96,6 @@ export function Header() {
   const pathname = usePathname();
   const { t, language } = useLanguage();
   const isTa = language === 'ta';
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 45);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Close mobile menu on actual route changes (skip initial mount)
   const prevPathnameRef = React.useRef(pathname);
@@ -201,12 +192,14 @@ export function Header() {
                   <img
                     src="/images/school-crest.png"
                     alt="S.U.M. Higher Secondary School Crest"
+                    width={64}
+                    height={64}
                     className="w-full h-full object-contain drop-shadow-xs"
                   />
                 </div>
                 <div className="flex flex-col text-left min-w-0 flex-1">
                   <span className="font-heading font-black text-xs sm:text-lg lg:text-2xl text-slate-900 dark:text-white tracking-tight leading-tight group-hover:text-blue-600 transition truncate">
-                    S.U.M. SCHOOL
+                    S.U.M. SCHOOLS
                   </span>
                   <span className="text-[8px] sm:text-[11px] lg:text-xs font-black text-blue-700 dark:text-blue-400 tracking-normal sm:tracking-wider uppercase leading-snug truncate">
                     HIGHER SECONDARY &amp; PRIMARY
@@ -275,6 +268,8 @@ export function Header() {
                   <img
                     src="/images/diamond-jubilee-logo.png"
                     alt="S.U.M. School 60th Diamond Jubilee Anniversary Logo"
+                    width={60}
+                    height={60}
                     className="h-9 sm:h-12 lg:h-15 w-auto object-contain drop-shadow-xs"
                   />
                 </div>
@@ -311,35 +306,9 @@ export function Header() {
           </div>
         </div>
 
-        {/* FOURTH: NAVIGATION MENU BAR (Row 2 - Sticky on Scroll) */}
-        <div
-          className={`w-full z-30 transition-all duration-300 bg-slate-900 text-slate-100 border-b border-slate-800 shadow-md ${
-            isScrolled ? 'sticky top-0 shadow-xl bg-slate-950/95 backdrop-blur-md' : 'relative'
-          }`}
-        >
+        {/* FOURTH: NAVIGATION MENU BAR (Row 2) */}
+        <div className="w-full z-40 bg-slate-900 text-slate-100 border-b border-slate-800 shadow-md relative">
           <div className="container-main flex items-center justify-end xl:justify-between min-w-0">
-            {/* Scrolled Compact Brand Mark */}
-            {isScrolled && (
-              <Link href="/" className="hidden lg:flex items-center gap-2.5 py-2 mr-4 shrink-0 group">
-                <div className="w-8 h-8 rounded-xl bg-white p-0.5 flex items-center justify-center shadow-xs">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/images/school-crest.png"
-                    alt="S.U.M. School Crest"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-heading font-extrabold text-xs text-white leading-none">
-                    S.U.M. SCHOOL
-                  </span>
-                  <span className="text-[9px] font-bold text-amber-400 leading-tight">
-                    Royappanpatti
-                  </span>
-                </div>
-              </Link>
-            )}
-
             {/* Desktop Navigation Links */}
             <nav className="hidden xl:flex items-center gap-0 py-1.5 overflow-visible" aria-label="Main Navigation">
               {navLinks.map((link, idx) => {
@@ -519,7 +488,7 @@ export function Header() {
                   </div>
                   <div>
                     <div className="font-heading font-black text-sm text-slate-900 dark:text-white leading-tight">
-                      S.U.M. SCHOOL
+                      S.U.M. SCHOOLS
                     </div>
                     <div className="text-[10px] font-bold text-blue-700 dark:text-blue-400">
                       Higher Secondary &amp; Primary

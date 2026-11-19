@@ -107,10 +107,10 @@ test.describe('Tombstone & Permanent Deletion Verification', () => {
       });
 
       // Verify item exists
-      const retrieved = await new Promise<any>((resolve) => {
+      const retrieved = await new Promise<Record<string, unknown> | undefined>((resolve) => {
         const tx = db.transaction(storeName, 'readonly');
         const req = tx.objectStore(storeName).get(testId);
-        req.onsuccess = () => resolve(req.result);
+        req.onsuccess = () => resolve(req.result as Record<string, unknown> | undefined);
       });
       if (!retrieved || retrieved.id !== testId) {
         return { success: false, reason: 'Failed to put test item in IndexedDB' };
@@ -130,10 +130,10 @@ test.describe('Tombstone & Permanent Deletion Verification', () => {
       localStorage.setItem('sum_school_deleted_tombstones', JSON.stringify(Array.from(tombstones)));
 
       // Verify item is removed
-      const afterDelete = await new Promise<any>((resolve) => {
+      const afterDelete = await new Promise<Record<string, unknown> | undefined>((resolve) => {
         const tx = db.transaction(storeName, 'readonly');
         const req = tx.objectStore(storeName).get(testId);
-        req.onsuccess = () => resolve(req.result);
+        req.onsuccess = () => resolve(req.result as Record<string, unknown> | undefined);
       });
       if (afterDelete) {
         return { success: false, reason: 'Item still exists in IndexedDB after delete' };
@@ -150,7 +150,7 @@ test.describe('Tombstone & Permanent Deletion Verification', () => {
 
     const postReload = await page.evaluate(async (id: string) => {
       const db = await new Promise<IDBDatabase>((resolve, reject) => {
-        const req = indexedDB.open('sum_school_local_db', 6);
+        const req = indexedDB.open('sum_school_local_db', 7);
         req.onupgradeneeded = (e) => {
           const d = (e.target as IDBOpenDBRequest).result;
           if (!d.objectStoreNames.contains('announcements')) {
@@ -160,10 +160,10 @@ test.describe('Tombstone & Permanent Deletion Verification', () => {
         req.onsuccess = () => resolve(req.result);
         req.onerror = () => reject(req.error);
       });
-      const check = await new Promise<any>((resolve) => {
+      const check = await new Promise<Record<string, unknown> | undefined>((resolve) => {
         const tx = db.transaction('announcements', 'readonly');
         const req = tx.objectStore('announcements').get(id);
-        req.onsuccess = () => resolve(req.result);
+        req.onsuccess = () => resolve(req.result as Record<string, unknown> | undefined);
       });
       const tombstones = new Set(JSON.parse(localStorage.getItem('sum_school_deleted_tombstones') || '[]'));
       return {

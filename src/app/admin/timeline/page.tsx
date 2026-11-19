@@ -12,9 +12,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { timelineRepository, aboutRepository } from '@/lib/repositories';
-import { defaultAboutContent, defaultTimelineEntries } from '@/lib/defaultData';
+import { defaultAboutContent } from '@/lib/defaultData';
 import { TimelineEntry } from '@/types';
-import { Plus, Edit2, Trash2, Milestone, Save, Sparkles, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Milestone, Save } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function TimelineAdminPage() {
@@ -38,7 +38,6 @@ export default function TimelineAdminPage() {
       '1963-ல் தொடங்கப்பட்ட எளிய கல்விப் பணி முதல் இன்றைய நவீன டிஜிட்டல் வளாகம் வரையிலான வளர்ச்சிப் பாதை.',
   });
   const [isSavingHeader, setIsSavingHeader] = useState(false);
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<TimelineEntry>>({
     year: '2026',
@@ -47,7 +46,7 @@ export default function TimelineAdminPage() {
     description: '',
     description_ta: '',
     category: 'milestone',
-    imageUrl: '/images/hero-campus.jpg',
+    imageUrl: '',
     order: 1,
     status: 'published',
   });
@@ -122,26 +121,6 @@ export default function TimelineAdminPage() {
     }
   };
 
-  const handleSeedDefaults = async () => {
-    setIsSeeding(true);
-    try {
-      for (const entry of defaultTimelineEntries) {
-        const { id, ...dataWithoutId } = entry;
-        await timelineRepository.create({
-          ...dataWithoutId,
-          createdAt: new Date(),
-        });
-      }
-      toast.success(`Seeded ${defaultTimelineEntries.length} verified school journey milestones!`);
-      loadEntries();
-    } catch (err) {
-      console.error('Seeding error:', err);
-      toast.error('Failed to seed timeline milestones.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const handleOpenAdd = () => {
     setEditingItem(null);
     setFormData({
@@ -151,7 +130,7 @@ export default function TimelineAdminPage() {
       description: '',
       description_ta: '',
       category: 'milestone',
-      imageUrl: '/images/hero-campus.jpg',
+      imageUrl: '',
       order: entries.length + 1,
       status: 'published',
     });
@@ -275,17 +254,6 @@ export default function TimelineAdminPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {entries.length === 0 && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSeedDefaults}
-              isLoading={isSeeding}
-              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
-            >
-              Seed 10 Verified Milestones
-            </Button>
-          )}
           <Button onClick={handleOpenAdd} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
             Add Timeline Milestone
           </Button>

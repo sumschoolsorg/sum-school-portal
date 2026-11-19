@@ -12,10 +12,16 @@ import {
   School,
   Cloud,
   HardDrive,
+  Upload,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/Modal';
+import { ImageUpload } from '@/components/ui/ImageUpload';
+import { toast } from 'sonner';
 import {
   defaultSchoolSettings,
 } from '@/lib/defaultData';
@@ -42,6 +48,9 @@ export default function AdminDashboardPage() {
   });
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadedUrl, setUploadedUrl] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const [recentEnquiries, setRecentEnquiries] = useState<{
     id: string;
@@ -181,6 +190,19 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <Button
+            onClick={() => {
+              setUploadedUrl('');
+              setCopied(false);
+              setIsUploadModalOpen(true);
+            }}
+            variant="primary"
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md font-semibold"
+            leftIcon={<Upload className="w-4 h-4" />}
+          >
+            Upload Image
+          </Button>
           <Link href="/admin/announcements">
             <Button
               variant="accent"
@@ -294,10 +316,12 @@ export default function AdminDashboardPage() {
 
             <div className="space-y-2">
               {[
+                { title: '⚡ Upload Images & Media Assets', href: '/admin/media' },
                 { title: 'School Information & Logo', href: '/admin/school-info' },
                 { title: 'Homepage Hero & Highlights', href: '/admin/homepage' },
                 { title: 'About Page & Core Values', href: '/admin/about' },
                 { title: 'Academic Streams & Subjects', href: '/admin/academics' },
+                { title: '📅 Academic Years Table (2000–2041)', href: '/admin/academic-years' },
                 { title: 'Admissions Criteria & Procedure', href: '/admin/admissions' },
                 { title: 'Faculty & Teacher Profiles', href: '/admin/faculty' },
                 { title: 'Campus Facilities & Photos', href: '/admin/facilities' },
@@ -316,6 +340,76 @@ export default function AdminDashboardPage() {
           </Card>
         </div>
       </div>
+
+      {/* Quick Image Upload Modal */}
+      {isUploadModalOpen && (
+        <Modal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          title="Quick Image Uploader"
+          size="md"
+        >
+          <div className="space-y-4">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Upload any campus photo, achievement trophy, or document image. Once uploaded, copy the URL to embed it into banners, announcements, or staff profiles.
+            </p>
+
+            <ImageUpload
+              label="Select Image"
+              folder="general"
+              onImageUploaded={(url) => {
+                setUploadedUrl(url);
+                setCopied(false);
+              }}
+            />
+
+            {uploadedUrl && (
+              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                  <span>Image URL Ready:</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(uploadedUrl);
+                      setCopied(true);
+                      toast.success('Copied URL to clipboard!');
+                      setTimeout(() => setCopied(false), 2500);
+                    }}
+                    className="flex items-center gap-1 text-emerald-700 dark:text-emerald-300 hover:underline cursor-pointer"
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copied ? 'Copied!' : 'Copy URL'}</span>
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  readOnly
+                  value={uploadedUrl}
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                  className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 text-xs font-mono select-all text-slate-800 dark:text-slate-200"
+                />
+              </div>
+            )}
+
+            <div className="flex items-center justify-between pt-2">
+              <Link
+                href="/admin/media"
+                onClick={() => setIsUploadModalOpen(false)}
+                className="text-xs text-blue-600 dark:text-blue-400 font-bold hover:underline flex items-center gap-1"
+              >
+                <span>Open Full Media Asset Manager</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsUploadModalOpen(false)}
+              >
+                Done
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

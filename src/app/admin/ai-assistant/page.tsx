@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { Select } from '@/components/ui/Select';
 import {
   Sparkles,
@@ -19,8 +18,6 @@ import {
   Cpu,
   Bot,
   User,
-  ExternalLink,
-  ShieldAlert,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AIChatMessage, AIProviderId } from '@/types/ai';
@@ -30,6 +27,7 @@ export default function AdminAIAssistantPage() {
   const [inputPrompt, setInputPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const msgCounterRef = useRef(1);
 
   const [messages, setMessages] = useState<AIChatMessage[]>([
     {
@@ -84,7 +82,7 @@ export default function AdminAIAssistantPage() {
     if (!text.trim()) return;
 
     const userMsg: AIChatMessage = {
-      id: `user-${Date.now()}`,
+      id: `user-${++msgCounterRef.current}`,
       role: 'user',
       content: text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -109,7 +107,7 @@ export default function AdminAIAssistantPage() {
 
       if (data.success && data.content) {
         const assistantMsg: AIChatMessage = {
-          id: `ai-${Date.now()}`,
+          id: `ai-${++msgCounterRef.current}`,
           role: 'assistant',
           content: data.content,
           providerUsed: data.provider || provider,

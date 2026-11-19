@@ -48,6 +48,9 @@ next-env.d.ts
 eslint-report.json
 eslint_output.json
 
+# image backups
+public/images/.backup/
+
 # firebase
 .firebase/
 

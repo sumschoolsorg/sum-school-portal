@@ -128,10 +128,10 @@ export default function AboutAdminPage() {
     setIsSaving(true);
     try {
       await aboutRepository.save(formData);
-      toast.success('About page content, vision, and management records saved to Firestore!');
+      toast.success('About page content, vision, and management records saved to Firebase!');
     } catch (error) {
-      console.warn('Saved in offline mode:', error);
-      toast.info('About page content updated locally.');
+      console.error('Failed to save about content:', error);
+      toast.error((error as Error)?.message || 'Failed to save About page content to Firebase.');
     } finally {
       setIsSaving(false);
     }

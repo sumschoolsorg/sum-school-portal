@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { timelineRepository, aboutRepository } from '@/lib/repositories';
-import { defaultTimelineEntries, defaultAboutContent } from '@/lib/defaultData';
+import { defaultAboutContent } from '@/lib/defaultData';
 import { TimelineEntry, AboutContent } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SectionHeading } from '@/components/ui/SectionHeading';
@@ -12,7 +12,7 @@ export function SchoolTimelineSection() {
   const { getLocalized, language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [timeline, setTimeline] = useState<TimelineEntry[]>(defaultTimelineEntries);
+  const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const [aboutContent, setAboutContent] = useState<AboutContent>(defaultAboutContent);
 
   useEffect(() => {
@@ -24,16 +24,15 @@ export function SchoolTimelineSection() {
           aboutRepository.get().catch(() => null),
         ]);
         if (isMounted) {
-          if (timelineData && timelineData.length > 0) {
-            const published = timelineData.filter((item) => item.status === 'published');
-            setTimeline(published.length > 0 ? published : defaultTimelineEntries);
-          }
+          const published = (timelineData || []).filter((item) => item.status === 'published');
+          setTimeline(published);
           if (aboutData) {
             setAboutContent(aboutData);
           }
         }
       } catch (err) {
         console.warn('Error loading timeline entries:', err);
+        if (isMounted) setTimeline([]);
       }
     };
     loadTimeline();
@@ -41,6 +40,8 @@ export function SchoolTimelineSection() {
       isMounted = false;
     };
   }, []);
+
+  if (timeline.length === 0) return null;
 
   const sectionSubtitle =
     getLocalized(aboutContent, 'timelineSubtitle') ||

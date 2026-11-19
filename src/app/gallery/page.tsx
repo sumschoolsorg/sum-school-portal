@@ -15,10 +15,11 @@ import {
   FolderOpen,
 } from 'lucide-react';
 import { galleryRepository } from '@/lib/repositories';
-import { defaultGalleryImages } from '@/lib/defaultData';
 import { GalleryImage } from '@/types';
+import { ACADEMIC_YEAR_OPTIONS } from '@/lib/academicYears';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { toast } from 'sonner';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function GalleryPage() {
   const { getLocalized, language } = useLanguage();
@@ -171,6 +172,7 @@ export default function GalleryPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main id="main-content" className="flex-1">
+        <Breadcrumbs items={[{ label: isTa ? 'புகைப்படத் தொகுப்பு' : 'Gallery' }]} />
         {/* Page Hero */}
         <section className="relative py-20 lg:py-24 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="container-main relative z-10 text-center">
@@ -190,7 +192,7 @@ export default function GalleryPage() {
         </section>
 
         {/* Year, Month & Category Navigation Toolbar */}
-        <section className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 sticky top-16 z-20 shadow-sm backdrop-blur-md bg-opacity-95">
+        <section className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 relative z-10 shadow-xs">
           <div className="container-main space-y-4">
             {/* Level 1: Academic Year Navigation Pills & Search Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0 max-w-full">
@@ -212,6 +214,20 @@ export default function GalleryPage() {
                     {yr === 'all' ? (isTa ? 'அனைத்து ஆண்டுகள்' : 'All Years') : yr}
                   </button>
                 ))}
+
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="px-3 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer shrink-0"
+                  aria-label="Filter Academic Year"
+                >
+                  <option value="all">{isTa ? 'மேலும் கல்வி ஆண்டுகள் (2000–2041)...' : 'Academic Years (2000–2041)...'}</option>
+                  {ACADEMIC_YEAR_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Search album / event */}
@@ -338,12 +354,18 @@ export default function GalleryPage() {
                     >
                       {/* Photo Thumbnail */}
                       <div className="relative h-56 w-full overflow-hidden bg-slate-200 dark:bg-slate-800">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={img.imageUrl}
-                          alt={title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                        {img.imageUrl ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={img.imageUrl}
+                            alt={title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
+                            <ImageIcon className="w-12 h-12" />
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-slate-950/0 group-hover:bg-slate-950/30 transition-colors flex items-center justify-center">
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity p-3 rounded-full bg-white/90 text-slate-900 shadow-lg transform translate-y-2 group-hover:translate-y-0 duration-300">
                             <ZoomIn className="w-5 h-5" />

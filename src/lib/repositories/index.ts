@@ -1,7 +1,6 @@
 // ============================================================
 // Data Access Repository Architecture
-// Provides a unified data abstraction over Local Storage (IndexedDB)
-// and Google Cloud Firestore.
+// Firebase Cloud Firestore Primary + IndexedDB Local Cache
 // ============================================================
 
 import {
@@ -11,6 +10,8 @@ import {
   getLocalById,
   putLocal,
   deleteLocal,
+  clearLocalStore,
+  clearAllLocalData,
   exportAllLocalData,
   importAllLocalData,
 } from '@/lib/db/indexedDB';
@@ -49,6 +50,7 @@ import {
   AlumniPrivateContact,
   TransportRoute,
   StudentResult,
+  MediaAsset,
 } from '@/types';
 
 export type DataMode = 'local' | 'firebase';
@@ -64,7 +66,7 @@ export function getCurrentDataMode(): DataMode {
       if (saved === 'firebase' && isFirebaseConfigured()) return 'firebase';
       if (saved === 'local' && !isFirebaseConfigured()) return 'local';
     } catch {
-      // Storage can be blocked by browser privacy settings; use the configured default.
+      // Storage blocked by browser privacy settings; use configured default.
     }
   }
   return isFirebaseConfigured() ? 'firebase' : 'local';
@@ -91,12 +93,12 @@ export class SingleDocRepository<T extends { id?: string }> {
   async get(): Promise<T> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      try {
-        const doc = await getDocument<T>(this.firestoreCollection, this.defaultDocId);
-        if (doc) return doc;
-      } catch (err) {
-        console.warn(`Firestore get fallback for ${this.firestoreCollection}:`, err);
+      const doc = await getDocument<T>(this.firestoreCollection, this.defaultDocId);
+      if (doc) {
+        await putLocal<T>(this.storeName, doc).catch(() => {});
+        return doc;
       }
+      throw new Error(`Document not found in cloud collection ${this.firestoreCollection}`);
     }
 
     const localDoc = await getLocalById<T>(this.storeName, this.defaultDocId);
@@ -113,12 +115,7 @@ export class SingleDocRepository<T extends { id?: string }> {
     const itemToSave = { ...data, id: this.defaultDocId } as T;
 
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      try {
-        await setDocument(this.firestoreCollection, this.defaultDocId, itemToSave);
-      } catch (err) {
-        console.error(`Firestore save failed for ${this.firestoreCollection}:`, err);
-        throw new Error(`Cloud save failed for ${this.firestoreCollection}. Please check your administrator privileges.`);
-      }
+      await setDocument(this.firestoreCollection, this.defaultDocId, itemToSave);
     }
 
     return putLocal<T>(this.storeName, itemToSave);
@@ -135,27 +132,20 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
   async getAll(): Promise<T[]> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      try {
-        const docs = await getDocuments<T>(this.firestoreCollection);
-        // When Firestore query succeeds, return docs directly (even if docs is []).
-        // A cloud query that returns 0 documents means there are legitimately 0 documents!
-        if (Array.isArray(docs)) {
-          // Sync with local cache: remove any local item not in cloud docs
-          try {
-            const localItems = await getLocalAll<T>(this.storeName);
-            const cloudIds = new Set(docs.map((d: any) => d.id).filter(Boolean));
-            for (const local of localItems) {
-              if (local.id && !cloudIds.has(local.id)) {
-                await deleteLocal(this.storeName, local.id);
-              }
+      const docs = await getDocuments<T>(this.firestoreCollection);
+      if (Array.isArray(docs)) {
+        // Mirror cloud state into local cache so offline cache matches Firestore exactly
+        try {
+          await clearLocalStore(this.storeName);
+          for (const cloudDoc of docs) {
+            if (cloudDoc.id) {
+              await putLocal<T>(this.storeName, cloudDoc);
             }
-          } catch (syncErr) {
-            console.warn(`Local sync cleanup warning for ${this.firestoreCollection}:`, syncErr);
           }
-          return docs;
+        } catch (syncErr) {
+          console.warn(`Local sync cache update warning for ${this.firestoreCollection}:`, syncErr);
         }
-      } catch (err) {
-        console.warn(`Firestore getDocuments fallback for ${this.firestoreCollection}:`, err);
+        return docs;
       }
     }
 
@@ -165,14 +155,8 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
   async getPublished(): Promise<T[]> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      try {
-        const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
-        if (Array.isArray(docs)) {
-          return docs;
-        }
-      } catch (err) {
-        console.warn(`Firestore published query fallback for ${this.firestoreCollection}:`, err);
-      }
+      const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
+      return Array.isArray(docs) ? docs : [];
     }
     const all = await getLocalAll<T>(this.storeName);
     return all.filter((item) => item.status === 'published');
@@ -181,12 +165,7 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
   async getById(id: string): Promise<T | null> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      try {
-        const doc = await getDocument<T>(this.firestoreCollection, id);
-        return doc;
-      } catch (err) {
-        console.warn(`Firestore getDocument fallback for ${this.firestoreCollection}/${id}:`, err);
-      }
+      return await getDocument<T>(this.firestoreCollection, id);
     }
 
     return getLocalById<T>(this.storeName, id);
@@ -195,13 +174,8 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
   async save(data: T): Promise<T> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      try {
-        if (!data.id) throw new Error('A document ID is required for a cloud save.');
-        await setDocument(this.firestoreCollection, data.id, data);
-      } catch (err) {
-        console.error(`Firestore save failed for ${this.firestoreCollection}:`, err);
-        throw new Error(`Cloud save failed for ${this.firestoreCollection}. The change was not reported as synced.`);
-      }
+      if (!data.id) throw new Error('A document ID is required for a cloud save.');
+      await setDocument(this.firestoreCollection, data.id, data);
     }
 
     return putLocal<T>(this.storeName, data);
@@ -231,12 +205,7 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
   async delete(id: string): Promise<void> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      try {
-        await deleteDocument(this.firestoreCollection, id);
-      } catch (err) {
-        console.error(`Firestore delete failed for ${this.firestoreCollection}/${id}:`, err);
-        throw new Error(`Cloud delete failed for ${this.firestoreCollection}/${id}. The record was not reported as deleted.`);
-      }
+      await deleteDocument(this.firestoreCollection, id);
     }
     await deleteLocal(this.storeName, id);
   }
@@ -373,5 +342,10 @@ export const studentResultRepository = new CollectionRepository<StudentResult>(
   'studentResults'
 );
 
+export const mediaAssetRepository = new CollectionRepository<MediaAsset>(
+  STORES.MEDIA_ASSETS,
+  'mediaAssets'
+);
+
 // Data backup and migration helpers
-export { exportAllLocalData, importAllLocalData };
+export { exportAllLocalData, importAllLocalData, clearAllLocalData };

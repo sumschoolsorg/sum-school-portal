@@ -79,8 +79,8 @@ export default function HomepageAdminPage() {
         toast.info('Homepage configuration saved to local offline preview.');
       }
     } catch (error) {
-      console.warn('Saved in offline mode:', error);
-      toast.info('Homepage configuration saved to local offline storage.');
+      console.error('Failed to save homepage content:', error);
+      toast.error((error as Error)?.message || 'Failed to save homepage content to Firebase.');
     } finally {
       setIsSaving(false);
     }

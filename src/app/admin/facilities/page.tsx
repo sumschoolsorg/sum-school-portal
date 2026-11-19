@@ -12,8 +12,7 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Facility } from '@/types';
 import { facilityRepository } from '@/lib/repositories';
-import { defaultFacilities } from '@/lib/defaultData';
-import { Plus, Edit2, Trash2, Building2, Loader2, Sparkles, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Building2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FacilitiesAdminPage() {
@@ -23,12 +22,11 @@ export default function FacilitiesAdminPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Facility>>({
     title: '',
     description: '',
-    imageUrl: 'https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '',
     icon: 'MonitorPlay',
     status: 'published',
   });
@@ -66,32 +64,12 @@ export default function FacilitiesAdminPage() {
     };
   }, []);
 
-  const handleSeedDefaults = async () => {
-    try {
-      setIsSeeding(true);
-      for (const fac of defaultFacilities) {
-        const existing = facilities.find((item) => item.title === fac.title);
-        if (!existing) {
-          const { id, ...dataToCreate } = fac;
-          await facilityRepository.create(dataToCreate as any);
-        }
-      }
-      toast.success('Successfully seeded verified facilities!');
-      await loadFacilities();
-    } catch (err) {
-      console.error('Error seeding facilities:', err);
-      toast.error('Failed to seed facilities.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const handleOpenAdd = () => {
     setEditingFacility(null);
     setFormData({
       title: '',
       description: '',
-      imageUrl: 'https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80',
+      imageUrl: '',
       icon: 'MonitorPlay',
       status: 'published',
     });
@@ -120,7 +98,7 @@ export default function FacilitiesAdminPage() {
         const newEntry = {
           title: formData.title || 'Untitled Facility',
           description: formData.description || '',
-          imageUrl: formData.imageUrl || 'https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80',
+          imageUrl: formData.imageUrl || '',
           icon: formData.icon || 'MonitorPlay',
           status: (formData.status as 'published' | 'draft') || 'published',
           order: facilities.length + 1,
@@ -132,7 +110,7 @@ export default function FacilitiesAdminPage() {
       setIsModalOpen(false);
     } catch (error) {
       console.error(error);
-      toast.error('Failed to save facility.');
+      toast.error((error as Error)?.message || 'Failed to save facility to Firebase.');
     } finally {
       setIsSaving(false);
     }
@@ -168,7 +146,7 @@ export default function FacilitiesAdminPage() {
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={item.imageUrl}
+            src={item.imageUrl || '/images/facility-science-lab.jpg'}
             alt={item.title}
             className="w-12 h-10 rounded-xl object-cover border border-slate-200"
           />
@@ -227,21 +205,6 @@ export default function FacilitiesAdminPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            onClick={handleSeedDefaults}
-            variant="secondary"
-            disabled={isSeeding}
-            leftIcon={
-              isSeeding ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
-              ) : (
-                <Sparkles className="w-4 h-4 text-amber-500" />
-              )
-            }
-          >
-            {isSeeding ? 'Seeding...' : 'Seed Facilities'}
-          </Button>
-
           <Button
             onClick={handleOpenAdd}
             variant="primary"

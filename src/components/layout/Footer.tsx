@@ -40,6 +40,10 @@ export function Footer() {
                   <img
                     src="/images/school-crest.png"
                     alt="S.U.M. School Crest"
+                    width={52}
+                    height={52}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -62,6 +66,10 @@ export function Footer() {
                 <img
                   src="/images/diamond-jubilee-logo.png"
                   alt="Diamond Jubilee 60 Years"
+                  width={48}
+                  height={48}
+                  loading="lazy"
+                  decoding="async"
                   className="h-10 sm:h-12 w-auto object-contain drop-shadow-md"
                 />
               </div>

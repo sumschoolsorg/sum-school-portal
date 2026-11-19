@@ -1,4 +1,4 @@
-import { AIProviderId, AICallRequest, AICallResponse } from '@/types/ai';
+import { AICallRequest, AICallResponse } from '@/types/ai';
 
 export const INSTITUTIONAL_SYSTEM_PROMPT = `You are the Official AI Administrative Copilot for Savariyappa Udaiyar Memorial (S.U.M.) Higher Secondary & Primary School, located in Royappanpatti, Theni District, Tamil Nadu (PIN: 625526, Established: 1963, Secondary UDISE: 33250800109, Primary UDISE: 33250800105).
 

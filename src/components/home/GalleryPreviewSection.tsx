@@ -1,48 +1,38 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Eye } from 'lucide-react';
+import { ArrowRight, Eye, Image as ImageIcon } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Button } from '@/components/ui/Button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { galleryRepository } from '@/lib/repositories';
+import { GalleryImage } from '@/types';
 
 export function GalleryPreviewSection() {
-  const { t, language } = useLanguage();
-  const isTa = language === 'ta';
+  const { t, getLocalized } = useLanguage();
+  const [photos, setPhotos] = useState<GalleryImage[]>([]);
 
-  const photos = [
-    {
-      title: isTa ? 'பள்ளி வளாக முதன்மை நுழைவாயில்' : 'School Campus Main Entrance',
-      category: isTa ? 'வளாகக் கட்டமைப்பு' : 'Campus Architecture',
-      url: '/images/hero-campus.jpg',
-    },
-    {
-      title: isTa ? 'ஊடாடும் ஸ்மார்ட் வகுப்பறை' : 'Interactive Smart Classroom',
-      category: isTa ? 'கல்வி வாழ்க்கை' : 'Academic Life',
-      url: '/images/facility-smart-class.jpg',
-    },
-    {
-      title: isTa ? 'அடல் டிங்கரிங் லேப் & ரோபாட்டிக்ஸ் மையம்' : 'Atal Tinkering Lab & Robotics Innovation',
-      category: isTa ? 'STEM & ரோபாட்டிக்ஸ்' : 'STEM & Robotics',
-      url: '/images/atl/atl-workshop-learning-6.jpeg',
-    },
-    {
-      title: isTa ? 'ஆண்டு விளையாட்டு மற்றும் தடகளப் போட்டி' : 'Annual Sports & Athletics Meet',
-      category: isTa ? 'விளையாட்டு' : 'Athletics',
-      url: '/images/event-sports-day.jpg',
-    },
-    {
-      title: isTa ? 'கலாச்சார விழா மற்றும் ஆண்டு விழா நிகழ்வு' : 'Cultural Festival Performance',
-      category: isTa ? 'கலை & பண்பாடு' : 'Cultural Activities',
-      url: '/images/event-annual-day.jpg',
-    },
-    {
-      title: isTa ? 'மாநில ஹேக்கத்தான் 2026 — முதற்பரிசு ரூ. 10,000' : 'State Hackathon 2026 — 1st Prize ₹10,000',
-      category: isTa ? 'மாணவர் சாதனை' : 'Student Achievement',
-      url: '/images/atl/hackathon-2026-1.jpeg',
-    },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+    galleryRepository
+      .getPublished()
+      .then((items) => {
+        if (isMounted) {
+          setPhotos((items || []).slice(0, 6));
+        }
+      })
+      .catch(() => {
+        if (isMounted) setPhotos([]);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (photos.length === 0) {
+    return null;
+  }
 
   return (
     <section className="section-padding bg-white dark:bg-slate-950 relative">
@@ -67,33 +57,43 @@ export function GalleryPreviewSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {photos.map((item, idx) => (
-            <div
-              key={idx}
-              className="relative h-64 rounded-3xl overflow-hidden shadow-sm group border border-slate-200/60 dark:border-slate-800"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.url}
-                alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
+          {photos.map((item, idx) => {
+            const title = getLocalized(item, 'title', 'title_en') || item.title;
+            return (
+              <Link
+                key={item.id || idx}
+                href="/gallery"
+                className="relative h-64 rounded-3xl overflow-hidden shadow-sm group border border-slate-200/60 dark:border-slate-800 block"
+              >
+                {item.imageUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={item.imageUrl}
+                    alt={title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+                    <ImageIcon className="w-12 h-12 text-slate-700" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-80 group-hover:opacity-95 transition-opacity" />
 
-              <div className="absolute bottom-4 left-4 right-4 text-white transform group-hover:-translate-y-1 transition-transform">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300">
-                  {item.category}
-                </span>
-                <h4 className="text-base font-bold font-heading text-white">
-                  {item.title}
-                </h4>
-              </div>
+                <div className="absolute bottom-4 left-4 right-4 text-white transform group-hover:-translate-y-1 transition-transform">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300">
+                    {item.albumName || item.eventCategory || 'Gallery'}
+                  </span>
+                  <h4 className="text-base font-bold font-heading text-white line-clamp-1">
+                    {title}
+                  </h4>
+                </div>
 
-              <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                <Eye className="w-4 h-4" />
-              </div>
-            </div>
-          ))}
+                <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Eye className="w-4 h-4" />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

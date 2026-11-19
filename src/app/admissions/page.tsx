@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function AdmissionsPage() {
   const { t, getLocalized, language } = useLanguage();
@@ -254,6 +255,7 @@ export default function AdmissionsPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main id="main-content" className="flex-1 bg-slate-50/50 dark:bg-slate-950">
+        <Breadcrumbs items={[{ label: t('header.admissions', 'Admissions') }]} />
         {/* Hero Banner */}
         <section className="relative py-20 lg:py-28 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="container-main relative z-10 text-center">
@@ -861,6 +863,77 @@ export default function AdmissionsPage() {
                 </div>
               </div>
             )}
+          </div>
+        </section>
+
+        {/* Admissions Frequently Asked Questions */}
+        <section className="py-16 bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800">
+          <div className="container-main max-w-4xl">
+            <div className="text-center mb-10">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                {isTa ? 'அடிக்கடி கேட்கப்படும் கேள்விகள்' : 'Help & Clarity'}
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-bold font-heading text-slate-900 dark:text-white mt-2">
+                {isTa ? 'மாணவர் சேர்க்கை வினா-விடைகள்' : 'Admissions Frequently Asked Questions'}
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+                {isTa
+                  ? 'சேர்க்கை நடைமுறைகள், ஆவணங்கள் மற்றும் பாடப்பிரிவுகள் பற்றிய பொதுவான கேள்விகள்.'
+                  : 'Common questions about admission eligibility, required certificates, and academic streams.'}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                {
+                  q: isTa
+                    ? 'ராயப்பன்பட்டி சவரியப்ப உடையார் நினைவுப் பள்ளியில் சேர்க்கைக்கு விண்ணப்பிப்பது எப்படி?'
+                    : 'How do I apply for admission to S.U.M. Higher Secondary & Primary School?',
+                  a: isTa
+                    ? 'பெற்றோர்கள் அல்லது மாணவர்கள் இணையதள சேர்க்கை படிவம் மூலம் ஆன்லைனில் விண்ணப்பிக்கலாம் அல்லது ராயப்பன்பட்டியில் உள்ள பள்ளி அலுவலகத்திற்கு நேரில் வருகை தந்து விண்ணப்பப் படிவத்தைப் பெறலாம்.'
+                    : 'Parents and guardians can submit an online admission enquiry through our official web portal or visit the school administrative office in Royappanpatti during school working hours.',
+                },
+                {
+                  q: isTa
+                    ? 'மேல்நிலை வகுப்பில் (11 & 12) என்னென்ன பாடப்பிரிவுகள் உள்ளன?'
+                    : 'What groups are available for Higher Secondary (Class 11 & 12)?',
+                  a: isTa
+                    ? 'தமிழ்நாடு அரசுப் பாடத்திட்டத்தின் கீழ் கணிதம்-உயிரியல் (Bio-Maths), கணினி அறிவியல் (Computer Science), அறிவியல் மற்றும் வணிகவியல்/கணக்குப்பதிவியல் (Commerce & Accountancy) பிரிவுகள் தமிழ் மற்றும் ஆங்கில வழியில் பயிற்றுவிக்கப்படுகின்றன.'
+                    : 'Under the Tamil Nadu State Board curriculum, we offer Bio-Maths, Computer Science with Mathematics, Pure Science, and Commerce with Accountancy & Computer Applications in both Tamil and English mediums.',
+                },
+                {
+                  q: isTa
+                    ? 'சேர்க்கையின் போது சமர்ப்பிக்க வேண்டிய முக்கிய ஆவணங்கள் எவை?'
+                    : 'What documents are required during school admission?',
+                  a: isTa
+                    ? 'மாணவரின் பிறப்புச் சான்றிதழ், முந்தைய பள்ளியின் மாற்றுச் சான்றிதழ் (TC), சாதிச் சான்றிதழ், ஆதார் அட்டை நகல் மற்றும் சமீபத்திய பாஸ்போர்ட் அளவு புகைப்படங்கள் அவசியம்.'
+                    : 'Essential documents include student birth certificate, Transfer Certificate (TC) from the previous institution, Community Certificate, Aadhaar card photocopy, and recent passport-size photographs.',
+                },
+                {
+                  q: isTa
+                    ? 'கிராமப்புற மாணவர்களுக்கு பள்ளிப் பேருந்து வசதி உள்ளதா?'
+                    : 'Is bus transportation provided for students from nearby villages?',
+                  a: isTa
+                    ? 'ஆம், ராயப்பன்பட்டி, உத்தமபாளையம், சின்னமனூர், கொம்பை மற்றும் கம்பம் பள்ளத்தாக்கின் சுற்றுவட்டார கிராமங்களை இணைக்கும் பாதுகாப்பான பள்ளிப் பேருந்து வசதி இயங்குகிறது.'
+                    : 'Yes, our school operates dedicated bus routes serving Royappanpatti, Uthamapalayam, Chinnamanur, Kombai, Cumbum Valley, and surrounding residential localities with certified safety standards.',
+                },
+              ].map((faq, idx) => (
+                <div
+                  key={idx}
+                  className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 transition"
+                >
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs flex items-center justify-center font-bold shrink-0">
+                      Q
+                    </span>
+                    {faq.q}
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 pl-8 leading-relaxed">
+                    {faq.a}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       </main>

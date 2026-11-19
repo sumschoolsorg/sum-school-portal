@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Clock, MapPin, ArrowRight } from 'lucide-react';
+import { Clock, MapPin, ArrowRight, Calendar } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Button } from '@/components/ui/Button';
 import { defaultEvents } from '@/lib/defaultData';
@@ -90,13 +90,19 @@ export function EventsSection({ events: initialEvents = defaultEvents }: { event
                 className="bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col sm:flex-row group"
               >
                 {/* Event Image & Date Badge */}
-                <div className="relative sm:w-52 h-48 sm:h-auto overflow-hidden shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={ev.imageUrl}
-                    alt={title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                <div className="relative sm:w-52 h-48 sm:h-auto overflow-hidden shrink-0 bg-slate-900">
+                  {ev.imageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={ev.imageUrl}
+                      alt={title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-600/10 via-slate-800 to-slate-900 min-h-[160px]">
+                      <Calendar className="w-12 h-12 text-blue-400/40" />
+                    </div>
+                  )}
                   <div className="absolute top-4 left-4 bg-blue-600 text-white rounded-2xl p-2.5 text-center min-w-[56px] shadow-lg">
                     <div className="text-xl font-extrabold font-heading leading-none">
                       {dateObj.day}

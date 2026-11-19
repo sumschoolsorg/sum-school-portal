@@ -12,7 +12,6 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { heroBannerRepository } from '@/lib/repositories';
-import { defaultHeroBanners } from '@/lib/defaultData';
 import { HeroBanner, BannerAnimationStyle } from '@/types';
 import {
   Plus,
@@ -26,7 +25,6 @@ import {
   Layers,
   Globe,
   Languages,
-  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,7 +38,6 @@ export default function BannersAdminPage() {
   const [editingBanner, setEditingBanner] = useState<HeroBanner | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [formTab, setFormTab] = useState<'en' | 'ta' | 'settings'>('en');
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<HeroBanner>>({
     title: '',
@@ -52,7 +49,7 @@ export default function BannersAdminPage() {
     description: '',
     description_en: '',
     description_ta: '',
-    imageUrl: '/images/hero-campus.jpg',
+    imageUrl: '',
     ctaText: 'Explore Admissions',
     ctaText_en: 'Explore Admissions',
     ctaText_ta: 'சேர்க்கை விவரங்கள்',
@@ -103,26 +100,6 @@ export default function BannersAdminPage() {
     };
   }, []);
 
-  const handleSeedDefaults = async () => {
-    try {
-      setIsSeeding(true);
-      for (const banner of defaultHeroBanners) {
-        const existing = banners.find((b) => b.title === banner.title);
-        if (!existing) {
-          const { id, ...dataToCreate } = banner;
-          await heroBannerRepository.create(dataToCreate as any);
-        }
-      }
-      toast.success('Successfully seeded verified hero banners!');
-      await loadData();
-    } catch (err) {
-      console.error('Error seeding banners:', err);
-      toast.error('Failed to seed hero banners.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const handleOpenAdd = () => {
     setEditingBanner(null);
     setFormTab('en');
@@ -136,7 +113,7 @@ export default function BannersAdminPage() {
       description: '',
       description_en: '',
       description_ta: '',
-      imageUrl: '/images/hero-campus.jpg',
+      imageUrl: '',
       ctaText: 'Explore Admissions',
       ctaText_en: 'Explore Admissions',
       ctaText_ta: 'சேர்க்கை விவரங்கள்',
@@ -234,7 +211,7 @@ export default function BannersAdminPage() {
       setIsModalOpen(false);
     } catch (err) {
       console.error('Error saving banner:', err);
-      toast.error('Failed to save banner.');
+      toast.error((err as Error)?.message || 'Failed to save banner to Firebase.');
     }
   };
 
@@ -302,21 +279,6 @@ export default function BannersAdminPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            onClick={handleSeedDefaults}
-            variant="secondary"
-            disabled={isSeeding}
-            leftIcon={
-              isSeeding ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
-              ) : (
-                <Sparkles className="w-4 h-4 text-amber-500" />
-              )
-            }
-          >
-            {isSeeding ? 'Seeding...' : 'Seed Verified Banners'}
-          </Button>
-
           <Button onClick={handleOpenAdd} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Add New Banner

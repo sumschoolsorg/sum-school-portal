@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, Cloud, CloudOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -18,12 +18,14 @@ const ROUTE_TITLES: Record<string, string> = {
   '/admin/banners': 'Hero Banners & Carousel',
   '/admin/about': 'About School & Core Values',
   '/admin/academics': 'Academics & Curriculum Streams',
+  '/admin/academic-years': 'Academic Year Master Table (2000–2041)',
   '/admin/admissions': 'Admissions Information & Procedure',
   '/admin/faculty': 'Faculty & Staff Directory',
   '/admin/facilities': 'Campus Facilities & Infrastructure',
   '/admin/announcements': 'Announcements & Circulars',
   '/admin/events': 'School Calendar & Events',
   '/admin/gallery': 'Photo Gallery & Media',
+  '/admin/media': 'Image Upload & Media Asset Manager',
   '/admin/achievements': 'Student Honors & Toppers Directory',
   '/admin/testimonials': 'Parent & Alumni Testimonials',
   '/admin/timeline': 'School History & Milestones',
@@ -39,7 +41,7 @@ const ROUTE_TITLES: Record<string, string> = {
 };
 
 export function AdminTopbar({ onToggleSidebar, title }: AdminTopbarProps) {
-  const { user, isSuperAdmin, isSchoolAdmin, role, logout } = useAuth();
+  const { user, isSuperAdmin, isSchoolAdmin, isCloudAuthenticated, role, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -80,6 +82,31 @@ export function AdminTopbar({ onToggleSidebar, title }: AdminTopbarProps) {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+        <span
+          className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+            isCloudAuthenticated
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+              : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
+          }`}
+          title={
+            isCloudAuthenticated
+              ? 'Authenticated with Firebase Cloud — changes sync to Firestore & Storage'
+              : 'Not authenticated with Firebase Cloud — sign in with Firebase email & password to save to cloud'
+          }
+        >
+          {isCloudAuthenticated ? (
+            <>
+              <Cloud className="w-3.5 h-3.5" />
+              Firebase Cloud Sync
+            </>
+          ) : (
+            <>
+              <CloudOff className="w-3.5 h-3.5" />
+              Offline Only
+            </>
+          )}
+        </span>
+
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
             {user?.email ? user.email.charAt(0).toUpperCase() : 'A'}

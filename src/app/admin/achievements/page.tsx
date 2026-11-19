@@ -12,9 +12,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { achievementRepository, announcementRepository } from '@/lib/repositories';
-import { defaultAchievements } from '@/lib/defaultData';
 import { Achievement, Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Trophy, Star, Bell, Sparkles, GraduationCap } from 'lucide-react';
+import { ACADEMIC_YEAR_OPTIONS, CURRENT_ACADEMIC_YEAR } from '@/lib/academicYears';
+import { Plus, Edit2, Trash2, Trophy, Star, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AchievementsAdminPage() {
@@ -34,21 +34,20 @@ export default function AchievementsAdminPage() {
     studentName: '',
     studentName_ta: '',
     className: '12th HSC (Science)',
-    academicYear: '2024–2025',
+    academicYear: CURRENT_ACADEMIC_YEAR,
     examinationName: 'Tamil Nadu Higher Secondary Public Examination',
     totalMarks: 580,
     totalMaxMarks: 600,
     percentage: 96.67,
     rank: '1st Rank (School Topper)',
     hometown: 'Royappanpatti',
-    imageUrl: '/images/faculty-1.jpg',
+    imageUrl: '',
     certificateUrl: '',
     status: 'published',
     isFeatured: true,
   });
 
   const [broadcastAnnouncement, setBroadcastAnnouncement] = useState(true);
-  const [isSeeding, setIsSeeding] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
 
   const loadAchievements = useCallback(async () => {
@@ -84,26 +83,6 @@ export default function AchievementsAdminPage() {
     };
   }, []);
 
-  const handleSeedDefaults = async () => {
-    setIsSeeding(true);
-    try {
-      for (const ach of defaultAchievements) {
-        const { id, ...dataWithoutId } = ach;
-        await achievementRepository.create({
-          ...dataWithoutId,
-          date: new Date(),
-        });
-      }
-      toast.success(`Seeded ${defaultAchievements.length} verified student honors & toppers into database!`);
-      loadAchievements();
-    } catch (err) {
-      console.error('Seeding error:', err);
-      toast.error('Failed to seed achievements to database.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const filteredAchievements = useMemo(() => {
     if (filterCategory === 'all') return achievements;
     return achievements.filter((a) => a.category === filterCategory);
@@ -131,7 +110,7 @@ export default function AchievementsAdminPage() {
       studentName: '',
       studentName_ta: '',
       className: '12th HSC (Science)',
-      academicYear: '2024–2025',
+      academicYear: CURRENT_ACADEMIC_YEAR,
       examinationName: 'Tamil Nadu Higher Secondary Public Examination',
       totalMarks: 580,
       totalMaxMarks: 600,
@@ -224,7 +203,7 @@ export default function AchievementsAdminPage() {
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={item.imageUrl}
+            src={item.imageUrl || '/images/hero-campus.jpg'}
             alt={item.title}
             className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shadow-sm shrink-0 bg-slate-100"
           />
@@ -318,17 +297,6 @@ export default function AchievementsAdminPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {achievements.length <= defaultAchievements.length && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSeedDefaults}
-              isLoading={isSeeding}
-              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
-            >
-              Seed Verified Toppers &amp; Honors
-            </Button>
-          )}
           <Button
             onClick={handleOpenAdd}
             variant="primary"
@@ -435,15 +403,9 @@ export default function AchievementsAdminPage() {
 
             <Select
               label="Academic Year"
-              value={formData.academicYear || '2024–2025'}
+              value={formData.academicYear || CURRENT_ACADEMIC_YEAR}
               onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
-              options={[
-                { value: '2025–2026', label: '2025–2026 (Current)' },
-                { value: '2024–2025', label: '2024–2025' },
-                { value: '2023–2024', label: '2023–2024' },
-                { value: '2022–2023', label: '2022–2023 (Diamond Jubilee)' },
-                { value: '2021–2022', label: '2021–2022' },
-              ]}
+              options={ACADEMIC_YEAR_OPTIONS}
             />
 
             <Select

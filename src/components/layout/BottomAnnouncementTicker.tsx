@@ -9,7 +9,6 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { announcementRepository } from '@/lib/repositories';
-import { defaultAnnouncements } from '@/lib/defaultData';
 import { Announcement } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -17,7 +16,7 @@ export function BottomAnnouncementTicker() {
   const { language } = useLanguage();
   const isTa = language === 'ta';
 
-  const [announcements, setAnnouncements] = useState<Announcement[]>(defaultAnnouncements);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {

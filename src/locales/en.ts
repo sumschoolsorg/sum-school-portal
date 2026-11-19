@@ -48,7 +48,7 @@ export const en = {
     topHours: 'Mon – Sat: 8:30 AM – 4:00 PM',
     affiliationNotice: 'Affiliated to State Board Education',
     adminLogin: 'Admin Portal',
-    schoolTitle: 'S.U.M. SCHOOL',
+    schoolTitle: 'S.U.M. SCHOOLS',
     schoolSubtitle: 'HIGHER SECONDARY & PRIMARY',
     schoolLocation: 'Royappanpatti • Estd. 1963',
     jubileeTitle: 'Diamond Jubilee',

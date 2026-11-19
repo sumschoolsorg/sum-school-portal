@@ -13,6 +13,7 @@ import {
   Link as LinkIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { normalizeImageUrl, isValidImageUrl } from '@/lib/storage';
 
 export interface RealSchoolPhoto {
   url: string;
@@ -252,7 +253,7 @@ export function RealImagePickerModal({
 
   // Custom URL inputs
   const [customUrl, setCustomUrl] = useState('');
-  const [isConfirmedReal, setIsConfirmedReal] = useState(false);
+  const [previewError, setPreviewError] = useState(false);
 
   const categories = [
     'All',
@@ -291,20 +292,20 @@ export function RealImagePickerModal({
     onClose();
   };
 
-  const handleCustomInsert = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customUrl.trim()) {
-      toast.error('Please provide an image URL.');
+  const handleCustomInsert = (e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const normalized = normalizeImageUrl(customUrl);
+    if (!normalized || !isValidImageUrl(normalized)) {
+      toast.error('Please enter a valid image URL (https://... or /images/...).');
       return;
     }
-    if (!isConfirmedReal) {
-      toast.error(
-        'You must confirm that this is a real photograph and NOT AI-generated before inserting.'
-      );
-      return;
-    }
-    onSelectImage(customUrl.trim(), 'Custom Real Photograph');
-    toast.success('Real photograph inserted successfully!');
+    onSelectImage(normalized, 'Custom Image URL');
+    toast.success('Image link inserted successfully!');
+    setCustomUrl('');
+    setPreviewError(false);
     onClose();
   };
 
@@ -510,78 +511,75 @@ export function RealImagePickerModal({
         )}
 
         {activeTab === 'custom' && (
-          <form onSubmit={handleCustomInsert} className="space-y-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
             <div className="space-y-1">
-              <label className="block text-xs font-bold text-slate-800">
-                Direct Real School Image URL or Local File Path
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">
+                Direct Image Link (URL) or Google Drive Share Link
               </label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="e.g. /images/hero-campus.jpg or https://.../real-school-photo.jpg"
+                  placeholder="https://... or Google Drive share link or /images/..."
                   value={customUrl}
-                  onChange={(e) => setCustomUrl(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
+                  onChange={(e) => {
+                    setCustomUrl(e.target.value);
+                    setPreviewError(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleCustomInsert(e);
+                    }
+                  }}
+                  className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              <p className="text-[11px] text-slate-500">
-                Must point to a genuine photograph of the school campus, students, or institutional facilities.
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Supports direct image URLs (JPG, PNG, WebP), Firebase Storage links, Google Drive share links, and Dropbox links.
               </p>
             </div>
 
-            {customUrl && (
-              <div className="p-3 bg-white rounded-xl border border-slate-200 flex items-center gap-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={customUrl}
-                  alt="Custom URL preview"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                  className="w-16 h-12 rounded object-cover border border-slate-200"
-                />
-                <div className="text-xs text-slate-600">
-                  <span className="font-semibold text-slate-800">Preview:</span> {customUrl}
+            {customUrl.trim() && (
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                {!previewError ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={normalizeImageUrl(customUrl)}
+                    alt="Custom URL preview"
+                    onError={() => setPreviewError(true)}
+                    className="w-20 h-14 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                  />
+                ) : (
+                  <div className="w-20 h-14 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-[10px] text-amber-700 dark:text-amber-300 font-semibold text-center px-1 shrink-0">
+                    Preview blocked
+                  </div>
+                )}
+                <div className="text-xs text-slate-600 dark:text-slate-300 min-w-0">
+                  <span className="font-semibold text-slate-800 dark:text-white block">Resolved URL:</span>
+                  <span className="truncate block text-[11px] font-mono text-blue-600 dark:text-blue-400">
+                    {normalizeImageUrl(customUrl)}
+                  </span>
                 </div>
               </div>
             )}
-
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
-              <label className="flex items-start gap-2.5 cursor-pointer text-xs text-amber-950 font-medium">
-                <input
-                  type="checkbox"
-                  checked={isConfirmedReal}
-                  onChange={(e) => setIsConfirmedReal(e.target.checked)}
-                  className="mt-0.5 rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
-                />
-                <span>
-                  <strong className="text-amber-900 font-bold block">
-                    Zero AI Generation Guarantee &amp; Photographic Authenticity:
-                  </strong>
-                  I explicitly confirm that this image is an authentic, genuine real-world photograph
-                  taken by a human photographer and is NOT generated by an AI model (Midjourney, DALL-E, Stable Diffusion, etc.).
-                </span>
-              </label>
-            </div>
 
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" size="sm" onClick={onClose}>
                 Cancel
               </Button>
               <Button
-                type="submit"
+                type="button"
                 variant="primary"
                 size="sm"
-                disabled={!customUrl.trim() || !isConfirmedReal}
+                onClick={handleCustomInsert}
+                disabled={!customUrl.trim()}
                 className="flex items-center gap-1.5"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                Insert Confirmed Real Photo
+                Insert Image Link
               </Button>
             </div>
-          </form>
+          </div>
         )}
       </div>
     </Modal>

@@ -47,15 +47,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Enter a valid application number and registered phone number.' }, { status: 400 });
     }
 
+    const cleanPhone = phone.slice(-10);
+    const allowedStatuses = ['new', 'contacted', 'follow-up', 'approved', 'rejected'];
+
     const db = getFirebaseAdminDb();
-    if (!db) return NextResponse.json({
-      success: false,
-      requiresOfficeContact: true,
-      message: 'Online application tracking is not configured. Please contact the school office for an update.',
-    }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+    if (!db) {
+      return NextResponse.json({
+        success: false,
+        error: 'NOT_CONFIGURED',
+        message: 'Application tracking service is temporarily unavailable. Please contact the school office.',
+      }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+    }
 
     const snapshot = await db.collection('enquiries').where('applicationNumber', '==', applicationNumber).limit(5).get();
-    const cleanPhone = phone.slice(-10);
     const matching = snapshot.docs.filter((doc) => {
       const record = doc.data();
       const storedPhone = typeof record.phone === 'string' ? record.phone.replace(/\D/g, '') : '';
@@ -64,7 +68,6 @@ export async function POST(request: NextRequest) {
     if (matching.length !== 1) return NextResponse.json({ success: false, error: 'NOT_FOUND', message: 'No application matched those details.' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
 
     const record = matching[0].data();
-    const allowedStatuses = ['new', 'contacted', 'follow-up', 'approved', 'rejected'];
     return NextResponse.json({
       success: true,
       isLocalPreview: false,

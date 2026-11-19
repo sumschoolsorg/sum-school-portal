@@ -684,3 +684,17 @@ export interface StudentResult extends FirestoreDoc {
   status: PublishStatus;
 }
 
+// --- Media Assets (multiple docs) ---
+
+export interface MediaAsset extends FirestoreDoc {
+  url: string;
+  name: string;
+  folder: string;
+  size: number;
+  optimizedSize?: number;
+  uploadedAt: string;
+  dimensions?: string;
+  sourceType?: 'upload' | 'url';
+}
+
+

@@ -51,7 +51,7 @@ export const ta: TranslationDictionary = {
     topHours: 'திங்கள் – சனி: காலை 8:30 – மாலை 4:00',
     affiliationNotice: 'தமிழ்நாடு அரசு கல்வித்துறை அங்கீகாரம் பெற்றது',
     adminLogin: 'நிர்வாகப் பக்கம்',
-    schoolTitle: 'S.U.M. SCHOOL',
+    schoolTitle: 'S.U.M. SCHOOLS',
     schoolSubtitle: 'மேல்நிலை & தொடக்கப்பள்ளி',
     schoolLocation: 'ராயப்பன்பட்டி • நிறுவப்பட்டது 1963',
     jubileeTitle: 'வைர விழா',

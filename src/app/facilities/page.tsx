@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { defaultFacilities } from '@/lib/defaultData';
 import { facilityRepository } from '@/lib/repositories';
 import { Facility } from '@/types';
 import {
@@ -20,6 +19,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function FacilitiesPage() {
   const { t, getLocalized, language } = useLanguage();
@@ -67,6 +67,7 @@ export default function FacilitiesPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main id="main-content" className="flex-1">
+        <Breadcrumbs items={[{ label: t('header.facilities', 'Facilities') }]} />
         {/* Page Hero */}
         <section className="relative py-20 lg:py-28 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="container-main relative z-10 text-center">
@@ -109,13 +110,19 @@ export default function FacilitiesPage() {
                     key={fac.id}
                     className="bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col group"
                   >
-                    <div className="relative h-56 w-full overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={fac.imageUrl}
-                        alt={title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                    <div className="relative h-56 w-full overflow-hidden bg-slate-900">
+                      {fac.imageUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={fac.imageUrl}
+                          alt={title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-600/10 via-slate-800 to-slate-900">
+                          <Building2 className="w-12 h-12 text-emerald-400/40" />
+                        </div>
+                      )}
                       <div className="absolute top-4 left-4 p-3 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-md">
                         {getIcon(fac.icon)}
                       </div>

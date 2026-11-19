@@ -1,7 +1,7 @@
 'use client';
 
 // ============================================================
-// Auth Context — provides auth state across the application
+// Auth Context — provides real Firebase auth state across the app
 // ============================================================
 
 import {
@@ -13,15 +13,18 @@ import {
 } from 'react';
 import { getIdTokenResult, type User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { db, isConfigured } from '@/lib/firebase';
+import { auth, db, isConfigured } from '@/lib/firebase';
 import { onAuthChange, signOut } from '@/lib/auth';
 
 export type AdminRole = 'super-admin' | 'admin' | 'content-manager';
+
+const PRIMARY_SUPER_ADMIN_EMAIL = 'admin@sumschools.org';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   isAuthenticated: boolean;
+  isCloudAuthenticated: boolean;
   role: AdminRole | null;
   isAdmin: boolean;
   isSchoolAdmin: boolean;
@@ -35,6 +38,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   isAuthenticated: false,
+  isCloudAuthenticated: false,
   role: null,
   isAdmin: false,
   isSchoolAdmin: false,
@@ -45,66 +49,28 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== 'undefined') {
-      const fastLogin = localStorage.getItem('sum_fast_login') || localStorage.getItem('sum_admin_authenticated');
-      if (fastLogin) {
-        return {
-          uid: 'fast-login-admin-uid',
-          email: 'admin@sumschools.org',
-          displayName: 'School Administrator (Fast Access)',
-        } as unknown as User;
-      }
-    }
-    return null;
-  });
-  const [loading, setLoading] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const fastLogin = localStorage.getItem('sum_fast_login') || localStorage.getItem('sum_admin_authenticated');
-      if (fastLogin) return false;
-    }
-    return true;
-  });
-  const [role, setRole] = useState<AdminRole | null>(() => {
-    if (typeof window !== 'undefined') {
-      const fastLogin = localStorage.getItem('sum_fast_login');
-      if (fastLogin === 'super-admin' || fastLogin === 'admin' || fastLogin === 'content-manager') {
-        return fastLogin as AdminRole;
-      }
-      if (localStorage.getItem('sum_admin_authenticated') === 'true') {
-        return 'super-admin';
-      }
-    }
-    return null;
-  });
-  const [isAdmin, setIsAdmin] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !!(localStorage.getItem('sum_fast_login') || localStorage.getItem('sum_admin_authenticated') === 'true');
-    }
-    return false;
-  });
-  const [isSchoolAdmin, setIsSchoolAdmin] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return !!(localStorage.getItem('sum_fast_login') || localStorage.getItem('sum_admin_authenticated') === 'true');
-    }
-    return false;
-  });
-  const [isSuperAdmin, setIsSuperAdmin] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('sum_fast_login') === 'super-admin' || localStorage.getItem('sum_admin_authenticated') === 'true';
-    }
-    return false;
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<AdminRole | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSchoolAdmin, setIsSchoolAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [isCloudAuthenticated, setIsCloudAuthenticated] = useState(false);
 
   const determineRole = async (targetUser: User): Promise<AdminRole | null> => {
     try {
       const token = await getIdTokenResult(targetUser);
-      const tokenRole = String(token.claims.role);
+      const tokenRole = String(token.claims.role || '');
       let detectedRole: AdminRole | null = (
         ['super-admin', 'admin', 'content-manager'].includes(tokenRole)
           ? tokenRole
           : null
       ) as AdminRole | null;
+
+      // Primary super-admin email fallback matches firestore.rules & storage.rules
+      if (!detectedRole && targetUser.email?.toLowerCase() === PRIMARY_SUPER_ADMIN_EMAIL) {
+        detectedRole = 'super-admin';
+      }
 
       if (isConfigured) {
         try {
@@ -131,73 +97,78 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const refreshRole = async () => {
-    if (!user) {
-      if (typeof window !== 'undefined') {
-        const fastLogin = localStorage.getItem('sum_fast_login') || localStorage.getItem('sum_admin_authenticated');
-        if (fastLogin) {
-          const fastRole = (localStorage.getItem('sum_fast_login') as AdminRole) || 'super-admin';
-          setRole(fastRole);
-          setIsAdmin(true);
-          setIsSchoolAdmin(true);
-          setIsSuperAdmin(fastRole === 'super-admin');
-          return;
-        }
-      }
-      setRole(null);
-      setIsAdmin(false);
-      setIsSchoolAdmin(false);
-      setIsSuperAdmin(false);
-      return;
-    }
-    const detected = await determineRole(user);
+  const applyRoleState = (detected: AdminRole | null, cloudAuth: boolean) => {
     setRole(detected);
     setIsAdmin(detected !== null);
     setIsSchoolAdmin(detected === 'super-admin' || detected === 'admin');
     setIsSuperAdmin(detected === 'super-admin');
+    setIsCloudAuthenticated(cloudAuth);
+  };
+
+  const refreshRole = async () => {
+    const activeFirebaseUser = auth.currentUser;
+    if (!activeFirebaseUser) {
+      if (!isConfigured && typeof window !== 'undefined') {
+        const localRole = localStorage.getItem('sum_fast_login') as AdminRole | null;
+        if (localRole && ['super-admin', 'admin', 'content-manager'].includes(localRole)) {
+          applyRoleState(localRole, false);
+          return;
+        }
+      }
+      applyRoleState(null, false);
+      return;
+    }
+    const detected = await determineRole(activeFirebaseUser);
+    applyRoleState(detected, true);
   };
 
   useEffect(() => {
     let isMounted = true;
     let authChangeVersion = 0;
+
+    // Purge stale fake fast-login flags whenever real Firebase is configured
+    // so admins are never trapped in an unauthenticated local-only session.
+    if (isConfigured && typeof window !== 'undefined') {
+      localStorage.removeItem('sum_fast_login');
+      localStorage.removeItem('sum_admin_authenticated');
+    }
+
     const unsubscribe = onAuthChange(async (currentUser) => {
       const currentVersion = ++authChangeVersion;
       setLoading(true);
       setUser(currentUser);
-      setRole(null);
-      setIsAdmin(false);
-      setIsSchoolAdmin(false);
-      setIsSuperAdmin(false);
+      applyRoleState(null, false);
 
       if (!currentUser) {
-        if (typeof window !== 'undefined') {
-          const fastLogin = localStorage.getItem('sum_fast_login') || localStorage.getItem('sum_admin_authenticated');
-          if (fastLogin && isMounted && currentVersion === authChangeVersion) {
-            const fastRole = (localStorage.getItem('sum_fast_login') as AdminRole) || 'super-admin';
+        // Offline local-only fallback ONLY when Firebase is completely unconfigured
+        if (!isConfigured && typeof window !== 'undefined') {
+          const fastLoginRole = localStorage.getItem('sum_fast_login') as AdminRole | null;
+          if (
+            fastLoginRole &&
+            ['super-admin', 'admin', 'content-manager'].includes(fastLoginRole) &&
+            isMounted &&
+            currentVersion === authChangeVersion
+          ) {
             const mockUser = {
-              uid: 'fast-login-admin-uid',
-              email: 'admin@sumschools.org',
-              displayName: 'School Administrator (Fast Access)',
+              uid: 'local-offline-admin-uid',
+              email: PRIMARY_SUPER_ADMIN_EMAIL,
+              displayName: 'School Administrator (Local Preview)',
             } as unknown as User;
             setUser(mockUser);
-            setRole(fastRole);
-            setIsAdmin(true);
-            setIsSchoolAdmin(true);
-            setIsSuperAdmin(fastRole === 'super-admin');
+            applyRoleState(fastLoginRole, false);
             setLoading(false);
             return;
           }
         }
-        if (isMounted && currentVersion === authChangeVersion) setLoading(false);
+        if (isMounted && currentVersion === authChangeVersion) {
+          setLoading(false);
+        }
         return;
       }
 
       const detected = await determineRole(currentUser);
       if (isMounted && currentVersion === authChangeVersion) {
-        setRole(detected);
-        setIsAdmin(detected !== null);
-        setIsSchoolAdmin(detected === 'super-admin' || detected === 'admin');
-        setIsSuperAdmin(detected === 'super-admin');
+        applyRoleState(detected, true);
         setLoading(false);
       }
     });
@@ -208,22 +179,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-
+  // Only permitted in unconfigured offline preview mode
   const fastLogin = (targetRole: AdminRole = 'super-admin') => {
+    if (isConfigured) {
+      console.warn('Fast local bypass is disabled when Firebase Cloud is configured.');
+      return;
+    }
     if (typeof window !== 'undefined') {
       localStorage.setItem('sum_fast_login', targetRole);
-      localStorage.setItem('sum_admin_authenticated', 'true');
     }
     const mockUser = {
-      uid: 'fast-login-admin-uid',
-      email: 'admin@sumschools.org',
-      displayName: 'School Administrator (Fast Access)',
+      uid: 'local-offline-admin-uid',
+      email: PRIMARY_SUPER_ADMIN_EMAIL,
+      displayName: 'School Administrator (Local Preview)',
     } as unknown as User;
     setUser(mockUser);
-    setRole(targetRole);
-    setIsAdmin(true);
-    setIsSchoolAdmin(true);
-    setIsSuperAdmin(targetRole === 'super-admin');
+    applyRoleState(targetRole, false);
     setLoading(false);
   };
 
@@ -233,10 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('sum_admin_authenticated');
     }
     setUser(null);
-    setRole(null);
-    setIsAdmin(false);
-    setIsSchoolAdmin(false);
-    setIsSuperAdmin(false);
+    applyRoleState(null, false);
     try {
       await signOut();
     } catch {
@@ -250,6 +218,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         loading,
         isAuthenticated: !!user,
+        isCloudAuthenticated,
         role,
         isAdmin,
         isSchoolAdmin,

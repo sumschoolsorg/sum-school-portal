@@ -16,7 +16,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { defaultHeroBanners, defaultHomepageContent } from '@/lib/defaultData';
+import { defaultHomepageContent } from '@/lib/defaultData';
 import { heroBannerRepository } from '@/lib/repositories';
 import { HeroBanner } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,7 +24,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export function HeroSection(props?: {
   content?: typeof defaultHomepageContent;
 }) {
-  const [banners, setBanners] = useState<HeroBanner[]>(defaultHeroBanners);
+  const [banners, setBanners] = useState<HeroBanner[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {

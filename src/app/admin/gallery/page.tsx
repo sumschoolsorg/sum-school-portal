@@ -11,9 +11,9 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { galleryRepository, announcementRepository } from '@/lib/repositories';
-import { defaultGalleryImages } from '@/lib/defaultData';
 import { GalleryImage, Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Image as ImageIcon, Bell, Sparkles, RefreshCw } from 'lucide-react';
+import { ACADEMIC_YEAR_OPTIONS, CURRENT_ACADEMIC_YEAR } from '@/lib/academicYears';
+import { Plus, Edit2, Trash2, Image as ImageIcon, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function GalleryAdminPage() {
@@ -26,7 +26,6 @@ export default function GalleryAdminPage() {
   // Filters
   const [filterYear, setFilterYear] = useState('all');
   const [broadcastAnnouncement, setBroadcastAnnouncement] = useState(true);
-  const [isSeeding, setIsSeeding] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState<Partial<GalleryImage>>({
@@ -36,9 +35,9 @@ export default function GalleryAdminPage() {
     albumId: 'campus',
     description: '',
     description_ta: '',
-    imageUrl: '/images/hero-campus.jpg',
-    academicYear: '2024–2025',
-    calendarYear: 2024,
+    imageUrl: '',
+    academicYear: CURRENT_ACADEMIC_YEAR,
+    calendarYear: 2025,
     month: 'June',
     eventCategory: 'Campus Life',
     eventDate: new Date().toISOString().split('T')[0],
@@ -79,26 +78,6 @@ export default function GalleryAdminPage() {
     };
   }, []);
 
-  const handleSeedDefaults = async () => {
-    try {
-      setIsSeeding(true);
-      for (const img of defaultGalleryImages) {
-        const existing = images.find((item) => item.title === img.title);
-        if (!existing) {
-          const { id, ...dataToCreate } = img;
-          await galleryRepository.create(dataToCreate as any);
-        }
-      }
-      toast.success('Successfully seeded verified photo albums!');
-      await loadGallery();
-    } catch (err) {
-      console.error('Error seeding gallery:', err);
-      toast.error('Failed to seed gallery images.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const handleOpenAdd = () => {
     setEditingImage(null);
     setBroadcastAnnouncement(true);
@@ -109,9 +88,9 @@ export default function GalleryAdminPage() {
       albumId: 'campus',
       description: '',
       description_ta: '',
-      imageUrl: '/images/hero-campus.jpg',
-      academicYear: '2024–2025',
-      calendarYear: 2024,
+      imageUrl: '',
+      academicYear: CURRENT_ACADEMIC_YEAR,
+      calendarYear: 2025,
       month: 'June',
       eventCategory: 'Campus Life',
       eventDate: new Date().toISOString().split('T')[0],
@@ -173,7 +152,7 @@ export default function GalleryAdminPage() {
       loadGallery();
     } catch (err) {
       console.error('Gallery save error:', err);
-      toast.error('Failed to save gallery photo.');
+      toast.error((err as Error)?.message || 'Failed to save gallery photo to Firebase.');
     }
   };
 
@@ -211,21 +190,6 @@ export default function GalleryAdminPage() {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <Button
-            onClick={handleSeedDefaults}
-            variant="secondary"
-            disabled={isSeeding}
-            leftIcon={
-              isSeeding ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
-              ) : (
-                <Sparkles className="w-4 h-4 text-amber-500" />
-              )
-            }
-          >
-            {isSeeding ? 'Seeding...' : 'Seed Verified Gallery'}
-          </Button>
-
-          <Button
             onClick={handleOpenAdd}
             variant="primary"
             leftIcon={<Plus className="w-4 h-4" />}
@@ -235,8 +199,8 @@ export default function GalleryAdminPage() {
         </div>
       </div>
 
-      {/* Year Filter Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
+      {/* Year Filter Pills & Selector */}
+      <div className="flex flex-wrap items-center gap-2 pb-1">
         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">
           Filter Year:
         </span>
@@ -253,6 +217,20 @@ export default function GalleryAdminPage() {
             {yr === 'all' ? 'All Years' : yr}
           </button>
         ))}
+        <div className="w-56 shrink-0">
+          <select
+            value={filterYear}
+            onChange={(e) => setFilterYear(e.target.value)}
+            className="w-full text-xs py-1 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+          >
+            <option value="all">More Academic Years (2000–2041)...</option>
+            {ACADEMIC_YEAR_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Grid of Images */}
@@ -267,12 +245,18 @@ export default function GalleryAdminPage() {
             <Card key={img.id} className="p-3 overflow-hidden flex flex-col justify-between group">
               <div>
                 <div className="relative h-44 rounded-xl overflow-hidden mb-3 bg-slate-100 dark:bg-slate-800">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.imageUrl}
-                    alt={img.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                  {img.imageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={img.imageUrl}
+                      alt={img.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
+                      <ImageIcon className="w-8 h-8" />
+                    </div>
+                  )}
                   <div className="absolute top-2 left-2 flex gap-1">
                     {img.academicYear && (
                       <span className="px-2 py-0.5 rounded-md bg-slate-900/80 text-white font-bold text-[10px] backdrop-blur-md">
@@ -352,15 +336,9 @@ export default function GalleryAdminPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Select
               label="Academic Year"
-              value={formData.academicYear || '2024–2025'}
+              value={formData.academicYear || CURRENT_ACADEMIC_YEAR}
               onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
-              options={[
-                { value: '2025–2026', label: '2025–2026' },
-                { value: '2024–2025', label: '2024–2025' },
-                { value: '2023–2024', label: '2023–2024' },
-                { value: '2022–2023', label: '2022–2023 (Diamond Jubilee)' },
-                { value: '2021–2022', label: '2021–2022' },
-              ]}
+              options={ACADEMIC_YEAR_OPTIONS}
             />
 
             <Select

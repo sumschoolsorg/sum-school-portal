@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -9,7 +10,7 @@ import { ImageUpload } from '@/components/ui/ImageUpload';
 import { defaultAcademicsContent } from '@/lib/defaultData';
 import { academicsRepository } from '@/lib/repositories';
 import { AcademicsContent } from '@/types';
-import { Save, GraduationCap, Loader2, Plus, Trash2, BookOpen, Sparkles } from 'lucide-react';
+import { Save, GraduationCap, Loader2, Plus, Trash2, BookOpen, Sparkles, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AcademicsAdminPage() {
@@ -65,10 +66,10 @@ export default function AcademicsAdminPage() {
     setIsSaving(true);
     try {
       await academicsRepository.save(formData);
-      toast.success('Academics content and curriculum saved to Firestore!');
+      toast.success('Academics content and curriculum saved to Firebase!');
     } catch (error) {
-      console.warn('Saved in offline mode:', error);
-      toast.info('Academics curriculum saved locally.');
+      console.error('Failed to save academics content:', error);
+      toast.error((error as Error)?.message || 'Failed to save Academics content to Firebase.');
     } finally {
       setIsSaving(false);
     }
@@ -619,6 +620,26 @@ export default function AcademicsAdminPage() {
             value={formData.academicCalendar}
             onChange={(e) => setFormData({ ...formData, academicCalendar: e.target.value })}
           />
+
+          <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-2">
+            <div className="flex items-center gap-3">
+              <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <div>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Academic Year Master Table (2000–2001 to 2040–2041)
+                </h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Inspect the authoritative 41-year span of academic sessions, status badges, and milestone records.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/admin/academic-years"
+              className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition text-center shrink-0 cursor-pointer"
+            >
+              View 41-Year Table &rarr;
+            </Link>
+          </div>
         </Card>
 
         <div className="flex justify-end">

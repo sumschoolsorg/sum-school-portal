@@ -33,6 +33,7 @@ import {
   Milestone,
   Sparkles,
   Cpu,
+  Upload,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
@@ -67,12 +68,14 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     { href: '/admin/admissions', label: 'Admissions Info', icon: <FileCheck className="w-4 h-4" />, category: 'Student Services' },
     { href: '/admin/enquiries', label: 'Applications & Messages', icon: <Inbox className="w-4 h-4" />, category: 'Student Services' },
     { href: '/admin/academics', label: 'Academics & Streams', icon: <GraduationCap className="w-4 h-4" />, category: 'Student Services' },
+    { href: '/admin/academic-years', label: 'Academic Years (2000–2041)', icon: <Calendar className="w-4 h-4 text-cyan-400" />, category: 'Student Services' },
     { href: '/admin/results', label: 'Exam Results', icon: <Award className="w-4 h-4" />, category: 'Student Services' },
     { href: '/admin/faculty', label: 'Faculty & Staff', icon: <Users className="w-4 h-4" />, category: 'Student Services' },
     { href: '/admin/facilities', label: 'Campus Facilities', icon: <Building2 className="w-4 h-4" />, category: 'Student Services' },
     { href: '/admin/transport', label: 'Bus & Transport', icon: <Bus className="w-4 h-4" />, category: 'Student Services' },
     { href: '/admin/alumni', label: 'Alumni Heritage', icon: <UserCheck className="w-4 h-4" />, category: 'Student Services' },
 
+    { href: '/admin/media', label: 'Image & Media Uploader', icon: <Upload className="w-4 h-4 text-emerald-400" />, category: 'Media & Content' },
     { href: '/admin/banners', label: 'Hero Banners', icon: <Layers className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/homepage', label: 'Homepage Content', icon: <Home className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/about', label: 'About School', icon: <Info className="w-4 h-4" />, category: 'Media & Content' },

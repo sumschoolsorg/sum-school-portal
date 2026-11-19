@@ -97,12 +97,18 @@ export function AchievementsSection({ achievements: initialAchievements = defaul
               >
                 {/* Image & Rank Ribbon */}
                 <div className="relative h-56 w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={ach.imageUrl}
-                    alt={title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                  {ach.imageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={ach.imageUrl}
+                      alt={title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-500/10 via-slate-800 to-slate-900">
+                      <Trophy className="w-12 h-12 text-amber-400/40" />
+                    </div>
+                  )}
                   <div className="absolute top-4 left-4 p-2.5 rounded-2xl bg-amber-500 text-slate-950 font-black shadow-lg flex items-center gap-1.5 text-xs">
                     <Trophy className="w-4 h-4" />
                     <span>{ach.rank || getCategoryLabel(ach.category)}</span>

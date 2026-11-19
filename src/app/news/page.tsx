@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Badge } from '@/components/ui/Badge';
-import { defaultAnnouncements } from '@/lib/defaultData';
 import { announcementRepository } from '@/lib/repositories';
 import { Announcement } from '@/types';
 import { Calendar, Search, FileText } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function NewsPage() {
   const { t, getLocalized, language } = useLanguage();
@@ -110,6 +110,7 @@ export default function NewsPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main id="main-content" className="flex-1">
+        <Breadcrumbs items={[{ label: t('header.news', 'News & Circulars') }]} />
         {/* Hero */}
         <section className="relative py-20 lg:py-28 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="container-main relative z-10 text-center">

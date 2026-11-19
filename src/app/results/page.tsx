@@ -16,6 +16,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function ResultsPage() {
   const { language } = useLanguage();
@@ -103,6 +104,9 @@ export default function ResultsPage() {
       </div>
 
       <main id="main-content" className="flex-1">
+        <div className="print:hidden">
+          <Breadcrumbs items={[{ label: isTa ? 'தேர்வு முடிவுகள்' : 'Exam Results' }]} />
+        </div>
         {/* Page Hero */}
         <section className="print:hidden relative py-20 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(59,130,246,0.15),transparent_70%)] pointer-events-none" />

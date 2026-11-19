@@ -4,8 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { eventRepository } from '@/lib/repositories';
-import { defaultEvents } from '@/lib/defaultData';
 import { SchoolEvent } from '@/types';
+import { ACADEMIC_YEAR_OPTIONS } from '@/lib/academicYears';
 import {
   Calendar,
   Clock,
@@ -16,11 +16,13 @@ import {
   Share2,
   CalendarCheck,
   History,
+  Tag,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
 import { toast } from 'sonner';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function EventsPage() {
   const { getLocalized, language } = useLanguage();
@@ -39,28 +41,45 @@ export default function EventsPage() {
   const [currentTime] = useState(() => Date.now());
 
   useEffect(() => {
-    const loadEvents = async (showLoading = false) => {
+    let isMounted = true;
+    const loadEvents = async () => {
       try {
-        if (showLoading) setIsLoading(true);
         const data = await eventRepository.getPublished();
-        const published = (data || []).filter((item) => item.status === 'published');
-        setEvents(published);
+        if (!isMounted) return;
+        if (data && data.length > 0) {
+          const published = data.filter((item) => item.status === 'published');
+          if (published.length > 0) {
+            setEvents(published);
+          }
+        }
       } catch (err) {
         console.warn('Error loading events:', err);
-        setEvents([]);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
-    loadEvents(false);
+    loadEvents();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const formatEventDate = (date: unknown) => {
     try {
-      const rawDate = date as { toDate?: () => Date } | Date | string | number | undefined;
-      const d = rawDate && typeof rawDate === 'object' && 'toDate' in rawDate && typeof rawDate.toDate === 'function'
-        ? rawDate.toDate()
-        : (date instanceof Date ? date : new Date(date as string | number));
+      if (!date) return { day: '15', month: 'OCT', full: 'Event Date', timestamp: 0 };
+      let d: Date;
+      const rawDate = date as { toDate?: () => Date } | Date | string | number;
+      if (typeof (rawDate as { toDate?: () => Date })?.toDate === 'function') {
+        d = (rawDate as { toDate: () => Date }).toDate();
+      } else if (rawDate instanceof Date) {
+        d = rawDate;
+      } else if (typeof rawDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+        const [y, m, day] = rawDate.split('-').map(Number);
+        d = new Date(y, m - 1, day, 12, 0, 0);
+      } else {
+        d = new Date(rawDate as string | number);
+      }
+
       if (isNaN(d.getTime())) return { day: '15', month: 'OCT', full: 'Event Date', timestamp: 0 };
       return {
         day: d.getDate().toString().padStart(2, '0'),
@@ -86,9 +105,16 @@ export default function EventsPage() {
     const getTime = (raw: unknown): number => {
       if (!raw) return 0;
       const r = raw as { toDate?: () => Date } | Date | string | number;
-      if (typeof (r as { toDate?: () => Date })?.toDate === 'function') return (r as { toDate: () => Date }).toDate().getTime();
+      if (typeof (r as { toDate?: () => Date })?.toDate === 'function') {
+        return (r as { toDate: () => Date }).toDate().getTime();
+      }
       if (r instanceof Date) return r.getTime();
-      return new Date(r as string | number).getTime() || 0;
+      if (typeof r === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r)) {
+        const [y, m, d] = r.split('-').map(Number);
+        return new Date(y, m - 1, d, 12, 0, 0).getTime();
+      }
+      const parsed = new Date(r as string | number).getTime();
+      return isNaN(parsed) ? 0 : parsed;
     };
 
     events.forEach((ev) => {
@@ -122,6 +148,7 @@ export default function EventsPage() {
     { id: 'academic', label: isTa ? 'அறிவியல் & கல்வி' : 'Science & Academics' },
     { id: 'sports', label: isTa ? 'விளையாட்டுப் போட்டிகள்' : 'Sports Meets' },
     { id: 'celebration', label: isTa ? 'சுதந்திர தினம் & பண்டிகைகள்' : 'National Days & Festivals' },
+    { id: 'general', label: isTa ? 'பொது நிகழ்வுகள்' : 'General & Assemblies' },
   ];
 
   // Active list based on tab
@@ -130,19 +157,37 @@ export default function EventsPage() {
   // Filtered by year, category, search
   const filteredEvents = useMemo(() => {
     return currentList.filter((ev) => {
-      if (selectedYear !== 'all' && ev.academicYear && ev.academicYear !== selectedYear) {
-        return false;
+      if (selectedYear !== 'all') {
+        const eventYear = (ev.academicYear || '').replace('-', '–').trim();
+        const targetYear = selectedYear.replace('-', '–').trim();
+        if (eventYear !== targetYear) {
+          return false;
+        }
       }
-      if (selectedCategory !== 'all' && ev.category !== selectedCategory) {
-        return false;
+      if (selectedCategory !== 'all') {
+        const cat = ev.category || 'other';
+        if (cat !== selectedCategory && !(selectedCategory === 'general' && cat === 'other')) {
+          return false;
+        }
       }
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+        const q = searchQuery.toLowerCase().trim();
         const title = (ev.title || '').toLowerCase();
+        const titleTa = (ev.title_ta || '').toLowerCase();
         const desc = (ev.description || '').toLowerCase();
+        const descTa = (ev.description_ta || '').toLowerCase();
         const guest = (ev.chiefGuest || '').toLowerCase();
         const venue = (ev.venue || '').toLowerCase();
-        if (!title.includes(q) && !desc.includes(q) && !guest.includes(q) && !venue.includes(q)) {
+        const venueTa = (ev.venue_ta || '').toLowerCase();
+        if (
+          !title.includes(q) &&
+          !titleTa.includes(q) &&
+          !desc.includes(q) &&
+          !descTa.includes(q) &&
+          !guest.includes(q) &&
+          !venue.includes(q) &&
+          !venueTa.includes(q)
+        ) {
           return false;
         }
       }
@@ -150,14 +195,22 @@ export default function EventsPage() {
     });
   }, [currentList, selectedYear, selectedCategory, searchQuery]);
 
-  const handleShare = (ev: SchoolEvent) => {
+  const handleShare = async (ev: SchoolEvent) => {
+    const shareData = {
+      title: ev.title,
+      text: `S.U.M. School Event: ${ev.title} at ${ev.venue || 'S.U.M. School, Royappanpatti'}`,
+      url: window.location.href,
+    };
     if (typeof window !== 'undefined' && navigator.share) {
-      navigator.share({
-        title: ev.title,
-        text: `School event: ${ev.title} on ${ev.venue || 'S.U.M. School'}`,
-        url: window.location.href,
-      }).catch(() => {});
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // Fallback to clipboard
+        await navigator.clipboard?.writeText(window.location.href);
+        toast.success(isTa ? 'இணைப்பு நகலெடுக்கப்பட்டது!' : 'Event link copied!');
+      }
     } else {
+      await navigator.clipboard?.writeText(window.location.href);
       toast.success(isTa ? 'இணைப்பு நகலெடுக்கப்பட்டது!' : 'Event link copied!');
     }
   };
@@ -166,6 +219,7 @@ export default function EventsPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main id="main-content" className="flex-1">
+        <Breadcrumbs items={[{ label: isTa ? 'நிகழ்வுகள்' : 'Events' }]} />
         {/* Hero */}
         <section className="relative py-20 lg:py-24 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="container-main relative z-10 text-center">
@@ -185,8 +239,9 @@ export default function EventsPage() {
         </section>
 
         {/* Navigation Toolbar: Upcoming vs Past Tabs, Years, Search */}
-        <section className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 sticky top-16 z-20 shadow-sm backdrop-blur-md bg-opacity-95">
+        <section className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 relative z-10 shadow-xs">
           <div className="container-main space-y-4">
+            {/* Level 1: Tabs + Search Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               {/* Upcoming vs Archive Tabs */}
               <div className="inline-flex p-1 rounded-2xl bg-slate-200 dark:bg-slate-800 self-start">
@@ -200,7 +255,7 @@ export default function EventsPage() {
                 >
                   <Calendar className="w-4 h-4" />
                   <span>{isTa ? 'வரவிருக்கும் நிகழ்வுகள்' : 'Upcoming Events'}</span>
-                  <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">
+                  <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-[10px]">
                     {upcomingEvents.length}
                   </span>
                 </button>
@@ -214,7 +269,7 @@ export default function EventsPage() {
                 >
                   <History className="w-4 h-4" />
                   <span>{isTa ? 'கடந்த கால நிகழ்வுகள் காப்பகம்' : 'Past Events Archive'}</span>
-                  <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px]">
+                  <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-[10px]">
                     {pastEvents.length}
                   </span>
                 </button>
@@ -233,7 +288,7 @@ export default function EventsPage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -241,38 +296,58 @@ export default function EventsPage() {
               </div>
             </div>
 
-            {/* Academic Year & Category Pills */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-200/60 dark:border-slate-800 min-w-0 max-w-full">
-              {/* Year pills */}
+            {/* Level 2: Academic Year Filter Row */}
+            <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800">
               <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1">
-                  {isTa ? 'கல்வியாண்டு:' : 'Academic Year:'}
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                  <span>{isTa ? 'கல்வியாண்டு:' : 'Academic Year:'}</span>
                 </span>
                 {availableYears.map((yr) => (
                   <button
                     key={yr}
                     onClick={() => setSelectedYear(yr)}
-                    className={`px-3.5 py-1 rounded-full text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap cursor-pointer shrink-0 ${
                       selectedYear === yr
                         ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
-                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
                     }`}
                   >
                     {yr === 'all' ? (isTa ? 'அனைத்து ஆண்டுகள்' : 'All Years') : yr}
                   </button>
                 ))}
-              </div>
 
-              {/* Categories */}
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shrink-0 shadow-xs min-w-[210px]"
+                  aria-label="Filter Academic Year"
+                >
+                  <option value="all">{isTa ? 'கல்வி ஆண்டுகள் (2000–2041)...' : 'Academic Years (2000–2041)...'}</option>
+                  {ACADEMIC_YEAR_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Level 3: Event Category Filter Row */}
+            <div>
               <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{isTa ? 'பிரிவு:' : 'Category:'}</span>
+                </span>
                 {categories.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`px-3 py-1 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer shrink-0 ${
                       selectedCategory === cat.id
-                        ? 'bg-amber-500 text-slate-950 font-bold'
-                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700'
                     }`}
                   >
                     {cat.label}
@@ -354,8 +429,14 @@ export default function EventsPage() {
                       <div className="relative md:w-80 h-56 md:h-auto overflow-hidden shrink-0 bg-slate-200 dark:bg-slate-800">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={ev.imageUrl}
+                          src={ev.imageUrl || '/images/event-annual-day.jpg'}
                           alt={title}
+                          onError={(e) => {
+                            const target = e.currentTarget;
+                            if (!target.src.includes('event-annual-day.jpg')) {
+                              target.src = '/images/event-annual-day.jpg';
+                            }
+                          }}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute top-4 left-4 bg-blue-600 text-white rounded-2xl p-3 text-center min-w-[64px] shadow-lg">
@@ -450,12 +531,18 @@ export default function EventsPage() {
               <div className="relative h-64 w-full rounded-2xl overflow-hidden bg-slate-200">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={activeModalEvent.imageUrl}
-                  alt={activeModalEvent.title}
+                  src={activeModalEvent.imageUrl || '/images/event-annual-day.jpg'}
+                  alt={getLocalized(activeModalEvent, 'title')}
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (!target.src.includes('event-annual-day.jpg')) {
+                      target.src = '/images/event-annual-day.jpg';
+                    }
+                  }}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-3 left-3 px-3 py-1 rounded-xl bg-blue-600 text-white font-bold text-xs shadow-md">
-                  {activeModalEvent.academicYear || 'Academic Event'}
+                  {activeModalEvent.academicYear || (isTa ? 'கல்வி நிகழ்வு' : 'Academic Event')}
                 </div>
               </div>
 
@@ -473,26 +560,26 @@ export default function EventsPage() {
 
               <div className="grid grid-cols-2 gap-3 text-xs p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                 <div>
-                  <span className="font-bold text-slate-500">Date & Time:</span>
+                  <span className="font-bold text-slate-500">{isTa ? 'தேதி & நேரம்:' : 'Date & Time:'}</span>
                   <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
-                    {formatEventDate(activeModalEvent.date).full} • {activeModalEvent.time || 'Day Event'}
+                    {formatEventDate(activeModalEvent.date).full} • {activeModalEvent.time || (isTa ? 'முழு நாள் நிகழ்வு' : 'Day Event')}
                   </div>
                 </div>
                 <div>
-                  <span className="font-bold text-slate-500">Venue:</span>
+                  <span className="font-bold text-slate-500">{isTa ? 'நடைபெறும் இடம்:' : 'Venue:'}</span>
                   <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
-                    {activeModalEvent.venue || 'S.U.M. Main Stage, Royappanpatti'}
+                    {getLocalized(activeModalEvent, 'venue') || activeModalEvent.venue || (isTa ? 'எஸ்.யு.எம். பள்ளி அரங்கம், ராயப்பன்பட்டி' : 'S.U.M. Main Stage, Royappanpatti')}
                   </div>
                 </div>
               </div>
 
               {activeModalEvent.chiefGuest && (
                 <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs text-blue-950 dark:text-blue-200">
-                  <strong>Chief Guest / Presided By:</strong> {activeModalEvent.chiefGuest}
+                  <strong>{isTa ? 'சிறப்பு விருந்தினர் / தலைமை:' : 'Chief Guest / Presided By:'}</strong> {activeModalEvent.chiefGuest}
                 </div>
               )}
 
-              <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed space-y-2">
+              <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed space-y-2 whitespace-pre-line">
                 <p>{getLocalized(activeModalEvent, 'content') || getLocalized(activeModalEvent, 'description')}</p>
               </div>
 
@@ -502,7 +589,7 @@ export default function EventsPage() {
                   className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition flex items-center gap-1.5 cursor-pointer"
                 >
                   <Share2 className="w-3.5 h-3.5" />
-                  <span>Share Event Details</span>
+                  <span>{isTa ? 'நிகழ்வைப் பகிர்க' : 'Share Event Details'}</span>
                 </button>
               </div>
             </div>

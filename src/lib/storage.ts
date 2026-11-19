@@ -1,6 +1,6 @@
 // ============================================================
 // Firebase Storage helpers
-// Image upload, delete, and URL management
+// Image upload, URL normalization, delete, and error reporting
 // ============================================================
 
 import {
@@ -10,7 +10,76 @@ import {
   deleteObject,
   type StorageReference,
 } from 'firebase/storage';
-import { storage } from './firebase';
+import { auth, isConfigured, storage } from './firebase';
+
+// Normalize direct image URLs (supports Google Drive share links, Dropbox links, local paths, HTTPS URLs)
+export function normalizeImageUrl(rawUrl: string): string {
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return '';
+
+  // Allow relative app paths like /images/...
+  if (trimmed.startsWith('/')) {
+    return trimmed;
+  }
+
+  // Convert Google Drive share links to direct viewable image URLs
+  // e.g. https://drive.google.com/file/d/FILE_ID/view?usp=sharing -> https://lh3.googleusercontent.com/d/FILE_ID
+  const driveFileMatch = trimmed.match(
+    /^https?:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/i
+  );
+  if (driveFileMatch?.[1]) {
+    return `https://lh3.googleusercontent.com/d/${driveFileMatch[1]}`;
+  }
+
+  // e.g. https://drive.google.com/open?id=FILE_ID or uc?id=FILE_ID
+  const driveIdMatch = trimmed.match(
+    /^https?:\/\/drive\.google\.com\/(?:open|uc)\?.*id=([a-zA-Z0-9_-]+)/i
+  );
+  if (driveIdMatch?.[1]) {
+    return `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}`;
+  }
+
+  // Convert Dropbox share link (?dl=0 -> ?raw=1)
+  if (/^https?:\/\/(www\.)?dropbox\.com\//i.test(trimmed)) {
+    try {
+      const u = new URL(trimmed);
+      u.searchParams.delete('dl');
+      u.searchParams.set('raw', '1');
+      return u.toString();
+    } catch {
+      return trimmed;
+    }
+  }
+
+  // Auto-prepend https:// if user pasted domain without scheme (e.g. i.imgur.com/abc.jpg)
+  if (!/^https?:\/\//i.test(trimmed) && !trimmed.startsWith('data:')) {
+    return `https://${trimmed}`;
+  }
+
+  return trimmed;
+}
+
+export function isValidImageUrl(url: string): boolean {
+  const normalized = normalizeImageUrl(url);
+  if (!normalized) return false;
+  if (normalized.startsWith('/')) return true;
+  try {
+    const parsed = new URL(normalized);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+// Helper to convert file to data URL ONLY when Firebase is completely unconfigured
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to read image file locally.'));
+    reader.readAsDataURL(file);
+  });
+}
 
 // --- Upload an image and return the download URL ---
 export async function uploadImage(
@@ -25,6 +94,14 @@ export async function uploadImage(
     throw new Error('Only image files (JPEG, PNG, WebP) and PDF documents are allowed.');
   }
 
+  // If Firebase is NOT configured at all (local-only dev without .env), allow local data URL
+  if (!isConfigured) {
+    if (typeof window !== 'undefined') {
+      return await fileToDataUrl(file);
+    }
+    throw new Error('Firebase Storage is not configured.');
+  }
+
   try {
     const storageRef: StorageReference = ref(storage, path);
     const snapshot = await uploadBytes(storageRef, file, {
@@ -33,8 +110,27 @@ export async function uploadImage(
     const downloadURL = await getDownloadURL(snapshot.ref);
     return downloadURL;
   } catch (error) {
-    console.error(`Error uploading image to ${path}:`, error);
-    throw error;
+    const err = error as { code?: string; message?: string } | undefined;
+    console.error(`Firebase Storage upload failed for ${path}:`, error);
+
+    if (err?.code === 'storage/unauthorized' || !auth.currentUser) {
+      throw new Error(
+        'Firebase Storage upload denied. Please make sure you are signed in with your Firebase Admin email & password (not offline mode).'
+      );
+    }
+    if (err?.code === 'storage/quota-exceeded') {
+      throw new Error('Firebase Storage quota exceeded. Please check your Firebase console.');
+    }
+    if (err?.code === 'storage/canceled') {
+      throw new Error('Image upload was canceled.');
+    }
+    if (err?.code === 'storage/retry-limit-exceeded') {
+      throw new Error('Upload timed out. Please check your internet connection and try again.');
+    }
+
+    throw new Error(
+      err?.message || 'Failed to upload image to Firebase Storage. Please verify your connection and storage rules.'
+    );
   }
 }
 
@@ -58,21 +154,19 @@ export async function deleteImage(path: string): Promise<void> {
     const storageRef = ref(storage, path);
     await deleteObject(storageRef);
   } catch (error) {
-    // If file doesn't exist, that's fine
     const err = error as { code?: string };
     if (err.code === 'storage/object-not-found') {
       console.warn(`Image not found at ${path}, skipping delete.`);
       return;
     }
     console.error(`Error deleting image at ${path}:`, error);
-    throw error;
   }
 }
 
 // --- Delete an image by its download URL ---
 export async function deleteImageByUrl(url: string): Promise<void> {
   if (!url || typeof url !== 'string') return;
-  // If this is a local relative asset or not a Firebase Storage URL, skip without error
+  // If this is a local relative asset or data URL, skip without error
   if (!url.startsWith('gs://') && !url.includes('firebasestorage.googleapis.com')) {
     return;
   }
@@ -99,15 +193,4 @@ export async function uploadDocument(
   const path = `${cleanFolder}/${timestamp}_${sanitizedName}`;
   const url = await uploadImage(file, path);
   return { url, path, name: file.name };
-}
-
-// --- Generate a storage path for different modules ---
-export function getStoragePath(
-  module: string,
-  filename?: string
-): string {
-  if (filename) {
-    return `${module}/${filename}`;
-  }
-  return module;
 }

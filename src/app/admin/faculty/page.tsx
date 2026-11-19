@@ -11,9 +11,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { facultyRepository } from '@/lib/repositories';
-import { defaultFaculty } from '@/lib/defaultData';
 import { Faculty } from '@/types';
-import { Plus, Edit2, Trash2, Users, Sparkles, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FacultyAdminPage() {
@@ -22,11 +21,10 @@ export default function FacultyAdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFaculty, setEditingFaculty] = useState<Faculty | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Faculty>>({
     name: '',
-    photoUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
+    photoUrl: '',
     designation: '',
     qualification: '',
     subject: '',
@@ -40,7 +38,7 @@ export default function FacultyAdminPage() {
     setEditingFaculty(null);
     setFormData({
       name: '',
-      photoUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=600&q=80',
+      photoUrl: '',
       designation: '',
       qualification: '',
       subject: '',
@@ -91,26 +89,6 @@ export default function FacultyAdminPage() {
     };
   }, []);
 
-  const handleSeedDefaults = async () => {
-    try {
-      setIsSeeding(true);
-      for (const fac of defaultFaculty) {
-        const existing = facultyList.find((f) => f.name === fac.name);
-        if (!existing) {
-          const { id, ...dataToCreate } = fac;
-          await facultyRepository.create(dataToCreate as any);
-        }
-      }
-      toast.success('Successfully seeded faculty members!');
-      await fetchFaculty();
-    } catch (err) {
-      console.error('Error seeding faculty:', err);
-      toast.error('Failed to seed faculty members.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.designation) {
@@ -130,7 +108,7 @@ export default function FacultyAdminPage() {
           subject: formData.subject || '',
           section: (formData.section as Faculty['section']) || 'secondary',
           experience: formData.experience || '',
-          photoUrl: formData.photoUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=400&q=80',
+          photoUrl: formData.photoUrl || '',
           biography: formData.biography || '',
           status: formData.status || 'published',
           order: facultyList.length + 1,
@@ -140,8 +118,9 @@ export default function FacultyAdminPage() {
       }
       setIsModalOpen(false);
       await fetchFaculty();
-    } catch {
-      toast.error('Failed to save faculty');
+    } catch (err) {
+      console.error('Failed to save faculty:', err);
+      toast.error((err as Error)?.message || 'Failed to save faculty to Firebase.');
     }
   };
 
@@ -167,7 +146,7 @@ export default function FacultyAdminPage() {
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={item.photoUrl}
+            src={item.photoUrl || '/images/faculty-1.jpg'}
             alt={item.name}
             className="w-10 h-10 rounded-full object-cover border border-slate-200"
           />
@@ -236,21 +215,6 @@ export default function FacultyAdminPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            onClick={handleSeedDefaults}
-            variant="secondary"
-            disabled={isSeeding}
-            leftIcon={
-              isSeeding ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
-              ) : (
-                <Sparkles className="w-4 h-4 text-amber-500" />
-              )
-            }
-          >
-            {isSeeding ? 'Seeding...' : 'Seed Faculty Roster'}
-          </Button>
-
           <Button
             onClick={handleOpenAdd}
             variant="primary"

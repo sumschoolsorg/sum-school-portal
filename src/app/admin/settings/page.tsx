@@ -39,10 +39,10 @@ export default function WebsiteSettingsAdminPage() {
     setIsSaving(true);
     try {
       await websiteSettingsRepository.save(formData);
-      toast.success('Website SEO and global configuration updated in Firestore!');
+      toast.success('Website SEO and global configuration saved to Firebase!');
     } catch (error) {
-      console.warn('Saved in offline mode:', error);
-      toast.info('Website settings updated locally.');
+      console.error('Failed to save website settings:', error);
+      toast.error((error as Error)?.message || 'Failed to save website settings to Firebase.');
     } finally {
       setIsSaving(false);
     }

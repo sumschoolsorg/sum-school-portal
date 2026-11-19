@@ -8,10 +8,6 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import {
   Cpu,
-  Key,
-  CheckCircle2,
-  AlertCircle,
-  Sparkles,
   ShieldCheck,
   RefreshCw,
   Sliders,
@@ -20,7 +16,6 @@ import {
   Eye,
   EyeOff,
   ExternalLink,
-  Bot,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { MultiAISettings, AIProviderId } from '@/types/ai';
@@ -28,7 +23,7 @@ import { defaultMultiAISettings } from '@/lib/ai/defaultAiSettings';
 
 export default function AdminAISettingsPage() {
   const [settings, setSettings] = useState<MultiAISettings>(defaultMultiAISettings);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   // Key testing states

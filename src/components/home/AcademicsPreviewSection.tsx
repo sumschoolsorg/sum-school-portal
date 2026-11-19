@@ -23,7 +23,7 @@ export function AcademicsPreviewSection({
       icon: <School className="w-6 h-6 text-blue-600 dark:text-blue-400" />,
       color: 'border-blue-500/30 hover:border-blue-500',
       tag: isTa ? 'தொடக்கக் கட்டம்' : 'Foundational Stage',
-      imageUrl: content.primarySection.imageUrl,
+      imageUrl: content.primarySection.imageUrl || '/images/facility-library.jpg',
     },
     {
       title: t('home.academicsPreview.secondaryTitle', 'Secondary Education'),
@@ -32,7 +32,7 @@ export function AcademicsPreviewSection({
       icon: <BookOpen className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />,
       color: 'border-emerald-500/30 hover:border-emerald-500',
       tag: isTa ? 'உயர்நிலைக் கட்டம்' : 'Preparatory & Middle',
-      imageUrl: content.secondarySection.imageUrl,
+      imageUrl: content.secondarySection.imageUrl || '/images/facility-science-lab.jpg',
     },
     {
       title: t('home.academicsPreview.hscTitle', 'Higher Secondary'),
@@ -41,7 +41,7 @@ export function AcademicsPreviewSection({
       icon: <GraduationCap className="w-6 h-6 text-amber-500 dark:text-amber-400" />,
       color: 'border-amber-500/30 hover:border-amber-500',
       tag: isTa ? 'மேல்நிலைக் கட்டம்' : 'Senior Secondary',
-      imageUrl: content.higherSecondarySection.imageUrl,
+      imageUrl: content.higherSecondarySection.imageUrl || '/images/facility-computer-lab.jpg',
     },
   ];
 
@@ -64,13 +64,19 @@ export function AcademicsPreviewSection({
               className={`bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm border-2 ${sec.color} transition-all duration-300 hover:-translate-y-2 hover:shadow-xl flex flex-col group`}
             >
               {/* Image Preview */}
-              <div className="relative h-48 w-full overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={sec.imageUrl}
-                  alt={sec.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+              <div className="relative h-48 w-full overflow-hidden bg-slate-900">
+                {sec.imageUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={sec.imageUrl}
+                    alt={sec.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center opacity-30">
+                    {sec.icon}
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
                 <div className="absolute top-4 left-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-slate-800 dark:text-slate-100 shadow-sm">
                   {sec.tag}

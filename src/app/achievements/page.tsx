@@ -12,14 +12,20 @@ import {
   CheckCircle,
   X,
   Share2,
+  Tag,
+  Medal,
+  Dumbbell,
+  Sparkles,
+  RotateCcw,
 } from 'lucide-react';
 import { achievementRepository } from '@/lib/repositories';
-import { defaultAchievements } from '@/lib/defaultData';
 import { Achievement } from '@/types';
+import { ACADEMIC_YEAR_OPTIONS } from '@/lib/academicYears';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { toast } from 'sonner';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function AchievementsPage() {
   const { getLocalized, language } = useLanguage();
@@ -35,63 +41,94 @@ export default function AchievementsPage() {
   const [activeModalItem, setActiveModalItem] = useState<Achievement | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const loadAchievements = async () => {
       try {
-        setIsLoading(true);
         const data = await achievementRepository.getPublished();
-        const published = (data || []).filter((item) => item.status === 'published');
-        setAchievements(published);
+        if (!isMounted) return;
+        if (data && data.length > 0) {
+          const published = data.filter((item) => item.status === 'published');
+          if (published.length > 0) {
+            setAchievements(published);
+          }
+        }
       } catch (err) {
         console.warn('Error loading achievements from repository:', err);
-        setAchievements([]);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
     loadAchievements();
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  // Normalize year string for reliable comparison across hyphens / en-dashes
+  const normalizeYear = (yr?: string) => (yr || '').replace(/[-–—\s]/g, '');
 
   // Academic years list
   const availableYears = useMemo(() => {
     const years = new Set<string>();
     achievements.forEach((a) => {
-      if (a.academicYear) years.add(a.academicYear);
+      if (a.academicYear) years.add(a.academicYear.trim());
     });
+    // Ensure primary school years are included in pills
+    ['2025–2026', '2024–2025', '2023–2024', '2022–2023'].forEach((y) => years.add(y));
     return ['all', ...Array.from(years).sort().reverse()];
   }, [achievements]);
 
   // Categories list
   const categories = [
-    { id: 'all', label: isTa ? 'அனைத்துப் பிரிவுகளும்' : 'All Categories' },
-    { id: 'topper', label: isTa ? 'பள்ளி முதலிடங்கள் (Toppers)' : 'Board Exam Toppers' },
-    { id: 'academic', label: isTa ? 'கல்விச் சிறப்பிடம்' : 'Academic Merits' },
-    { id: 'sports', label: isTa ? 'விளையாட்டு சாம்பியன்கள்' : 'Sports & Athletics' },
-    { id: 'cultural', label: isTa ? 'கலை & இலக்கியம்' : 'Cultural & Arts' },
+    { id: 'all', label: isTa ? 'அனைத்துப் பிரிவுகளும்' : 'All Categories', icon: Trophy },
+    { id: 'topper', label: isTa ? 'பள்ளி முதலிடங்கள் (Toppers)' : 'Board Exam Toppers', icon: Medal },
+    { id: 'academic', label: isTa ? 'கல்விச் சிறப்பிடம்' : 'Academic Merits', icon: GraduationCap },
+    { id: 'sports', label: isTa ? 'விளையாட்டு சாம்பியன்கள்' : 'Sports & Athletics', icon: Dumbbell },
+    { id: 'cultural', label: isTa ? 'கலை & இலக்கியம்' : 'Cultural & Arts', icon: Sparkles },
   ];
 
   // Filtered list
   const filteredAchievements = useMemo(() => {
     return achievements.filter((ach) => {
       // Year filter
-      if (selectedYear !== 'all' && ach.academicYear !== selectedYear) {
-        return false;
+      if (selectedYear !== 'all') {
+        const normSelected = normalizeYear(selectedYear);
+        const normAchYear = normalizeYear(ach.academicYear);
+        if (normAchYear !== normSelected) return false;
       }
       // Category filter
       if (selectedCategory !== 'all') {
-        if (selectedCategory === 'topper' && ach.category !== 'topper') return false;
-        if (selectedCategory === 'academic' && ach.category !== 'academic') return false;
-        if (selectedCategory === 'sports' && ach.category !== 'sports') return false;
-        if (selectedCategory === 'cultural' && ach.category !== 'cultural' && ach.category !== 'competition') return false;
+        const cat = (ach.category || '').toLowerCase();
+        if (selectedCategory === 'topper' && cat !== 'topper') return false;
+        if (selectedCategory === 'academic' && cat !== 'academic') return false;
+        if (selectedCategory === 'sports' && cat !== 'sports' && cat !== 'athletics') return false;
+        if (selectedCategory === 'cultural' && cat !== 'cultural' && cat !== 'arts' && cat !== 'competition') return false;
       }
       // Search query
       if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+        const q = searchQuery.toLowerCase().trim();
         const student = (ach.studentName || '').toLowerCase();
+        const studentTa = (ach.studentName_ta || '').toLowerCase();
         const title = (ach.title || '').toLowerCase();
+        const titleTa = (ach.title_ta || '').toLowerCase();
         const hometown = (ach.hometown || '').toLowerCase();
         const className = (ach.className || '').toLowerCase();
         const exam = (ach.examinationName || '').toLowerCase();
-        if (!student.includes(q) && !title.includes(q) && !hometown.includes(q) && !className.includes(q) && !exam.includes(q)) {
+        const rank = (ach.rank || '').toLowerCase();
+        const desc = (ach.description || '').toLowerCase();
+        const descTa = (ach.description_ta || '').toLowerCase();
+        if (
+          !student.includes(q) &&
+          !studentTa.includes(q) &&
+          !title.includes(q) &&
+          !titleTa.includes(q) &&
+          !hometown.includes(q) &&
+          !className.includes(q) &&
+          !exam.includes(q) &&
+          !rank.includes(q) &&
+          !desc.includes(q) &&
+          !descTa.includes(q)
+        ) {
           return false;
         }
       }
@@ -122,6 +159,7 @@ export default function AchievementsPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main id="main-content" className="flex-1">
+        <Breadcrumbs items={[{ label: isTa ? 'சாதனைகள்' : 'Achievements' }]} />
         {/* Hero Section */}
         <section className="relative py-20 lg:py-24 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="container-main relative z-10 text-center">
@@ -161,67 +199,122 @@ export default function AchievementsPage() {
         </section>
 
         {/* Filter Toolbar Section */}
-        <section className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-6 sticky top-16 z-20 shadow-sm backdrop-blur-md bg-opacity-95">
+        <section className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-5 relative z-10 shadow-xs">
           <div className="container-main space-y-4">
-            {/* Top row: Year Selector Pills & Search Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0 max-w-full">
-              {/* Academic Year Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full w-full md:w-auto">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1 shrink-0 mr-1">
-                  <Calendar className="w-3.5 h-3.5" />
-                  {isTa ? 'கல்வியாண்டு:' : 'Academic Year:'}
-                </span>
-                {availableYears.map((yr) => (
-                  <button
-                    key={yr}
-                    onClick={() => setSelectedYear(yr)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-                      selectedYear === yr
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
-                    }`}
-                  >
-                    {yr === 'all' ? (isTa ? 'அனைத்து ஆண்டுகள்' : 'All Academic Years') : yr}
-                  </button>
-                ))}
-              </div>
-
+            {/* Level 1: Search Bar & Active Status Row */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 min-w-0 max-w-full">
               {/* Search Box */}
-              <div className="relative w-full md:w-80 shrink-0">
+              <div className="relative w-full md:w-96 shrink-0">
                 <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={isTa ? 'மாணவர் பெயர், ஊர், தேர்வு தேடுக...' : 'Search student, hometown, exam...'}
-                  className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-slate-900 dark:text-white placeholder:text-slate-400 shadow-sm"
+                  className="w-full pl-9 pr-9 py-2 text-xs sm:text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 text-slate-900 dark:text-white placeholder:text-slate-400 shadow-xs"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-0.5"
+                    aria-label="Clear search"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
+
+              {/* Status & Reset Filter Action */}
+              <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
+                <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>
+                    {isTa
+                      ? `${filteredAchievements.length} சாதனைகள் உள்ளன`
+                      : `Showing ${filteredAchievements.length} verified accolades`}
+                  </span>
+                </div>
+
+                {(selectedYear !== 'all' || selectedCategory !== 'all' || searchQuery.trim() !== '') && (
+                  <button
+                    onClick={() => {
+                      setSelectedYear('all');
+                      setSelectedCategory('all');
+                      setSearchQuery('');
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-900 transition cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>{isTa ? 'வடிகட்டிகளை மீட்டமை' : 'Reset Filters'}</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Bottom row: Category Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full w-full">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-                    selectedCategory === cat.id
-                      ? 'bg-amber-500 text-slate-950 shadow-sm'
-                      : 'bg-white dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700'
-                  }`}
+            {/* Level 2: Academic Year Filter Row */}
+            <div className="pt-3 border-t border-slate-200/70 dark:border-slate-800">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span>{isTa ? 'கல்வியாண்டு:' : 'Academic Year:'}</span>
+                </span>
+
+                {availableYears.map((yr) => (
+                  <button
+                    key={yr}
+                    onClick={() => setSelectedYear(yr)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap cursor-pointer shrink-0 ${
+                      selectedYear === yr
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
+                    }`}
+                  >
+                    {yr === 'all' ? (isTa ? 'அனைத்து ஆண்டுகள்' : 'All Academic Years') : yr}
+                  </button>
+                ))}
+
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shrink-0 shadow-xs min-w-[210px]"
+                  aria-label="Filter Academic Year"
                 >
-                  {cat.label}
-                </button>
-              ))}
+                  <option value="all">{isTa ? 'கல்வி ஆண்டுகள் (2000–2041)...' : 'Academic Years (2000–2041)...'}</option>
+                  {ACADEMIC_YEAR_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Level 3: Categories Filter Row */}
+            <div className="pt-3 border-t border-slate-200/70 dark:border-slate-800">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none min-w-0 max-w-full">
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-amber-500" />
+                  <span>{isTa ? 'பிரிவு:' : 'Category:'}</span>
+                </span>
+                {categories.map((cat) => {
+                  const Icon = cat.icon;
+                  const isSelected = selectedCategory === cat.id;
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`px-4 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                        isSelected
+                          ? 'bg-amber-500 text-slate-950 shadow-xs'
+                          : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700'
+                      }`}
+                    >
+                      <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-slate-950' : 'text-amber-500'}`} />
+                      <span>{cat.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>
@@ -268,9 +361,12 @@ export default function AchievementsPage() {
                       <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-xl mb-4 bg-slate-100">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={topper.imageUrl}
+                          src={topper.imageUrl || '/images/hero-campus.jpg'}
                           alt={topper.studentName || topper.title}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/hero-campus.jpg';
+                          }}
                         />
                       </div>
 
@@ -375,9 +471,12 @@ export default function AchievementsPage() {
                       <div className="relative h-56 w-full overflow-hidden bg-slate-200 dark:bg-slate-800">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={ach.imageUrl}
+                          src={ach.imageUrl || '/images/hero-campus.jpg'}
                           alt={title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/images/hero-campus.jpg';
+                          }}
                         />
                         {/* Rank / Category Badge */}
                         <div className="absolute top-3 left-3 flex flex-col gap-1.5">
@@ -458,9 +557,12 @@ export default function AchievementsPage() {
                 <div className="w-28 h-28 rounded-2xl overflow-hidden border-2 border-white shadow-md shrink-0 bg-slate-200">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={activeModalItem.imageUrl}
+                    src={activeModalItem.imageUrl || '/images/hero-campus.jpg'}
                     alt={activeModalItem.studentName || activeModalItem.title}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/images/hero-campus.jpg';
+                    }}
                   />
                 </div>
                 <div className="space-y-1.5 text-center sm:text-left">

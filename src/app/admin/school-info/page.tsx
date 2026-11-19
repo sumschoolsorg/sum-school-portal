@@ -93,7 +93,7 @@ export default function SchoolInfoAdminPage() {
       id: 'item-5',
       field: 'phone',
       label: 'Landline Phone Contact',
-      researchedValue: '+91 4554 253224 / 04554-253200',
+      researchedValue: '04554-253224',
       source: 'Uthamapalayam Telecommunication Exchange & TNEA Directory',
       sourceUrl: 'https://static.tneaonline.org',
       status: 'Verify',
@@ -199,7 +199,7 @@ export default function SchoolInfoAdminPage() {
       setFormData((prev) => ({
         ...prev,
         phone: '04554-253224',
-        phone2: '+91 4554 253200',
+        phone2: '',
       }));
     } else if (item.field === 'educationBoard') {
       setFormData((prev) => ({
@@ -234,7 +234,7 @@ export default function SchoolInfoAdminPage() {
       mediumOfInstruction: 'Tamil & English Medium',
       classesOffered: 'Classes 1 to 12 (Primary Wing: 1–5 | High School & Higher Secondary: 6–12)',
       phone: '04554-253224',
-      phone2: '+91 4554 253200',
+      phone2: '',
       address: '105/W-2, Savarimuthu Lourdu Nagar / East Street, Royappanpatti',
       city: 'Royappanpatti, Uthamapalayam Taluk',
       state: 'Tamil Nadu',
@@ -252,10 +252,10 @@ export default function SchoolInfoAdminPage() {
     setIsSaving(true);
     try {
       await schoolRepository.save(formData);
-      toast.success('Official School Profile saved successfully in repository & published to website!');
+      toast.success('Official School Profile saved to Firebase & published to website!');
     } catch (error) {
       console.error('Save error:', error);
-      toast.error('Failed to save school profile.');
+      toast.error((error as Error)?.message || 'Failed to save school profile to Firebase.');
     } finally {
       setIsSaving(false);
     }
@@ -694,7 +694,7 @@ export default function SchoolInfoAdminPage() {
                 name="phone2"
                 value={formData.phone2}
                 onChange={handleChange}
-                helperText="Admission / Office Desk: +91 4554 253200"
+                helperText="Alternate phone number (optional)"
               />
             </div>
 

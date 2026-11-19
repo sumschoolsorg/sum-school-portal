@@ -29,10 +29,10 @@ export function PrincipalMessageSection({
             {/* Principal Photo & Details (Col 4) */}
             <div className="lg:col-span-4 flex flex-col items-center sm:items-start text-center sm:text-left">
               <div className="relative mb-6">
-                <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl overflow-hidden border-4 border-amber-400/40 shadow-2xl shadow-blue-950">
+                <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl overflow-hidden border-4 border-amber-400/40 shadow-2xl shadow-blue-950 bg-slate-900 flex items-center justify-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={content.photoUrl}
+                    src={content.photoUrl || '/images/principal-photo.jpg'}
                     alt={name}
                     className="w-full h-full object-cover"
                   />

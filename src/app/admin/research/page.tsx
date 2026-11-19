@@ -11,7 +11,6 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { researchRepository } from '@/lib/repositories';
-import { defaultResearchRecords } from '@/lib/defaultData';
 import { ResearchRecord, VerificationStatus } from '@/types';
 import {
   Plus,
@@ -24,7 +23,6 @@ import {
   XCircle,
   Clock,
   BookOpen,
-  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -48,23 +46,6 @@ export default function ResearchAdminPage() {
     adminApproval: true,
     published: true,
   });
-
-  const handleSyncVerifiedFindings = async () => {
-    try {
-      setIsLoading(true);
-      for (const rec of defaultResearchRecords) {
-        await researchRepository.save(rec);
-      }
-      const updated = await researchRepository.getAll();
-      setRecords(updated);
-      toast.success('Synchronized all 15 authentic research findings (Stack Schools, TRB, TNEA)!');
-    } catch (err) {
-      console.error('Sync error:', err);
-      toast.error('Failed to synchronize records.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -339,15 +320,6 @@ export default function ResearchAdminPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={handleSyncVerifiedFindings}
-            className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-50"
-            title="Load authentic research records from government registries and Stack Schools"
-          >
-            <RefreshCw className="w-4 h-4 text-blue-600" />
-            Sync Verified Research
-          </Button>
           <Button onClick={handleOpenAdd} className="flex items-center gap-2 bg-blue-700 hover:bg-blue-800">
             <Plus className="w-4 h-4" />
             Add Research Record

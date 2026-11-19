@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { transportRepository } from '@/lib/repositories';
-import { defaultTransportRoutes } from '@/lib/defaultData';
 import { TransportRoute } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import {
   Bus,
   MapPin,
@@ -52,6 +52,7 @@ export default function TransportPage() {
       <Header />
 
       <main id="main-content" className="flex-1">
+        <Breadcrumbs items={[{ label: isTa ? 'வாகன வசதி' : 'Transport' }]} />
         {/* Page Hero */}
         <section className="relative py-20 lg:py-28 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(59,130,246,0.15),transparent_70%)] pointer-events-none" />
@@ -137,7 +138,7 @@ export default function TransportPage() {
                 <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase">
                   {isTa ? 'நேரடி உதவி எண்' : 'Emergency Hotline'}
                 </h4>
-                <p className="text-[11px] text-slate-500">04554-253224 / 253200</p>
+                <p className="text-[11px] text-slate-500">04554-253224</p>
               </div>
             </div>
           </div>

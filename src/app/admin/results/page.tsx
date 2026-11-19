@@ -10,8 +10,8 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { studentResultRepository, announcementRepository } from '@/lib/repositories';
-import { defaultStudentResults } from '@/lib/defaultData';
 import { StudentResult, SubjectScore } from '@/types';
+import { ACADEMIC_YEAR_OPTIONS, CURRENT_ACADEMIC_YEAR, normalizeAcademicYear } from '@/lib/academicYears';
 import {
   Award,
   Plus,
@@ -24,8 +24,6 @@ import {
   FileSpreadsheet,
   AlertCircle,
   Check,
-  Sparkles,
-  RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -70,7 +68,6 @@ export default function AdminResultsPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [broadcastAnnouncement, setBroadcastAnnouncement] = useState(true);
   const [uploadMode, setUploadMode] = useState<'file' | 'text'>('file');
-  const [isSeeding, setIsSeeding] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<Partial<StudentResult>>({
@@ -82,7 +79,7 @@ export default function AdminResultsPage() {
     className: '10th Standard (SSLC)',
     section: 'A',
     examName: 'Tamil Nadu SSLC Annual Board Examination',
-    academicYear: '2025–2026',
+    academicYear: CURRENT_ACADEMIC_YEAR,
     subjects: [],
     totalMarks: 0,
     totalMaxMarks: 500,
@@ -127,26 +124,6 @@ export default function AdminResultsPage() {
     };
   }, []);
 
-  const handleSeedDefaults = async () => {
-    try {
-      setIsSeeding(true);
-      for (const res of defaultStudentResults) {
-        const existing = results.find((r) => r.rollNumber === res.rollNumber);
-        if (!existing) {
-          const { id, ...dataToCreate } = res;
-          await studentResultRepository.create(dataToCreate as any);
-        }
-      }
-      toast.success('Successfully seeded sample examination marksheets!');
-      await loadData();
-    } catch (err) {
-      console.error('Error seeding student results:', err);
-      toast.error('Failed to seed examination marksheets.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const handleOpenAdd = () => {
     setEditingResult(null);
     const initialSubjects: SubjectScore[] = [
@@ -166,7 +143,7 @@ export default function AdminResultsPage() {
       className: '10th Standard (SSLC)',
       section: 'A',
       examName: 'Tamil Nadu SSLC Annual Board Examination',
-      academicYear: '2025–2026',
+      academicYear: CURRENT_ACADEMIC_YEAR,
       subjects: initialSubjects,
       totalMarks: 0,
       totalMaxMarks: 500,
@@ -395,7 +372,7 @@ export default function AdminResultsPage() {
       const className = getVal(colIdx.className, '10th Standard (SSLC)');
       const section = getVal(colIdx.section, 'A');
       const examName = getVal(colIdx.examName, 'Tamil Nadu SSLC Annual Board Examination');
-      const academicYear = getVal(colIdx.academicYear, '2025–2026');
+      const academicYear = normalizeAcademicYear(getVal(colIdx.academicYear, CURRENT_ACADEMIC_YEAR));
       const remarks = getVal(colIdx.remarks, 'State Board Certified');
 
       const parseMark = (idx: number) => {
@@ -702,21 +679,6 @@ export default function AdminResultsPage() {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <Button
-            onClick={handleSeedDefaults}
-            variant="secondary"
-            disabled={isSeeding}
-            leftIcon={
-              isSeeding ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
-              ) : (
-                <Sparkles className="w-4 h-4 text-amber-500" />
-              )
-            }
-          >
-            {isSeeding ? 'Seeding...' : 'Seed Sample Board Results'}
-          </Button>
-
-          <Button
             onClick={handleDownloadTemplate}
             variant="secondary"
             leftIcon={<Download className="w-4 h-4" />}
@@ -823,11 +785,11 @@ export default function AdminResultsPage() {
               onChange={(e) => setFormData({ ...formData, examName: e.target.value })}
               placeholder="Tamil Nadu SSLC Annual Board Examination"
             />
-            <Input
+            <Select
               label="Academic Year"
-              value={formData.academicYear || '2025–2026'}
+              value={formData.academicYear || CURRENT_ACADEMIC_YEAR}
               onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
-              placeholder="2025–2026"
+              options={ACADEMIC_YEAR_OPTIONS}
             />
           </div>
 

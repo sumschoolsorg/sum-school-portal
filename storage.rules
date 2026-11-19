@@ -1,15 +1,20 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    // Helper function
+
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
+    function isPrimarySuperAdminEmail() {
+      return isAuthenticated() && request.auth.token.email == 'admin@sumschools.org';
+    }
+
     function isAdmin() {
       return isAuthenticated() && (
-        (firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
+        isPrimarySuperAdminEmail()
+        || (firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
           && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.status == 'active'
           && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.role in ['super-admin', 'admin', 'content-manager'])
         || (!firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
@@ -19,7 +24,8 @@ service firebase.storage {
 
     function isSchoolAdmin() {
       return isAuthenticated() && (
-        (firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
+        isPrimarySuperAdminEmail()
+        || (firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
           && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.status == 'active'
           && firestore.get(/databases/(default)/documents/adminUsers/$(request.auth.uid)).data.role in ['super-admin', 'admin'])
         || (!firestore.exists(/databases/(default)/documents/adminUsers/$(request.auth.uid))
@@ -28,12 +34,39 @@ service firebase.storage {
     }
 
     function canManageContentFolder(folder) {
-      return isAdmin() && folder in ['announcements', 'events', 'gallery', 'uploads'];
+      return isAdmin() && folder in [
+        'announcements',
+        'events',
+        'gallery',
+        'uploads',
+        'general',
+        'news',
+        'banners',
+        'facilities',
+        'faculty',
+        'achievements',
+        'timeline',
+        'testimonials',
+        'alumni',
+        'academics',
+        'management',
+        'hero',
+        'principal',
+        'settings',
+        'admins'
+      ];
     }
 
-    // Public images (banners, logos, faculty, facilities, gallery, achievements)
-    // Anyone can read/download
-    // Only authenticated admin can upload, replace, or delete
+    // Public alumni registration photo uploads (size & image-type restricted)
+    match /alumni/{allPaths=**} {
+      allow read: if true;
+      allow create: if request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+      allow update, delete: if isSchoolAdmin() || isAdmin();
+    }
+
+    // All school portal media folders (banners, logos, faculty, facilities, gallery, achievements, etc.)
+    // Anyone can read/download; only authenticated admins can upload, replace, or delete
     match /{folder}/{allPaths=**} {
       allow read: if true;
       allow delete: if isSchoolAdmin() || canManageContentFolder(folder);

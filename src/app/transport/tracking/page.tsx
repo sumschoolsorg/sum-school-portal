@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { transportRepository } from '@/lib/repositories';
-import { defaultTransportRoutes } from '@/lib/defaultData';
 import { TransportRoute, TransportStop } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {

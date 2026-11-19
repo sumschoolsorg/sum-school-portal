@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowRight, MonitorPlay, FlaskConical, Laptop, BookOpen, Trophy, Bus } from 'lucide-react';
+import { ArrowRight, MonitorPlay, FlaskConical, Laptop, BookOpen, Trophy, Bus, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { defaultFacilities } from '@/lib/defaultData';
@@ -75,13 +75,19 @@ export function FacilitiesPreviewSection({ facilities: initialFacilities = defau
                 className="bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col group"
               >
                 {/* Facility Image */}
-                <div className="relative h-48 w-full overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={fac.imageUrl}
-                    alt={facTitle}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                <div className="relative h-48 w-full overflow-hidden bg-slate-900">
+                  {fac.imageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={fac.imageUrl}
+                      alt={facTitle}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-600/10 via-slate-800 to-slate-900">
+                      <Building2 className="w-12 h-12 text-emerald-400/40" />
+                    </div>
+                  )}
                   <div className="absolute top-4 left-4 p-2.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-md shadow-md">
                     {getIcon(fac.icon)}
                   </div>

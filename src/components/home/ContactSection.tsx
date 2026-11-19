@@ -109,7 +109,9 @@ export function ContactSection() {
                       {t('contact.phoneLabel', 'Phone Numbers')}
                     </div>
                     <div className="mt-1">{defaultSchoolSettings.phone}</div>
-                    <div className="text-slate-400">{defaultSchoolSettings.phone2}</div>
+                    {defaultSchoolSettings.phone2 ? (
+                      <div className="text-slate-400">{defaultSchoolSettings.phone2}</div>
+                    ) : null}
                   </div>
                 </div>
 

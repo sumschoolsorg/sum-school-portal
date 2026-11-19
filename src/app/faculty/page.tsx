@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Badge } from '@/components/ui/Badge';
-import { defaultFaculty } from '@/lib/defaultData';
 import { facultyRepository } from '@/lib/repositories';
 import { Faculty } from '@/types';
 import { GraduationCap, Briefcase, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function FacultyPage() {
   const { t, getLocalized, language } = useLanguage();
@@ -54,6 +54,7 @@ export default function FacultyPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main id="main-content" className="flex-1">
+        <Breadcrumbs items={[{ label: t('header.faculty', 'Faculty') }]} />
         {/* Page Hero */}
         <section className="relative py-20 lg:py-28 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="container-main relative z-10 text-center">
@@ -143,12 +144,18 @@ export default function FacultyPage() {
                   >
                     {/* Photo */}
                     <div className="relative h-64 w-full overflow-hidden bg-slate-200 dark:bg-slate-800">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={staff.photoUrl}
-                        alt={name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      {staff.photoUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={staff.photoUrl}
+                          alt={name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-400">
+                          <GraduationCap className="w-16 h-16 opacity-40" />
+                        </div>
+                      )}
                       <div className="absolute bottom-3 left-3">
                         <Badge variant="primary">
                           {getSectionBadge(staff.section)}

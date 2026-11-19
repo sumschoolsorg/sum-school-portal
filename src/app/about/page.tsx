@@ -11,6 +11,7 @@ import { AboutContent } from '@/types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Target, Eye, Heart } from 'lucide-react';
 import { SchoolTimelineSection } from '@/components/about/SchoolTimelineSection';
+import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
 export default function AboutPage() {
   const { t, language, getLocalized } = useLanguage();
@@ -48,6 +49,7 @@ export default function AboutPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main id="main-content" className="flex-1">
+        <Breadcrumbs items={[{ label: t('header.about', 'About Us') }]} />
         {/* Page Hero Banner */}
         <section className="relative py-20 lg:py-28 bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(#ffffff0a_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
@@ -257,7 +259,7 @@ export default function AboutPage() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={mem.photoUrl}
+                    src={mem.photoUrl || '/images/principal-photo.jpg'}
                     alt={getLocalized(mem, 'name')}
                     className="w-28 h-28 rounded-2xl object-cover border-2 border-blue-500/20 shrink-0 shadow-md"
                   />

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 export interface ModalProps {
@@ -38,7 +39,6 @@ export function Modal({
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
 
-      // Focus close button on mount
       setTimeout(() => {
         closeButtonRef.current?.focus();
       }, 50);
@@ -55,7 +55,7 @@ export function Modal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
   const sizeClasses = {
     sm: 'max-w-md',
@@ -65,12 +65,13 @@ export function Modal({
     full: 'max-w-5xl',
   };
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={descId}
+      onClick={(e) => e.stopPropagation()}
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
     >
       {/* Backdrop */}
@@ -98,6 +99,7 @@ export function Modal({
             )}
           </div>
           <button
+            type="button"
             ref={closeButtonRef}
             onClick={onClose}
             className="min-w-[44px] min-h-[44px] rounded-full p-2.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 transition flex items-center justify-center cursor-pointer shrink-0"
@@ -111,6 +113,7 @@ export function Modal({
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

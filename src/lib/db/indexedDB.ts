@@ -1,33 +1,12 @@
 // ============================================================
-// Local-First IndexedDB Database Implementation
-// Supports offline storage, local preview, and data export/import
+// Local-First IndexedDB Cache Implementation (Zero Demo Seeding)
+// Supports offline cache, local preview, and data export/import
+// Automatically purges legacy demo data from existing browsers
 // ============================================================
 
-import {
-  defaultSchoolSettings,
-  defaultHomepageContent,
-  defaultAboutContent,
-  defaultAcademicsContent,
-  defaultAdmissionsContent,
-  defaultFaculty,
-  defaultFacilities,
-  defaultAnnouncements,
-  defaultEvents,
-  defaultGalleryImages,
-  defaultAchievements,
-  defaultTimelineEntries,
-  defaultTestimonials,
-  defaultWebsiteSettings,
-  defaultHeroBanners,
-  defaultResearchRecords,
-  defaultThemeSettings,
-  defaultAlumni,
-  defaultTransportRoutes,
-} from '@/lib/defaultData';
-
 const DB_NAME = 'sum_school_local_db';
-const DB_VERSION = 6;
-const SEED_STORAGE_KEY = 'sum_school_db_seeded_v2';
+const DB_VERSION = 7;
+const DEMO_PURGE_KEY = 'sum_school_demo_purged_v3';
 const TOMBSTONES_STORAGE_KEY = 'sum_school_deleted_tombstones';
 
 // Tombstone tracking to prevent deleted records from ever resurrecting
@@ -72,15 +51,6 @@ export function clearAllTombstones(): void {
   }
 }
 
-export function resetSeedFlag(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.removeItem(SEED_STORAGE_KEY);
-  } catch (e) {
-    console.warn('Failed to reset seed flag:', e);
-  }
-}
-
 export const STORES = {
   SCHOOL_SETTINGS: 'school_settings',
   HOMEPAGE_CONTENT: 'homepage_content',
@@ -106,11 +76,11 @@ export const STORES = {
   ALUMNI_PRIVATE: 'alumni_private',
   TRANSPORT_ROUTES: 'transport_routes',
   STUDENT_RESULTS: 'student_results',
+  MEDIA_ASSETS: 'media_assets',
 } as const;
 
 export type StoreName = (typeof STORES)[keyof typeof STORES];
 
-// Memory/localStorage fallback for SSR or environments without IndexedDB
 const memoryCache: Record<string, unknown[]> = {};
 
 function isBrowser(): boolean {
@@ -119,6 +89,36 @@ function isBrowser(): boolean {
 
 let dbInstance: IDBDatabase | null = null;
 let initPromise: Promise<IDBDatabase> | null = null;
+
+// One-time automatic purge of all legacy seeded demo data cached in browsers
+async function purgeLegacyDemoData(db: IDBDatabase): Promise<void> {
+  if (typeof window === 'undefined') return;
+  if (localStorage.getItem(DEMO_PURGE_KEY) === 'true') return;
+
+  const storeNames = Object.values(STORES).filter((s) => db.objectStoreNames.contains(s));
+  for (const storeName of storeNames) {
+    await new Promise<void>((resolve) => {
+      try {
+        const tx = db.transaction(storeName, 'readwrite');
+        const store = tx.objectStore(storeName);
+        const req = store.clear();
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
+      } catch {
+        resolve();
+      }
+    });
+  }
+
+  try {
+    localStorage.removeItem('sum_school_db_seeded_v2');
+    localStorage.removeItem('sum_school_admin_uploaded_media');
+    localStorage.removeItem(TOMBSTONES_STORAGE_KEY);
+    localStorage.setItem(DEMO_PURGE_KEY, 'true');
+  } catch {
+    // ignore storage quota errors
+  }
+}
 
 export async function getDB(): Promise<IDBDatabase> {
   if (!isBrowser()) {
@@ -143,15 +143,16 @@ export async function getDB(): Promise<IDBDatabase> {
     request.onsuccess = async (event) => {
       dbInstance = (event.target as IDBOpenDBRequest).result;
       try {
-        await seedInitialData(dbInstance);
+        await purgeLegacyDemoData(dbInstance);
       } catch (err) {
-        console.warn('Initial seeding warning:', err);
+        console.warn('Demo data purge warning:', err);
       }
       resolve(dbInstance);
     };
 
     request.onerror = (event) => {
       console.error('IndexedDB open error:', (event.target as IDBOpenDBRequest).error);
+      initPromise = null;
       reject((event.target as IDBOpenDBRequest).error);
     };
   });
@@ -159,71 +160,6 @@ export async function getDB(): Promise<IDBDatabase> {
   return initPromise;
 }
 
-async function seedInitialData(db: IDBDatabase): Promise<void> {
-  // If already seeded in this browser, never re-seed automatically!
-  // This ensures deletions made by administrators are permanently respected.
-  if (typeof window !== 'undefined' && localStorage.getItem(SEED_STORAGE_KEY) === 'true') {
-    return;
-  }
-
-  const tombstones = getDeletedTombstones();
-
-  const seeds: Record<string, unknown[]> = {
-    [STORES.SCHOOL_SETTINGS]: [{ id: 'default', ...defaultSchoolSettings }],
-    [STORES.HOMEPAGE_CONTENT]: [{ id: 'default', ...defaultHomepageContent }],
-    [STORES.ABOUT_CONTENT]: [{ id: 'default', ...defaultAboutContent }],
-    [STORES.ACADEMICS_CONTENT]: [{ id: 'default', ...defaultAcademicsContent }],
-    [STORES.ADMISSIONS_CONTENT]: [{ id: 'default', ...defaultAdmissionsContent }],
-    [STORES.WEBSITE_SETTINGS]: [{ id: 'default', ...defaultWebsiteSettings }],
-    [STORES.THEME_SETTINGS]: [{ id: 'default', ...defaultThemeSettings }],
-    [STORES.HERO_BANNERS]: defaultHeroBanners,
-    [STORES.FACULTY]: defaultFaculty,
-    [STORES.FACILITIES]: defaultFacilities,
-    [STORES.ANNOUNCEMENTS]: defaultAnnouncements,
-    [STORES.EVENTS]: defaultEvents,
-    [STORES.GALLERY]: defaultGalleryImages,
-    [STORES.ACHIEVEMENTS]: defaultAchievements,
-    [STORES.TIMELINE]: defaultTimelineEntries,
-    [STORES.TESTIMONIALS]: defaultTestimonials,
-    [STORES.RESEARCH_RECORDS]: defaultResearchRecords,
-    [STORES.ALUMNI]: defaultAlumni,
-    [STORES.TRANSPORT_ROUTES]: defaultTransportRoutes,
-    [STORES.CONTACT_MESSAGES]: [],
-    [STORES.ENQUIRIES]: [],
-    [STORES.STUDENT_RESULTS]: [],
-  };
-
-  for (const [storeName, defaultItems] of Object.entries(seeds)) {
-    if (!defaultItems || defaultItems.length === 0) continue;
-    const tx = db.transaction(storeName, 'readwrite');
-    const store = tx.objectStore(storeName);
-    const countReq = store.count();
-
-    await new Promise<void>((resolve) => {
-      countReq.onsuccess = () => {
-        // Only seed when store is completely brand new / zero count on very first startup
-        if (countReq.result === 0) {
-          defaultItems.forEach((item) => {
-            const record = item as { id?: string };
-            // Never insert an item that was previously deleted
-            if (!record?.id || !tombstones.has(record.id)) {
-              store.put(item);
-            }
-          });
-        }
-        resolve();
-      };
-      countReq.onerror = () => resolve();
-    });
-  }
-
-  // Mark as seeded permanently so subsequent getDB() calls never re-seed
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(SEED_STORAGE_KEY, 'true');
-  }
-}
-
-// Generic CRUD operations on IndexedDB with fallback
 export async function getLocalAll<T>(storeName: StoreName): Promise<T[]> {
   const tombstones = getDeletedTombstones();
 
@@ -241,7 +177,6 @@ export async function getLocalAll<T>(storeName: StoreName): Promise<T[]> {
 
       req.onsuccess = () => {
         const results = (req.result as Array<T & { id?: string }>) || [];
-        // Filter out any tombstoned/deleted items
         const filtered = results.filter((item) => !item.id || !tombstones.has(item.id));
         resolve(filtered as T[]);
       };
@@ -296,7 +231,6 @@ export async function putLocal<T extends { id?: string }>(
     updatedAt: new Date().toISOString(),
   };
 
-  // If this item ID was previously tombstoned, untombstone it on save
   if (item.id) {
     removeDeletedTombstone(item.id);
   }
@@ -325,7 +259,6 @@ export async function putLocal<T extends { id?: string }>(
 }
 
 export async function deleteLocal(storeName: StoreName, id: string): Promise<void> {
-  // Mark as tombstone immediately so it can never reappear from cache or legacy seeds
   addDeletedTombstone(id);
 
   if (!isBrowser()) {
@@ -364,7 +297,13 @@ export async function clearLocalStore(storeName: StoreName): Promise<void> {
   });
 }
 
-// Backup & Export All Data
+export async function clearAllLocalData(): Promise<void> {
+  for (const storeName of Object.values(STORES)) {
+    await clearLocalStore(storeName);
+  }
+  clearAllTombstones();
+}
+
 export async function exportAllLocalData(): Promise<Record<string, unknown[]>> {
   const exportData: Record<string, unknown[]> = {};
   for (const storeName of Object.values(STORES)) {
@@ -373,8 +312,9 @@ export async function exportAllLocalData(): Promise<Record<string, unknown[]>> {
   return exportData;
 }
 
-// Restore & Import All Data
-export async function importAllLocalData(data: Record<string, Array<{ id?: string } & Record<string, unknown>>>): Promise<number> {
+export async function importAllLocalData(
+  data: Record<string, Array<{ id?: string } & Record<string, unknown>>>
+): Promise<number> {
   let totalImported = 0;
   for (const [storeName, items] of Object.entries(data)) {
     if (Object.values(STORES).includes(storeName as StoreName) && Array.isArray(items)) {

@@ -12,7 +12,6 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { alumniRepository, alumniPrivateRepository } from '@/lib/repositories';
-import { defaultAlumni } from '@/lib/defaultData';
 import { AlumniMember } from '@/types';
 import {
   Plus,
@@ -23,14 +22,12 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
-  History,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function AdminAlumniPage() {
   const [alumni, setAlumni] = useState<AlumniMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSeeding, setIsSeeding] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAlumnus, setEditingAlumnus] = useState<AlumniMember | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -86,26 +83,6 @@ export default function AdminAlumniPage() {
     };
   }, []);
 
-  const handleSeedDefaults = async () => {
-    setIsSeeding(true);
-    try {
-      for (const al of defaultAlumni) {
-        const { id, ...dataWithoutId } = al;
-        await alumniRepository.create({
-          ...dataWithoutId,
-          createdAt: new Date(),
-        });
-      }
-      toast.success(`Seeded ${defaultAlumni.length} verified alumni heritage records into database!`);
-      loadData();
-    } catch (err) {
-      console.error('Seeding error:', err);
-      toast.error('Failed to seed alumni records to database.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const handleOpenAdd = () => {
     setEditingAlumnus(null);
     setFormData({
@@ -115,7 +92,7 @@ export default function AdminAlumniPage() {
       currentDesignation: '',
       companyOrOrg: '',
       location: '',
-      photoUrl: '/images/faculty-1.jpg',
+      photoUrl: '',
       message: '',
       email: '',
       phone: '',
@@ -403,17 +380,6 @@ export default function AdminAlumniPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {alumni.length <= defaultAlumni.length && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSeedDefaults}
-              isLoading={isSeeding}
-              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
-            >
-              Seed 60+ Years Heritage
-            </Button>
-          )}
           <Button onClick={handleOpenAdd} variant="primary" leftIcon={<Plus className="w-4 h-4" />}>
             Add Alumni Record
           </Button>

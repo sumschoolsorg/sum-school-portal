@@ -1,56 +1,61 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, Mail, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck, Eye, EyeOff, Cloud, AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { signIn } from '@/lib/auth';
-import { toast } from 'sonner';
+import { isConfigured } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { fastLogin } = useAuth();
+  const { isAdmin, loading, fastLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // If already authenticated as admin, redirect straight to /admin
+  useEffect(() => {
+    if (!loading && isAdmin) {
+      router.replace('/admin');
+    }
+  }, [loading, isAdmin, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      toast.error('Please enter your email and password.');
+    setErrorMessage('');
+    const cleanEmail = email.trim();
+    if (!cleanEmail || !password) {
+      toast.error('Please enter your administrator email and password.');
       return;
     }
 
     setIsLoading(true);
     try {
-      await signIn(email, password);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('sum_admin_authenticated', 'true');
-      }
-      toast.success('Authentication successful! Welcome to the Admin Portal.');
+      await signIn(cleanEmail, password);
+      toast.success('Signed in to Firebase Cloud! Welcome to the Admin Portal.');
       router.push('/admin');
     } catch (err: unknown) {
       const error = err as { message?: string } | undefined;
-      console.warn('Firebase login attempt:', error?.message);
-      toast.error(error?.message || 'Login failed. Check credentials or use Fast 1-Click Login below.');
+      const msg = error?.message || 'Invalid email or password. Please verify your Firebase Auth credentials.';
+      setErrorMessage(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleFastLogin = (role: 'super-admin' | 'admin' = 'super-admin') => {
+  const handleOfflinePreviewLogin = () => {
+    if (isConfigured) return;
     setIsLoading(true);
-    fastLogin(role);
-    toast.success('⚡ Fast 1-Click Login Successful! Welcome.');
+    fastLogin('super-admin');
+    toast.success('Entered offline local preview mode.');
     router.push('/admin');
-  };
-
-  const handleQuickFill = () => {
-    setEmail('admin@sumschools.org');
-    setPassword('admin@1963');
-    toast.info('Filled default administrator credentials.');
   };
 
   return (
@@ -83,31 +88,63 @@ export default function AdminLoginPage() {
 
         {/* Login Card */}
         <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 sm:p-10 shadow-2xl">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-slate-800 text-xs font-semibold text-amber-400">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Authorized Personnel Only</span>
+          <div className="flex items-center justify-between gap-2 mb-6 pb-4 border-b border-slate-800 text-xs font-semibold">
+            <span className="flex items-center gap-2 text-amber-400">
+              <ShieldCheck className="w-4 h-4" />
+              Authorized Personnel Only
+            </span>
+            {isConfigured && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px]">
+                <Cloud className="w-3 h-3" />
+                Firebase Live
+              </span>
+            )}
           </div>
+
+          {errorMessage && (
+            <div className="mb-5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="font-semibold">{errorMessage}</p>
+                <p className="text-[11px] text-rose-300/80">
+                  Ensure this email/password exists in Firebase Console &rarr; Authentication &rarr; Users so Cloud Firestore &amp; Storage saves are authorized.
+                </p>
+              </div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               label="Administrator Email"
               type="email"
               required
+              autoComplete="email"
               placeholder="admin@sumschools.org"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               leftIcon={<Mail className="w-4 h-4" />}
             />
 
-            <Input
-              label="Password"
-              type="password"
-              required
-              placeholder="••••••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              leftIcon={<Lock className="w-4 h-4" />}
-            />
+            <div className="relative">
+              <Input
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                leftIcon={<Lock className="w-4 h-4" />}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-[34px] p-1 text-slate-400 hover:text-slate-200 transition cursor-pointer"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
 
             <Button
               type="submit"
@@ -121,32 +158,23 @@ export default function AdminLoginPage() {
             </Button>
           </form>
 
-          {/* Fast 1-Click Login & Quick Access */}
-          <div className="mt-6 pt-6 border-t border-slate-800 space-y-3">
-            <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
-              <span>Quick / Fast Access</span>
-              <button
+          {!isConfigured && (
+            <div className="mt-6 pt-6 border-t border-slate-800">
+              <Button
                 type="button"
-                onClick={handleQuickFill}
-                className="text-amber-400 hover:text-amber-300 hover:underline transition cursor-pointer"
+                variant="outline"
+                size="md"
+                onClick={handleOfflinePreviewLogin}
+                className="w-full border-slate-700 text-slate-300 hover:bg-slate-800"
               >
-                Auto-fill credentials
-              </button>
+                Continue in Local Offline Preview (No Firebase Config)
+              </Button>
             </div>
-
-            <button
-              onClick={() => handleFastLogin('super-admin')}
-              type="button"
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all duration-200 cursor-pointer hover:scale-[1.01]"
-            >
-              <Zap className="w-4 h-4 fill-slate-950" />
-              <span>⚡ Fast 1-Click Login (Full Admin)</span>
-            </button>
-          </div>
+          )}
         </div>
 
         <div className="text-center mt-6 text-xs text-slate-500">
-          Secure Firebase Authentication &bull; Role-Based Authorization
+          Secure Firebase Authentication &bull; Live Cloud Firestore &amp; Storage Sync
         </div>
       </div>
     </div>

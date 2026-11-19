@@ -52,12 +52,18 @@ export function TestimonialsSection({ testimonials = defaultTestimonials }: { te
                 </div>
 
                 <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={test.photoUrl}
-                    alt={name}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-blue-500/30"
-                  />
+                  {test.photoUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={test.photoUrl}
+                      alt={name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-blue-500/30"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950/60 border-2 border-blue-500/30 flex items-center justify-center font-bold text-blue-600 dark:text-blue-300">
+                      {name?.charAt(0) || 'U'}
+                    </div>
+                  )}
                   <div>
                     <h4 className="text-base font-bold font-heading text-slate-900 dark:text-white">
                       {name}

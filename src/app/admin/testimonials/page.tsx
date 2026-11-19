@@ -10,8 +10,7 @@ import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { Testimonial } from '@/types';
 import { testimonialRepository } from '@/lib/repositories';
-import { defaultTestimonials } from '@/lib/defaultData';
-import { Plus, Edit2, Trash2, MessageSquareQuote, Star, Loader2, Sparkles, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, MessageSquareQuote, Star, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function TestimonialsAdminPage() {
@@ -21,13 +20,12 @@ export default function TestimonialsAdminPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const [formData, setFormData] = useState<Partial<Testimonial>>({
     name: '',
     role: '',
     message: '',
-    photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    photoUrl: '',
     rating: 5,
     status: 'published',
   });
@@ -65,33 +63,13 @@ export default function TestimonialsAdminPage() {
     };
   }, []);
 
-  const handleSeedDefaults = async () => {
-    try {
-      setIsSeeding(true);
-      for (const t of defaultTestimonials) {
-        const existing = testimonials.find((item) => item.name === t.name);
-        if (!existing) {
-          const { id, ...dataToCreate } = t;
-          await testimonialRepository.create(dataToCreate as any);
-        }
-      }
-      toast.success('Successfully seeded testimonials!');
-      await loadTestimonials();
-    } catch (err) {
-      console.error('Error seeding testimonials:', err);
-      toast.error('Failed to seed testimonials.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const handleOpenAdd = () => {
     setEditingItem(null);
     setFormData({
       name: '',
       role: '',
       message: '',
-      photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      photoUrl: '',
       rating: 5,
       status: 'published',
     });
@@ -113,16 +91,20 @@ export default function TestimonialsAdminPage() {
 
     setIsSaving(true);
     try {
+      const cleanRating = Math.min(5, Math.max(1, Number(formData.rating) || 5));
       if (editingItem) {
-        await testimonialRepository.update(editingItem.id!, formData);
+        await testimonialRepository.update(editingItem.id!, {
+          ...formData,
+          rating: cleanRating,
+        });
         toast.success('Testimonial updated successfully!');
       } else {
         const newEntry = {
           name: formData.name || 'Anonymous',
           role: formData.role || 'Parent',
           message: formData.message || '',
-          photoUrl: formData.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-          rating: formData.rating || 5,
+          photoUrl: formData.photoUrl || '',
+          rating: cleanRating,
           status: (formData.status as 'published' | 'draft') || 'published',
           order: testimonials.length + 1,
         };
@@ -133,7 +115,7 @@ export default function TestimonialsAdminPage() {
       setIsModalOpen(false);
     } catch (error) {
       console.error(error);
-      toast.error('Failed to save testimonial.');
+      toast.error((error as Error)?.message || 'Failed to save testimonial to Firebase.');
     } finally {
       setIsSaving(false);
     }
@@ -169,7 +151,7 @@ export default function TestimonialsAdminPage() {
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={item.photoUrl}
+            src={item.photoUrl || '/images/faculty-1.jpg'}
             alt={item.name}
             className="w-10 h-10 rounded-full object-cover border border-slate-200"
           />
@@ -235,21 +217,6 @@ export default function TestimonialsAdminPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            onClick={handleSeedDefaults}
-            variant="secondary"
-            disabled={isSeeding}
-            leftIcon={
-              isSeeding ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-amber-600 dark:text-amber-400" />
-              ) : (
-                <Sparkles className="w-4 h-4 text-amber-500" />
-              )
-            }
-          >
-            {isSeeding ? 'Seeding...' : 'Seed Testimonials'}
-          </Button>
-
           <Button
             onClick={handleOpenAdd}
             variant="primary"

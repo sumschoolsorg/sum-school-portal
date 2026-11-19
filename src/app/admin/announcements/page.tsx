@@ -11,9 +11,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { announcementRepository } from '@/lib/repositories';
-import { defaultAnnouncements } from '@/lib/defaultData';
 import { Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Bell, Languages, Sparkles } from 'lucide-react';
+import { Plus, Edit2, Trash2, Bell, Languages } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -36,7 +35,7 @@ export default function AnnouncementsAdminPage() {
     content_ta: '',
     category: 'general',
     status: 'published',
-    imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '',
     attachmentUrl: '',
     featured: false,
   });
@@ -56,7 +55,7 @@ export default function AnnouncementsAdminPage() {
       content_ta: '',
       category: 'general',
       status: 'published',
-      imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80',
+      imageUrl: '',
       attachmentUrl: '',
       featured: false,
     });
@@ -82,7 +81,6 @@ export default function AnnouncementsAdminPage() {
   };
 
   const [isLoading, setIsLoading] = useState(true);
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -92,7 +90,7 @@ export default function AnnouncementsAdminPage() {
     } catch (err) {
       console.warn('Error loading announcements:', err);
       setAnnouncements([]);
-      toast.error('Failed to load announcements');
+      toast.error((err as Error)?.message || 'Failed to load announcements');
     } finally {
       setIsLoading(false);
     }
@@ -116,26 +114,6 @@ export default function AnnouncementsAdminPage() {
       isMounted = false;
     };
   }, []);
-
-  const handleSeedDefaults = async () => {
-    setIsSeeding(true);
-    try {
-      for (const ann of defaultAnnouncements) {
-        const { id, ...dataWithoutId } = ann;
-        await announcementRepository.create({
-          ...dataWithoutId,
-          date: new Date(),
-        });
-      }
-      toast.success(`Seeded ${defaultAnnouncements.length} official school announcements!`);
-      loadData();
-    } catch (err) {
-      console.error('Seeding error:', err);
-      toast.error('Failed to seed announcements to database.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,16 +156,7 @@ export default function AnnouncementsAdminPage() {
       loadData();
     } catch (err) {
       console.error('Error saving announcement:', err);
-      toast.error('Failed to save announcement to database. Changes saved locally only.');
-      // Local fallback
-      if (editingAnnouncement) {
-        setAnnouncements((prev) =>
-          prev.map((a) => (a.id === editingAnnouncement.id ? payload : a))
-        );
-      } else {
-        setAnnouncements((prev) => [payload, ...prev]);
-      }
-      setIsModalOpen(false);
+      toast.error((err as Error)?.message || 'Failed to save announcement to Firebase.');
     }
   };
 
@@ -303,17 +272,6 @@ export default function AnnouncementsAdminPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {announcements.length <= defaultAnnouncements.length && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSeedDefaults}
-              isLoading={isSeeding}
-              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
-            >
-              Seed Official Notices
-            </Button>
-          )}
           <Button onClick={handleOpenAdd} className="flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Publish Notice

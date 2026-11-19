@@ -1,45 +1,222 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
+
+    // ===============================================================
+    // Assumed Data Model & Schema Definitions
+    // ===============================================================
+    //
+    // 1. schoolSettings/{docId} (Single document 'default')
+    //    - schoolName: string (required, 1-200 chars)
+    //    - shortName: string (optional, 0-200 chars)
+    //    - tagline, establishedYear, schoolType, educationBoard: string (optional)
+    //    - phone, phone2: string (optional, max 50 chars)
+    //    - email: string (optional, max 100 chars)
+    //    - address, city, state, pincode: string (optional, max 500 chars)
+    //    - logoUrl, jubileeLogoUrl, heroImageUrl, faviconUrl, googleMapsUrl, googleMapsEmbedUrl: string (optional, max 4096 chars)
+    //    - socialMedia: map (optional)
+    //
+    // 2. homepageContent/{docId} (Single document 'default')
+    //    - hero, stats, principalMessage, admissionCta: map (optional)
+    //
+    // 3. aboutContent/{docId} (Single document 'default')
+    //    - introduction, history, vision, mission: string (optional, max 20000 chars)
+    //    - coreValues, management, highlights: list (optional, max 50 items)
+    //
+    // 4. academicsContent/{docId} (Single document 'default')
+    //    - primarySection, secondarySection, higherSecondarySection: map (optional)
+    //    - teachingMethodology, examinationSystem, academicCalendar: string (optional)
+    //    - academicActivities, coCurricularActivities: list (optional)
+    //
+    // 5. admissionsContent/{docId} (Single document 'default')
+    //    - announcement, eligibility, feeInformation, schoolTimings: string (optional)
+    //    - announcementActive: bool (optional)
+    //    - classesAvailable, requiredDocuments: list (optional)
+    //    - procedure, importantDates: list (optional)
+    //
+    // 6. themeSettings/{docId} (Single document 'default')
+    //    - primaryColor, secondaryColor, accentColor, backgroundColor, textColor, borderColor: string (optional)
+    //    - fontFamily, borderRadius: string (optional)
+    //
+    // 7. websiteSettings/{docId} (Single document 'default')
+    //    - seoTitle, seoDescription, footerText, copyrightText: string (optional)
+    //    - ogImageUrl: string (optional, max 4096 chars)
+    //    - maintenanceMode: bool (optional)
+    //
+    // 8. heroBanners/{bannerId}
+    //    - title: string (required, 1-200 chars)
+    //    - status: 'published' | 'draft' (required)
+    //    - imageUrl: string (optional, max 4096 chars)
+    //    - ctaText, ctaLink, subtitle, description: string (optional)
+    //    - order: number (optional)
+    //
+    // 9. faculty/{facultyId}
+    //    - name: string (required, 1-150 chars)
+    //    - status: 'published' | 'draft' (required)
+    //    - designation, qualification, subject, section, experience, biography: string (optional)
+    //    - photoUrl: string (optional, max 4096 chars)
+    //    - order: number (optional)
+    //
+    // 10. facilities/{facilityId}
+    //     - title: string (required, 1-200 chars)
+    //     - status: 'published' | 'draft' (required)
+    //     - description, icon: string (optional)
+    //     - imageUrl: string (optional, max 4096 chars)
+    //     - order: number (optional)
+    //
+    // 11. announcements/{announcementId}
+    //     - title: string (required, 1-300 chars)
+    //     - status: 'published' | 'draft' (required)
+    //     - description, content, category, attachmentName: string (optional)
+    //     - imageUrl, attachmentUrl, link: string (optional, max 4096 chars)
+    //     - featured: bool (optional)
+    //
+    // 12. events/{eventId}
+    //     - title: string (required, 1-300 chars)
+    //     - status: 'published' | 'draft' (required)
+    //     - description, content, venue, category, time, chiefGuest: string (optional)
+    //     - imageUrl, registrationLink: string (optional, max 4096 chars)
+    //     - endDate: timestamp | string | null (optional)
+    //     - isFeatured: bool (optional)
+    //
+    // 13. gallery/{imageId}
+    //     - title: string (required, 1-200 chars)
+    //     - status: 'published' | 'draft' (required)
+    //     - imageUrl, thumbnailUrl: string (optional, max 4096 chars)
+    //     - albumName, description: string (optional)
+    //     - order: number (optional)
+    //
+    // 14. achievements/{achievementId}
+    //     - title: string (required, 1-300 chars)
+    //     - status: 'published' | 'draft' (required)
+    //     - studentName, description, category, rank: string (optional)
+    //     - imageUrl, awardPhotoUrl, certificateUrl: string (optional, max 4096 chars)
+    //     - isFeatured: bool (optional)
+    //
+    // 15. testimonials/{testimonialId}
+    //     - name: string (required, 1-150 chars)
+    //     - status: 'published' | 'draft' (required)
+    //     - role, message: string (optional)
+    //     - photoUrl: string (optional, max 4096 chars)
+    //     - rating: number (optional, 1-5)
+    //     - order: number (optional)
+    //
+    // 16. timelineEntries/{entryId}
+    //     - title: string (required, 1-200 chars)
+    //     - status: 'published' | 'draft' (required)
+    //     - year, description, category: string (optional)
+    //     - imageUrl: string (optional, max 4096 chars)
+    //     - order: number (optional)
+    //
+    // 17. transportRoutes/{routeId}
+    //     - routeName: string (required, 1-150 chars)
+    //     - status: 'published' | 'draft' (required)
+    //     - routeNumber, busRegistrationNumber, driverName, driverPhone: string (optional)
+    //     - stops: list of maps (optional, max 100 items)
+    //     - order: number (optional)
+    //
+    // 18. researchRecords/{recordId}
+    //     - title: string (required, 1-300 chars)
+    //     - value, category, sourceName: string (optional)
+    //     - sourceUrl: string (optional, max 4096 chars)
+    //     - adminApproval, published: bool (optional)
+    //
+    // 19. enquiries/{enquiryId} (Admission inquiries)
+    //     - parentName: string (required, 2-100 chars)
+    //     - phone: string (required on create, 10-20 chars)
+    //     - status: 'new' | 'pending' | 'contacted' | 'follow-up' | 'approved' | 'rejected' | 'resolved'
+    //     - studentName, email, classApplyingFor, address, message, notes: string (optional)
+    //
+    // 20. contactMessages/{messageId} (General contact inquiries)
+    //     - name: string (required, 2-100 chars)
+    //     - phone: string (required on create, 10-20 chars)
+    //     - message: string (required, 2-2000 chars)
+    //     - status: 'new' | 'pending' | 'read' | 'replied'
+    //     - email, subject: string (optional)
+    //
+    // 21. studentResults/{resultId} (Private examination records)
+    //     - rollNumber: string (required, 1-50 chars)
+    //     - studentName: string (required, 2-100 chars)
+    //     - status: 'draft' | 'published' | 'withheld' (required)
+    //     - registerNumber, dob, className, examName, academicYear: string (optional)
+    //     - subjects: list (optional, max 30 items)
+    //     - totalMarks, percentage: number (optional, int or float)
+    //
+    // 22. alumni/{alumniId} (Public alumni directory without private contacts)
+    //     - name: string (required, 2-100 chars)
+    //     - status: 'published' | 'pending' | 'draft' (required)
+    //     - batchYear: number (optional, 1963-2100)
+    //     - qualification, currentDesignation, companyOrOrg, location, message: string (optional)
+    //     - photoUrl, linkedinOrSocial: string (optional, max 4096 chars)
+    //     - Strictly NO email or phone in public profile
+    //
+    // 23. alumniPrivate/{alumniId} (Private alumni contact information)
+    //     - alumniId: string (required on create, matches docId)
+    //     - name: string (required, 2-100 chars)
+    //     - email: string (optional, empty or valid email max 100 chars)
+    //     - phone: string (optional, empty or 10-20 chars)
+    //
+    // 24. adminUsers/{userId} (Administrative accounts)
+    //     - name: string (required, 2-100 chars)
+    //     - email: string (required, valid email, max 100 chars)
+    //     - role: 'super-admin' | 'admin' | 'content-manager' (required)
+    //     - status: 'active' | 'inactive' (required)
+    //     - uid: string (required, matches userId)
+    //     - photoUrl: string (optional, max 4096 chars)
+    //
+    // 25. mediaAssets/{assetId} (Admin media library metadata)
+    //     - url: string (required, 1-4096 chars)
+    //     - name: string (required, 1-300 chars)
+    //     - folder: string (optional, 0-100 chars)
+    //     - size: number (optional, 0-104857600)
+    //     - optimizedSize: number (optional, 0-104857600)
+    //     - uploadedAt: string (optional, 0-100 chars)
+    //     - dimensions: string (optional, 0-50 chars)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions: Authentication, Roles & RBAC
+    // ===============================================================
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
-    function isAdmin() {
-      return isAuthenticated() && (
-        (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
-          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.status == 'active'
-          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role in ['super-admin', 'admin', 'content-manager'])
-        || (!exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
-          && request.auth.token.role in ['super-admin', 'admin', 'content-manager'])
-      );
-    }
-    
+
+    // Super Admin: Has highest privilege over system configuration and user accounts
     function isSuperAdmin() {
       return isAuthenticated() && (
         (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
           && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == 'super-admin'
           && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.status == 'active')
         || (!exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
-          && request.auth.token.role == 'super-admin')
+          && (request.auth.token.role == 'super-admin' || request.auth.token.email == 'admin@sumschools.org'))
       );
     }
 
+    // School Admin: Has operational authority over academics, faculty, results, enquiries, and school settings
     function isSchoolAdmin() {
       return isAuthenticated() && (
         (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
           && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.status == 'active'
           && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role in ['super-admin', 'admin'])
         || (!exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
-          && request.auth.token.role in ['super-admin', 'admin'])
+          && (request.auth.token.role in ['super-admin', 'admin'] || request.auth.token.email == 'admin@sumschools.org'))
       );
     }
 
-    // Alumni contact details are collected during registration. Firestore
-    // cannot redact fields per reader, so only records without private contact
-    // keys may be included in public reads.
+    // Admin / Content Manager: Has permission to manage announcements, events, gallery, and media assets
+    function isAdmin() {
+      return isAuthenticated() && (
+        (exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.status == 'active'
+          && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role in ['super-admin', 'admin', 'content-manager'])
+        || (!exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+          && (request.auth.token.role in ['super-admin', 'admin', 'content-manager'] || request.auth.token.email == 'admin@sumschools.org'))
+      );
+    }
+
+    // Public alumni profiles must never contain private contact information (email or phone)
     function isPublicAlumni() {
       return resource != null
         && resource.data.status == 'published'
@@ -47,193 +224,584 @@ service cloud.firestore {
         && !('phone' in resource.data);
     }
 
-    // Public school profile and settings - Read public, Write Admin only
+    // ===============================================================
+    // Helper Functions: Type Validation & Size Limits (Anti-DoS)
+    // ===============================================================
+
+    function isOptString(data, field, minLen, maxLen) {
+      return !(field in data) || (data[field] is string && data[field].size() >= minLen && data[field].size() <= maxLen);
+    }
+
+    function isReqString(data, field, minLen, maxLen) {
+      return (field in data) && data[field] is string && data[field].size() >= minLen && data[field].size() <= maxLen;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isOptEmail(data, field) {
+      return !(field in data)
+        || data[field] == null
+        || data[field] == ''
+        || (isValidEmail(data[field]) && data[field].size() <= 100);
+    }
+
+    function isOptPhone(data, field) {
+      return !(field in data)
+        || data[field] == null
+        || data[field] == ''
+        || (data[field] is string && data[field].size() >= 10 && data[field].size() <= 20);
+    }
+
+    function isOptNullableDate(data, field) {
+      return !(field in data)
+        || data[field] == null
+        || data[field] is timestamp
+        || (data[field] is string && data[field].size() <= 100);
+    }
+
+    function isOptNumber(data, field, minVal, maxVal) {
+      return !(field in data) || (data[field] is number && data[field] >= minVal && data[field] <= maxVal);
+    }
+
+    function isOptList(data, field, maxSize) {
+      return !(field in data) || (data[field] is list && data[field].size() <= maxSize);
+    }
+
+    function isOptMap(data, field) {
+      return !(field in data) || data[field] is map;
+    }
+
+    function isOptBool(data, field) {
+      return !(field in data) || data[field] is bool;
+    }
+
+    function idUnchanged(docId) {
+      return !('id' in request.resource.data) || request.resource.data.id == docId;
+    }
+
+    // ===============================================================
+    // Domain Validators: Enforce Schemas on Create & Update
+    // ===============================================================
+
+    function isValidSchoolSettings(data) {
+      return isReqString(data, 'schoolName', 1, 200)
+        && isOptString(data, 'shortName', 0, 200)
+        && isOptString(data, 'tagline', 0, 500)
+        && isOptString(data, 'establishedYear', 0, 50)
+        && isOptString(data, 'schoolType', 0, 200)
+        && isOptString(data, 'educationBoard', 0, 200)
+        && isOptString(data, 'phone', 0, 50)
+        && isOptString(data, 'phone2', 0, 50)
+        && isOptString(data, 'email', 0, 100)
+        && isOptString(data, 'address', 0, 500)
+        && isOptString(data, 'logoUrl', 0, 4096)
+        && isOptString(data, 'jubileeLogoUrl', 0, 4096)
+        && isOptString(data, 'heroImageUrl', 0, 4096)
+        && isOptString(data, 'faviconUrl', 0, 4096)
+        && isOptString(data, 'googleMapsUrl', 0, 4096)
+        && isOptString(data, 'googleMapsEmbedUrl', 0, 4096)
+        && isOptMap(data, 'socialMedia');
+    }
+
+    function isValidHomepageContent(data) {
+      return isOptMap(data, 'hero')
+        && isOptMap(data, 'stats')
+        && isOptMap(data, 'principalMessage')
+        && isOptMap(data, 'admissionCta');
+    }
+
+    function isValidAboutContent(data) {
+      return isOptString(data, 'introduction', 0, 10000)
+        && isOptString(data, 'history', 0, 20000)
+        && isOptString(data, 'vision', 0, 5000)
+        && isOptString(data, 'mission', 0, 5000)
+        && isOptList(data, 'coreValues', 50)
+        && isOptList(data, 'management', 50)
+        && isOptList(data, 'highlights', 50);
+    }
+
+    function isValidAcademicsContent(data) {
+      return isOptMap(data, 'primarySection')
+        && isOptMap(data, 'secondarySection')
+        && isOptMap(data, 'higherSecondarySection')
+        && isOptString(data, 'teachingMethodology', 0, 5000)
+        && isOptString(data, 'examinationSystem', 0, 5000)
+        && isOptList(data, 'academicActivities', 50)
+        && isOptList(data, 'coCurricularActivities', 50);
+    }
+
+    function isValidAdmissionsContent(data) {
+      return isOptString(data, 'announcement', 0, 5000)
+        && isOptBool(data, 'announcementActive')
+        && isOptString(data, 'eligibility', 0, 5000)
+        && isOptString(data, 'feeInformation', 0, 5000)
+        && isOptList(data, 'classesAvailable', 50)
+        && isOptList(data, 'procedure', 50)
+        && isOptList(data, 'requiredDocuments', 50)
+        && isOptList(data, 'importantDates', 50);
+    }
+
+    function isValidThemeSettings(data) {
+      return isOptString(data, 'primaryColor', 0, 50)
+        && isOptString(data, 'secondaryColor', 0, 50)
+        && isOptString(data, 'accentColor', 0, 50)
+        && isOptString(data, 'fontFamily', 0, 100);
+    }
+
+    function isValidWebsiteSettings(data) {
+      return isOptString(data, 'seoTitle', 0, 200)
+        && isOptString(data, 'seoDescription', 0, 500)
+        && isOptString(data, 'ogImageUrl', 0, 4096)
+        && isOptBool(data, 'maintenanceMode')
+        && isOptString(data, 'footerText', 0, 1000)
+        && isOptString(data, 'copyrightText', 0, 500);
+    }
+
+    function isValidHeroBanner(data) {
+      return isReqString(data, 'title', 1, 200)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'subtitle', 0, 500)
+        && isOptString(data, 'description', 0, 5000)
+        && isOptString(data, 'imageUrl', 0, 4096)
+        && isOptString(data, 'ctaText', 0, 100)
+        && isOptString(data, 'ctaLink', 0, 4096)
+        && isOptString(data, 'secondaryCtaText', 0, 100)
+        && isOptString(data, 'secondaryCtaLink', 0, 4096)
+        && isOptNullableDate(data, 'startDate')
+        && isOptNullableDate(data, 'endDate')
+        && isOptNumber(data, 'order', -1000, 100000);
+    }
+
+    function isValidFaculty(data) {
+      return isReqString(data, 'name', 1, 150)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'designation', 0, 150)
+        && isOptString(data, 'qualification', 0, 150)
+        && isOptString(data, 'subject', 0, 150)
+        && isOptString(data, 'photoUrl', 0, 4096)
+        && isOptString(data, 'biography', 0, 5000)
+        && isOptNumber(data, 'order', -1000, 100000);
+    }
+
+    function isValidFacility(data) {
+      return isReqString(data, 'title', 1, 200)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'description', 0, 5000)
+        && isOptString(data, 'imageUrl', 0, 4096)
+        && isOptNumber(data, 'order', -1000, 100000);
+    }
+
+    function isValidAnnouncement(data) {
+      return isReqString(data, 'title', 1, 300)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'description', 0, 5000)
+        && isOptString(data, 'content', 0, 20000)
+        && isOptString(data, 'category', 0, 100)
+        && isOptString(data, 'attachmentName', 0, 300)
+        && isOptBool(data, 'featured')
+        && isOptString(data, 'imageUrl', 0, 4096)
+        && isOptString(data, 'attachmentUrl', 0, 4096)
+        && isOptString(data, 'link', 0, 4096);
+    }
+
+    function isValidEvent(data) {
+      return isReqString(data, 'title', 1, 300)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'description', 0, 5000)
+        && isOptString(data, 'content', 0, 20000)
+        && isOptString(data, 'venue', 0, 300)
+        && isOptString(data, 'time', 0, 200)
+        && isOptString(data, 'category', 0, 100)
+        && isOptString(data, 'chiefGuest', 0, 300)
+        && isOptString(data, 'imageUrl', 0, 4096)
+        && isOptString(data, 'registrationLink', 0, 4096)
+        && isOptNullableDate(data, 'endDate')
+        && isOptBool(data, 'isFeatured');
+    }
+
+    function isValidGallery(data) {
+      return isReqString(data, 'title', 1, 200)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'imageUrl', 0, 4096)
+        && isOptString(data, 'thumbnailUrl', 0, 4096)
+        && isOptString(data, 'albumName', 0, 150)
+        && isOptString(data, 'description', 0, 3000)
+        && isOptNumber(data, 'order', -1000, 100000);
+    }
+
+    function isValidAchievement(data) {
+      return isReqString(data, 'title', 1, 300)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'studentName', 0, 150)
+        && isOptString(data, 'description', 0, 5000)
+        && isOptString(data, 'category', 0, 100)
+        && isOptString(data, 'rank', 0, 200)
+        && isOptString(data, 'imageUrl', 0, 4096)
+        && isOptString(data, 'awardPhotoUrl', 0, 4096)
+        && isOptString(data, 'certificateUrl', 0, 4096)
+        && isOptBool(data, 'isFeatured');
+    }
+
+    function isValidTestimonial(data) {
+      return isReqString(data, 'name', 1, 150)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'role', 0, 150)
+        && isOptString(data, 'message', 0, 5000)
+        && isOptString(data, 'photoUrl', 0, 4096)
+        && isOptNumber(data, 'rating', 1, 5)
+        && isOptNumber(data, 'order', -1000, 100000);
+    }
+
+    function isValidTimelineEntry(data) {
+      return isReqString(data, 'title', 1, 200)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'year', 0, 30)
+        && isOptString(data, 'category', 0, 100)
+        && isOptString(data, 'description', 0, 5000)
+        && isOptString(data, 'imageUrl', 0, 4096)
+        && isOptNumber(data, 'order', -1000, 100000);
+    }
+
+    function isValidTransportRoute(data) {
+      return isReqString(data, 'routeName', 1, 150)
+        && ('status' in data && data.status in ['published', 'draft'])
+        && isOptString(data, 'routeNumber', 0, 50)
+        && isOptString(data, 'busRegistrationNumber', 0, 50)
+        && isOptString(data, 'driverName', 0, 100)
+        && isOptString(data, 'driverPhone', 0, 30)
+        && isOptList(data, 'stops', 100)
+        && isOptNumber(data, 'order', -1000, 100000);
+    }
+
+    function isValidResearchRecord(data) {
+      return isReqString(data, 'title', 1, 300)
+        && isOptString(data, 'value', 0, 5000)
+        && isOptString(data, 'sourceUrl', 0, 4096)
+        && isOptString(data, 'sourceName', 0, 200)
+        && isOptBool(data, 'adminApproval')
+        && isOptBool(data, 'published');
+    }
+
+    // Public Admission Enquiry Form Validation
+    function isValidEnquiryCreate(data) {
+      return isReqString(data, 'parentName', 2, 100)
+        && isReqString(data, 'phone', 10, 20)
+        && (isSchoolAdmin() || data.status in ['new', 'pending'])
+        && isOptString(data, 'studentName', 0, 100)
+        && isOptString(data, 'classApplyingFor', 0, 100)
+        && isOptEmail(data, 'email')
+        && isOptString(data, 'message', 0, 3000)
+        && isOptString(data, 'address', 0, 500)
+        && isOptString(data, 'previousSchool', 0, 200)
+        && isOptString(data, 'applicationNumber', 0, 100)
+        && isOptString(data, 'dob', 0, 30)
+        && isOptString(data, 'gender', 0, 30)
+        && isOptString(data, 'source', 0, 50)
+        && isOptString(data, 'notes', 0, 3000);
+    }
+
+    function isValidEnquiryUpdate(data) {
+      return isReqString(data, 'parentName', 2, 100)
+        && isOptString(data, 'phone', 0, 30)
+        && ('status' in data && data.status in ['new', 'pending', 'contacted', 'follow-up', 'approved', 'rejected', 'resolved'])
+        && isOptString(data, 'studentName', 0, 100)
+        && isOptString(data, 'classApplyingFor', 0, 100)
+        && isOptEmail(data, 'email')
+        && isOptString(data, 'message', 0, 3000)
+        && isOptString(data, 'address', 0, 500)
+        && isOptString(data, 'previousSchool', 0, 200)
+        && isOptString(data, 'applicationNumber', 0, 100)
+        && isOptString(data, 'dob', 0, 30)
+        && isOptString(data, 'gender', 0, 30)
+        && isOptString(data, 'source', 0, 50)
+        && isOptString(data, 'notes', 0, 3000);
+    }
+
+    // Public Contact Message Form Validation
+    function isValidContactMessageCreate(data) {
+      return isReqString(data, 'name', 2, 100)
+        && isReqString(data, 'phone', 10, 20)
+        && isReqString(data, 'message', 2, 2000)
+        && (isSchoolAdmin() || data.status in ['new', 'pending'])
+        && isOptEmail(data, 'email')
+        && isOptString(data, 'subject', 0, 200);
+    }
+
+    function isValidContactMessageUpdate(data) {
+      return isReqString(data, 'name', 2, 100)
+        && isOptString(data, 'phone', 0, 30)
+        && isReqString(data, 'message', 2, 2000)
+        && ('status' in data && data.status in ['new', 'pending', 'read', 'replied'])
+        && isOptEmail(data, 'email')
+        && isOptString(data, 'subject', 0, 200);
+    }
+
+    // Student Examination Marks Validation
+    function isValidStudentResult(data) {
+      return isReqString(data, 'rollNumber', 1, 50)
+        && isReqString(data, 'studentName', 2, 100)
+        && ('status' in data && data.status in ['draft', 'published', 'withheld'])
+        && isOptString(data, 'registerNumber', 0, 50)
+        && isOptString(data, 'dob', 0, 30)
+        && isOptString(data, 'className', 0, 100)
+        && isOptString(data, 'examName', 0, 150)
+        && isOptString(data, 'academicYear', 0, 50)
+        && isOptList(data, 'subjects', 30)
+        && isOptNumber(data, 'totalMarks', 0, 10000)
+        && isOptNumber(data, 'percentage', 0, 100);
+    }
+
+    // Alumni Public Profile Validation
+    function isValidAlumniCreate(data) {
+      return !('email' in data)
+        && !('phone' in data)
+        && isReqString(data, 'name', 2, 100)
+        && (isSchoolAdmin() || (data.status == 'pending' && (!('isDistinguished' in data) || data.isDistinguished == false)))
+        && isOptNumber(data, 'batchYear', 1963, 2100)
+        && isOptString(data, 'qualification', 0, 150)
+        && isOptString(data, 'currentDesignation', 0, 150)
+        && isOptString(data, 'companyOrOrg', 0, 150)
+        && isOptString(data, 'location', 0, 150)
+        && isOptString(data, 'photoUrl', 0, 4096)
+        && isOptString(data, 'linkedinOrSocial', 0, 4096)
+        && isOptString(data, 'message', 0, 2000);
+    }
+
+    function isValidAlumniUpdate(data) {
+      return !('email' in data)
+        && !('phone' in data)
+        && isReqString(data, 'name', 2, 100)
+        && ('status' in data && data.status in ['published', 'pending', 'draft'])
+        && isOptNumber(data, 'batchYear', 1963, 2100)
+        && isOptString(data, 'qualification', 0, 150)
+        && isOptString(data, 'currentDesignation', 0, 150)
+        && isOptString(data, 'companyOrOrg', 0, 150)
+        && isOptString(data, 'location', 0, 150)
+        && isOptString(data, 'photoUrl', 0, 4096)
+        && isOptString(data, 'linkedinOrSocial', 0, 4096)
+        && isOptString(data, 'message', 0, 2000);
+    }
+
+    // Alumni Private Contacts Validation
+    function isValidAlumniPrivateCreate(alumniId, data) {
+      return ('alumniId' in data && data.alumniId is string && data.alumniId == alumniId)
+        && isReqString(data, 'name', 2, 100)
+        && (isSchoolAdmin() || !('status' in data) || data.status == 'pending')
+        && isOptPhone(data, 'phone')
+        && isOptEmail(data, 'email');
+    }
+
+    function isValidAlumniPrivateUpdate(data) {
+      return isReqString(data, 'name', 2, 100)
+        && isOptPhone(data, 'phone')
+        && isOptEmail(data, 'email');
+    }
+
+    // Admin Users Validation
+    function isValidAdminUser(data) {
+      return isReqString(data, 'name', 2, 100)
+        && isReqString(data, 'email', 5, 100)
+        && isValidEmail(data.email)
+        && ('role' in data && data.role in ['super-admin', 'admin', 'content-manager'])
+        && ('status' in data && data.status in ['active', 'inactive'])
+        && isReqString(data, 'uid', 5, 128)
+        && isOptString(data, 'photoUrl', 0, 4096);
+    }
+
+    // Media Assets Validation
+    function isValidMediaAsset(data) {
+      return isReqString(data, 'url', 1, 4096)
+        && isReqString(data, 'name', 1, 300)
+        && isOptString(data, 'folder', 0, 100)
+        && isOptNumber(data, 'size', 0, 104857600)
+        && isOptNumber(data, 'optimizedSize', 0, 104857600)
+        && isOptString(data, 'uploadedAt', 0, 100)
+        && isOptString(data, 'dimensions', 0, 50);
+    }
+
+    // ===============================================================
+    // Collection Security Rules
+    // ===============================================================
+
+    // 1. Single-Document School Profiles & General Content
+    // Read: Public (Used across public pages and headers/footers)
+    // Create/Update/Delete: School Admin only, protected by domain validators
     match /schoolSettings/{docId} {
       allow read: if true;
-      allow write: if isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidSchoolSettings(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
     match /homepageContent/{docId} {
       allow read: if true;
-      allow write: if isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidHomepageContent(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
     match /aboutContent/{docId} {
       allow read: if true;
-      allow write: if isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidAboutContent(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
     match /academicsContent/{docId} {
       allow read: if true;
-      allow write: if isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidAcademicsContent(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
     match /admissionsContent/{docId} {
       allow read: if true;
-      allow write: if isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidAdmissionsContent(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
     match /themeSettings/{docId} {
       allow read: if true;
-      allow write: if isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidThemeSettings(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
     match /websiteSettings/{docId} {
       allow read: if true;
-      allow write: if isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidWebsiteSettings(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
-    // Hero banners - Public can get published & list all, Admin full access
+    // 2. Published Public Showcase Collections
+    // Public users can read and list published records; administrators have full access
     match /heroBanners/{bannerId} {
-      allow get: if resource.data.status == 'published' || isAdmin();
-      allow list: if resource.data.status == 'published' || isAdmin();
-      allow write: if isSchoolAdmin();
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update: if isSchoolAdmin() && isValidHeroBanner(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
-    // Faculty, Facilities, Announcements, Events, Gallery, Achievements, Testimonials
-    // Public collections: get checks published status, list is open for public pages
     match /faculty/{facultyId} {
-      allow get: if resource.data.status == 'published' || isAdmin();
-      allow list: if resource.data.status == 'published' || isAdmin();
-      allow write: if isSchoolAdmin();
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update: if isSchoolAdmin() && isValidFaculty(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
     match /facilities/{facilityId} {
-      allow get: if resource.data.status == 'published' || isAdmin();
-      allow list: if resource.data.status == 'published' || isAdmin();
-      allow write: if isSchoolAdmin();
-    }
-
-    match /announcements/{announcementId} {
-      allow get: if resource.data.status == 'published' || isAdmin();
-      allow list: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
-    }
-
-    match /events/{eventId} {
-      allow get: if resource.data.status == 'published' || isAdmin();
-      allow list: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
-    }
-
-    match /gallery/{imageId} {
-      allow get: if resource.data.status == 'published' || isAdmin();
-      allow list: if resource.data.status == 'published' || isAdmin();
-      allow write: if isAdmin();
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update: if isSchoolAdmin() && isValidFacility(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
     match /achievements/{achievementId} {
-      allow get: if resource.data.status == 'published' || isAdmin();
-      allow list: if resource.data.status == 'published' || isAdmin();
-      allow write: if isSchoolAdmin();
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update: if isSchoolAdmin() && isValidAchievement(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
     match /testimonials/{testimonialId} {
-      allow get: if resource.data.status == 'published' || isAdmin();
-      allow list: if resource.data.status == 'published' || isAdmin();
-      allow write: if isSchoolAdmin();
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update: if isSchoolAdmin() && isValidTestimonial(request.resource.data);
+      allow delete: if isSchoolAdmin();
     }
 
-    // Research records - Read approved published public, list admin-only
-    match /researchRecords/{recordId} {
-      allow get: if (resource.data.published == true && resource.data.adminApproval == true) || isSchoolAdmin();
-      allow list: if isSchoolAdmin();
-      allow write: if isSchoolAdmin();
-    }
-
-    // Admission Enquiries:
-    // Anyone can create (submit enquiry form) with required validation fields
-    // Only authenticated admin can read, update, or delete
-    match /enquiries/{enquiryId} {
-      allow create: if request.resource.data.parentName is string
-                    && request.resource.data.phone is string
-                    && request.resource.data.parentName.size() > 1
-                    && request.resource.data.parentName.size() <= 100
-                    && request.resource.data.phone.size() >= 10
-                    && request.resource.data.phone.size() <= 15
-                    && (isSchoolAdmin() || request.resource.data.status in ['new', 'pending']);
-      allow read, update, delete: if isSchoolAdmin();
-    }
-
-    // Contact Messages:
-    // Anyone can create (submit contact form) with validation
-    // Only authenticated admin can read or delete
-    match /contactMessages/{messageId} {
-      allow create: if request.resource.data.name is string
-                    && request.resource.data.email is string
-                    && request.resource.data.message is string
-                    && request.resource.data.name.size() > 1
-                    && request.resource.data.name.size() <= 100
-                    && request.resource.data.email.size() <= 100
-                    && request.resource.data.message.size() > 2
-                    && request.resource.data.message.size() <= 2000
-                    && (isSchoolAdmin() || request.resource.data.status in ['new', 'pending']);
-      allow read, update, delete: if isSchoolAdmin();
-    }
-
-    // Timeline Entries (School History) - Public collection
     match /timelineEntries/{entryId} {
-      allow get: if resource.data.status == 'published' || isAdmin();
-      allow list: if resource.data.status == 'published' || isAdmin();
-      allow write: if isSchoolAdmin();
-    }
-
-    // Alumni Members:
-    // Public can view verified published alumni (without private contact data) or submit registration
-    // Administrators approve, update, or delete profiles
-    match /alumni/{alumniId} {
-      allow get: if isPublicAlumni() || isSchoolAdmin();
-      allow list: if isPublicAlumni() || isSchoolAdmin();
-      allow create: if (!('email' in request.resource.data) && !('phone' in request.resource.data))
-                    && (isSchoolAdmin() || (request.resource.data.name is string && request.resource.data.status == 'pending'));
-      allow update: if isSchoolAdmin()
-                    && !('email' in request.resource.data)
-                    && !('phone' in request.resource.data);
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update: if isSchoolAdmin() && isValidTimelineEntry(request.resource.data);
       allow delete: if isSchoolAdmin();
     }
 
-    // Alumni Private Contacts - Strictly School Admin readable/writeable, Public create with abuse-resistant validation
-    match /alumniPrivate/{alumniId} {
-      allow read, update, delete: if isSchoolAdmin();
-      allow create: if request.resource.data.alumniId is string
-                    && request.resource.data.alumniId == alumniId
-                    && request.resource.data.name is string
-                    && request.resource.data.name.size() > 1
-                    && request.resource.data.name.size() <= 100
-                    && (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() >= 10 && request.resource.data.phone.size() <= 15))
-                    && (!('email' in request.resource.data) || (request.resource.data.email is string && request.resource.data.email.size() <= 100))
-                    && (isSchoolAdmin() || request.resource.data.status == 'pending');
-    }
-
-    // Transport Routes & Bus Stops:
-    // Public can view published routes and bus timings
-    // Administrators manage routes, stops, and fleet details
     match /transportRoutes/{routeId} {
-      allow get: if resource.data.status == 'published' || isSchoolAdmin();
-      allow list: if resource.data.status == 'published' || isSchoolAdmin();
-      allow write: if isSchoolAdmin();
-    }
-
-    // Student Examination Results:
-    // Public can retrieve published results by roll/registration lookup
-    // Administrators upload, update, and manage marks
-    match /studentResults/{resultId} {
-      // Student marks are private educational records; public access must use a
-      // dedicated authenticated/validated lookup endpoint, never collection reads.
-      allow get: if isSchoolAdmin();
-      allow list: if isSchoolAdmin();
-      allow create, update: if isSchoolAdmin()
-                    && request.resource.data.rollNumber is string
-                    && request.resource.data.studentName is string
-                    && request.resource.data.status in ['draft', 'published', 'withheld'];
+      allow read: if resource.data.status == 'published' || isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidTransportRoute(request.resource.data);
       allow delete: if isSchoolAdmin();
     }
 
-    // Admin Users collection - Strictly managed by Super Admin
+    // 3. News, Media & Events
+    // Content managers and administrators can create, update, and delete articles and media
+    match /announcements/{announcementId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update: if isAdmin() && isValidAnnouncement(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /events/{eventId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update: if isAdmin() && isValidEvent(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /gallery/{imageId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow create, update: if isAdmin() && isValidGallery(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /mediaAssets/{assetId} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin() && isValidMediaAsset(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    // 4. Research Records
+    // Approved and published records are viewable; creation, edits, and deletes require School Admin
+    match /researchRecords/{recordId} {
+      allow read: if (resource.data.published == true && resource.data.adminApproval == true) || isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidResearchRecord(request.resource.data);
+      allow delete: if isSchoolAdmin();
+    }
+
+    // 5. Inquiries & Communication
+    // Anyone can create (submit form) with strict type and length limits.
+    // Reading, updating, and deleting are strictly reserved for School Administrators.
+    match /enquiries/{enquiryId} {
+      allow create: if isValidEnquiryCreate(request.resource.data);
+      allow read, delete: if isSchoolAdmin();
+      allow update: if isSchoolAdmin() && isValidEnquiryUpdate(request.resource.data);
+    }
+
+    match /contactMessages/{messageId} {
+      allow create: if isValidContactMessageCreate(request.resource.data);
+      allow read, delete: if isSchoolAdmin();
+      allow update: if isSchoolAdmin() && isValidContactMessageUpdate(request.resource.data);
+    }
+
+    // 6. Student Examination Results
+    // Sensitive student marks are private; direct client collection reads/lists are completely restricted.
+    // Public queries must go through the dedicated server lookup endpoint (/api/results/lookup).
+    match /studentResults/{resultId} {
+      allow read: if isSchoolAdmin();
+      allow create, update: if isSchoolAdmin() && isValidStudentResult(request.resource.data);
+      allow delete: if isSchoolAdmin();
+    }
+
+    // 7. Alumni Network (Two-Tier Separation)
+    // Public collection has no PII (no email/phone). Visitors view published profiles or submit registration.
+    match /alumni/{alumniId} {
+      allow read: if isPublicAlumni() || isSchoolAdmin();
+      allow create: if isValidAlumniCreate(request.resource.data);
+      allow update: if isSchoolAdmin() && isValidAlumniUpdate(request.resource.data);
+      allow delete: if isSchoolAdmin();
+    }
+
+    // Private contact records for alumni. Strictly admin-only read/update/delete.
+    match /alumniPrivate/{alumniId} {
+      allow create: if isValidAlumniPrivateCreate(alumniId, request.resource.data);
+      allow read, delete: if isSchoolAdmin();
+      allow update: if isSchoolAdmin() && isValidAlumniPrivateUpdate(request.resource.data);
+    }
+
+    // 8. Admin Users Collection
+    // Strictly managed by Super Admin. Admins can read their own user record.
     match /adminUsers/{userId} {
       allow get: if isAuthenticated() && (userId == request.auth.uid || isSuperAdmin());
       allow list: if isSuperAdmin();
-      allow write: if isSuperAdmin();
+      allow create, update: if isSuperAdmin()
+        && idUnchanged(userId)
+        && isValidAdminUser(request.resource.data);
+      allow delete: if isSuperAdmin();
+    }
+
+    // Catch-all Default Deny for any unmapped paths
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

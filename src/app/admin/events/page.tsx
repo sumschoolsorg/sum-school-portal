@@ -12,9 +12,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
 import { eventRepository, announcementRepository } from '@/lib/repositories';
-import { defaultEvents } from '@/lib/defaultData';
 import { SchoolEvent, Announcement } from '@/types';
-import { Plus, Edit2, Trash2, Calendar, Star, Bell, MapPin, Clock, UserCheck, Sparkles } from 'lucide-react';
+import { ACADEMIC_YEAR_OPTIONS, CURRENT_ACADEMIC_YEAR } from '@/lib/academicYears';
+import { Plus, Edit2, Trash2, Calendar, Star, Bell, MapPin, Clock, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function EventsAdminPage() {
@@ -34,21 +34,19 @@ export default function EventsAdminPage() {
     venue: 'S.U.M. Main Stage, Royappanpatti',
     venue_ta: 'எஸ்.யு.எம். பள்ளி பிரதான அரங்கம், ராயப்பன்பட்டி',
     category: 'cultural',
-    academicYear: '2024–2025',
+    academicYear: CURRENT_ACADEMIC_YEAR,
     calendarYear: 2025,
     month: 'March',
     chiefGuest: '',
     status: 'published',
     isFeatured: true,
-    imageUrl: '/images/event-annual-day.jpg',
+    imageUrl: '',
   });
 
   const [eventDateStr, setEventDateStr] = useState<string>(() =>
     new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   );
   const [broadcastAnnouncement, setBroadcastAnnouncement] = useState(true);
-
-  const [isSeeding, setIsSeeding] = useState(false);
 
   const loadEvents = useCallback(async () => {
     try {
@@ -83,26 +81,6 @@ export default function EventsAdminPage() {
     };
   }, []);
 
-  const handleSeedDefaults = async () => {
-    setIsSeeding(true);
-    try {
-      for (const ev of defaultEvents) {
-        const { id, ...dataWithoutId } = ev;
-        await eventRepository.create({
-          ...dataWithoutId,
-          createdAt: new Date(),
-        });
-      }
-      toast.success(`Seeded ${defaultEvents.length} official school events & historical archives!`);
-      loadEvents();
-    } catch (err) {
-      console.error('Seeding error:', err);
-      toast.error('Failed to seed events to database.');
-    } finally {
-      setIsSeeding(false);
-    }
-  };
-
   const handleOpenAdd = () => {
     setEditingEvent(null);
     setBroadcastAnnouncement(true);
@@ -118,13 +96,13 @@ export default function EventsAdminPage() {
       venue: 'S.U.M. Main Stage, Royappanpatti',
       venue_ta: 'எஸ்.யு.எம். பள்ளி பிரதான அரங்கம், ராயப்பன்பட்டி',
       category: 'cultural',
-      academicYear: '2024–2025',
+      academicYear: CURRENT_ACADEMIC_YEAR,
       calendarYear: 2025,
       month: 'March',
       chiefGuest: '',
       status: 'published',
       isFeatured: true,
-      imageUrl: '/images/event-annual-day.jpg',
+      imageUrl: '',
     });
     setIsModalOpen(true);
   };
@@ -132,13 +110,21 @@ export default function EventsAdminPage() {
   const handleOpenEdit = (ev: SchoolEvent) => {
     setEditingEvent(ev);
     setBroadcastAnnouncement(false);
-    const raw = ev.date as { toDate?: () => Date } | Date | string | number | undefined;
-    const d = raw && typeof raw === 'object' && 'toDate' in raw && typeof raw.toDate === 'function'
-      ? raw.toDate()
-      : raw instanceof Date
-      ? raw
-      : new Date((raw as string | number) || Date.now());
-    setEventDateStr(d.toISOString().split('T')[0]);
+    let dateStr = new Date().toISOString().split('T')[0];
+    try {
+      const raw = ev.date as { toDate?: () => Date } | Date | string | number | undefined;
+      const d = raw && typeof raw === 'object' && 'toDate' in raw && typeof raw.toDate === 'function'
+        ? raw.toDate()
+        : raw instanceof Date
+        ? raw
+        : new Date((raw as string | number) || Date.now());
+      if (!isNaN(d.getTime())) {
+        dateStr = d.toISOString().split('T')[0];
+      }
+    } catch {
+      // fallback to today
+    }
+    setEventDateStr(dateStr);
     setFormData(ev);
     setIsModalOpen(true);
   };
@@ -150,7 +136,13 @@ export default function EventsAdminPage() {
       return;
     }
 
-    const finalDate = new Date(eventDateStr);
+    let finalDate = new Date();
+    if (eventDateStr && /^\d{4}-\d{2}-\d{2}$/.test(eventDateStr)) {
+      const [y, m, day] = eventDateStr.split('-').map(Number);
+      finalDate = new Date(y, m - 1, day, 12, 0, 0);
+    } else if (eventDateStr) {
+      finalDate = new Date(eventDateStr);
+    }
 
     try {
       if (editingEvent && editingEvent.id) {
@@ -195,7 +187,7 @@ export default function EventsAdminPage() {
       loadEvents();
     } catch (err) {
       console.error('Error saving event:', err);
-      toast.error('Failed to save event.');
+      toast.error((err as Error)?.message || 'Failed to save event to Firebase.');
     }
   };
 
@@ -221,7 +213,7 @@ export default function EventsAdminPage() {
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={item.imageUrl}
+            src={item.imageUrl || '/images/event-annual-day.jpg'}
             alt={item.title}
             className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm shrink-0 bg-slate-100"
           />
@@ -307,17 +299,6 @@ export default function EventsAdminPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {events.length <= defaultEvents.length && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleSeedDefaults}
-              isLoading={isSeeding}
-              leftIcon={<Sparkles className="w-4 h-4 text-amber-500" />}
-            >
-              Seed Verified Events &amp; Archives
-            </Button>
-          )}
           <Button
             onClick={handleOpenAdd}
             variant="primary"
@@ -379,14 +360,9 @@ export default function EventsAdminPage() {
             />
             <Select
               label="Academic Year"
-              value={formData.academicYear || '2024–2025'}
+              value={formData.academicYear || CURRENT_ACADEMIC_YEAR}
               onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
-              options={[
-                { value: '2025–2026', label: '2025–2026' },
-                { value: '2024–2025', label: '2024–2025' },
-                { value: '2023–2024', label: '2023–2024' },
-                { value: '2022–2023', label: '2022–2023 (Diamond Jubilee)' },
-              ]}
+              options={ACADEMIC_YEAR_OPTIONS}
             />
           </div>
 

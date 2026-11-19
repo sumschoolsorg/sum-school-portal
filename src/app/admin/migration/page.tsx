@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   exportAllLocalData,
   importAllLocalData,
+  clearAllLocalData,
   getLocalAll,
   STORES,
   StoreName,
@@ -18,6 +19,7 @@ import {
   setDataMode,
   DataMode,
 } from '@/lib/repositories';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Database,
   Cloud,
@@ -25,6 +27,7 @@ import {
   Upload,
   RefreshCw,
   Server,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -59,6 +62,7 @@ const STORE_DISPLAY_NAMES: Record<StoreName, string> = {
   [STORES.STUDENT_RESULTS]: 'Student Examination Results & Marksheets',
   [STORES.ENQUIRIES]: 'Admission Enquiries',
   [STORES.CONTACT_MESSAGES]: 'Contact Messages',
+  [STORES.MEDIA_ASSETS]: 'Media Library Assets',
 };
 
 // IndexedDB uses snake_case names while Firestore uses these collection names.
@@ -87,14 +91,17 @@ const FIRESTORE_COLLECTIONS: Partial<Record<StoreName, string>> = {
   [STORES.ALUMNI_PRIVATE]: 'alumniPrivate',
   [STORES.TRANSPORT_ROUTES]: 'transportRoutes',
   [STORES.STUDENT_RESULTS]: 'studentResults',
+  [STORES.MEDIA_ASSETS]: 'mediaAssets',
 };
 
 export default function MigrationAdminPage() {
+  const { isCloudAuthenticated } = useAuth();
   const [stats, setStats] = useState<CollectionStatItem[]>([]);
   const [currentMode, setCurrentMode] = useState<DataMode>(() => getCurrentDataMode());
   const [firebaseReady, setFirebaseReady] = useState(() => isFirebaseConfigured());
   const [isMigrating, setIsMigrating] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isClearLocalModalOpen, setIsClearLocalModalOpen] = useState(false);
   const [migrationLog, setMigrationLog] = useState<string[]>([]);
 
   const loadStats = useCallback(async () => {
@@ -125,6 +132,21 @@ export default function MigrationAdminPage() {
       console.warn('Error loading migration stats:', err);
     }
   }, []);
+
+  const handleClearLocalCache = async () => {
+    setIsClearLocalModalOpen(false);
+    try {
+      await clearAllLocalData();
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('sum_school_admin_uploaded_media');
+      }
+      await loadStats();
+      toast.success('All local cached/demo data cleared! Fresh cloud records will load from Firebase.');
+    } catch (err) {
+      console.error('Failed to clear local cache:', err);
+      toast.error('Failed to clear local browser cache.');
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -380,7 +402,7 @@ export default function MigrationAdminPage() {
             </div>
           </div>
 
-          <div className="mt-5 flex items-center gap-2">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             <Button
               variant={currentMode === 'local' ? 'primary' : 'outline'}
               size="sm"
@@ -397,6 +419,15 @@ export default function MigrationAdminPage() {
             >
               <Download className="w-3.5 h-3.5" />
               Export JSON Backup
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsClearLocalModalOpen(true)}
+              className="text-xs text-rose-600 border-rose-200 hover:bg-rose-50 flex items-center gap-1"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Clear Local Cache
             </Button>
           </div>
         </Card>
@@ -430,8 +461,14 @@ export default function MigrationAdminPage() {
               <strong>{firebaseReady ? 'API Keys Connected' : 'Requires .env.local'}</strong>
             </div>
             <div className="flex justify-between">
+              <span>Firebase Auth Session:</span>
+              <strong className={isCloudAuthenticated ? 'text-emerald-700' : 'text-rose-600'}>
+                {isCloudAuthenticated ? 'Authenticated (Cloud Write Ready)' : 'Not Signed In to Firebase Auth'}
+              </strong>
+            </div>
+            <div className="flex justify-between">
               <span>Security Rules:</span>
-              <strong className="text-blue-700">Protected & RBAC Enabled</strong>
+              <strong className="text-blue-700">Protected &amp; RBAC Enabled</strong>
             </div>
           </div>
 
@@ -524,6 +561,16 @@ export default function MigrationAdminPage() {
         confirmLabel="Start Migration"
         onConfirm={handleStartFirebaseMigration}
         onCancel={() => setIsConfirmModalOpen(false)}
+      />
+
+      {/* Clear Local Cache Confirmation Modal */}
+      <ConfirmDialog
+        isOpen={isClearLocalModalOpen}
+        title="Clear Local Browser Cache?"
+        message="This removes all cached local IndexedDB records and legacy demo items from this browser. Your live Firebase Cloud Firestore data is NOT deleted."
+        confirmLabel="Clear Local Cache"
+        onConfirm={handleClearLocalCache}
+        onCancel={() => setIsClearLocalModalOpen(false)}
       />
     </div>
   );

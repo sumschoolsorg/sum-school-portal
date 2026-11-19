@@ -140,10 +140,10 @@ export default function AdmissionsAdminPage() {
     setIsSaving(true);
     try {
       await admissionsRepository.save(formData);
-      toast.success('Admissions guidelines and criteria saved to Firestore!');
+      toast.success('Admissions guidelines and criteria saved to Firebase!');
     } catch (error) {
-      console.warn('Saved in offline mode:', error);
-      toast.info('Admissions content updated locally.');
+      console.error('Failed to save admissions content:', error);
+      toast.error((error as Error)?.message || 'Failed to save Admissions content to Firebase.');
     } finally {
       setIsSaving(false);
     }
