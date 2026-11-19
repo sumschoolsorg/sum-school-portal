@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import {
@@ -11,23 +11,17 @@ import {
   Filter,
   Ban,
   Link as LinkIcon,
+  UploadCloud,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeImageUrl, isValidImageUrl } from '@/lib/storage';
+import { mediaAssetRepository } from '@/lib/repositories';
+import { MediaAsset } from '@/types';
 
 export interface RealSchoolPhoto {
   url: string;
   title: string;
-  category:
-    | 'Campus'
-    | 'Classroom'
-    | 'Laboratories'
-    | 'Library'
-    | 'Sports'
-    | 'Primary'
-    | 'Secondary'
-    | 'Faculty'
-    | 'Events';
+  category: string;
   description: string;
   tags: string[];
 }
@@ -244,34 +238,79 @@ export function RealImagePickerModal({
   onClose,
   onSelectImage,
   currentImageUrl,
-  title = 'Search & Insert Real School Photography',
+  title = 'Search & Insert Authentic School Photography',
 }: RealImagePickerModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedPhoto, setSelectedPhoto] = useState<RealSchoolPhoto | null>(null);
   const [activeTab, setActiveTab] = useState<'library' | 'custom'>('library');
+  const [uploadedAssets, setUploadedAssets] = useState<MediaAsset[]>([]);
 
   // Custom URL inputs
   const [customUrl, setCustomUrl] = useState('');
   const [previewError, setPreviewError] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      mediaAssetRepository
+        .getAll()
+        .then((data) => {
+          setUploadedAssets(data || []);
+        })
+        .catch(() => {});
+    }
+  }, [isOpen]);
+
   const categories = [
     'All',
-    'Campus',
-    'Classroom',
-    'Laboratories',
-    'Library',
-    'Sports',
-    'Primary',
-    'Secondary',
+    'School Campus',
+    'School Building',
+    'Founders',
+    'Headmaster',
     'Faculty',
-    'Events',
+    'Classrooms',
+    'Science Laboratory',
+    'Computer Laboratory',
+    'Sports',
+    'Cultural Events',
+    'Achievements',
+    'Students and Activities',
+    'School Functions',
+    'Infrastructure',
+    'General',
   ];
 
+  const allPhotos: RealSchoolPhoto[] = useMemo(() => {
+    const fromUploads: RealSchoolPhoto[] = uploadedAssets.map((asset) => ({
+      url: asset.url,
+      title: asset.title || asset.name,
+      category: asset.category || asset.folder || 'General',
+      description: asset.description || asset.altText || `Authentic school photo: ${asset.title || asset.name}`,
+      tags: Array.isArray(asset.tags) ? asset.tags : ['authentic', 'school', (asset.category || '').toLowerCase()],
+    }));
+
+    const seenUrls = new Set<string>();
+    const combined: RealSchoolPhoto[] = [];
+
+    // Prioritize uploaded assets from the ZERO AI School Image Library
+    for (const p of [...fromUploads, ...VERIFIED_REAL_SCHOOL_PHOTOS]) {
+      if (!seenUrls.has(p.url)) {
+        seenUrls.add(p.url);
+        combined.push(p);
+      }
+    }
+    return combined;
+  }, [uploadedAssets]);
+
   const filteredPhotos = useMemo(() => {
-    return VERIFIED_REAL_SCHOOL_PHOTOS.filter((photo) => {
+    return allPhotos.filter((photo) => {
       const matchesCategory =
-        selectedCategory === 'All' || photo.category === selectedCategory;
+        selectedCategory === 'All' ||
+        photo.category.toLowerCase() === selectedCategory.toLowerCase() ||
+        (selectedCategory === 'Classrooms' && photo.category === 'Classroom') ||
+        (selectedCategory === 'Science Laboratory' && photo.category === 'Laboratories') ||
+        (selectedCategory === 'Computer Laboratory' && photo.category === 'Laboratories') ||
+        (selectedCategory === 'School Campus' && photo.category === 'Campus');
 
       if (!matchesCategory) return false;
 
@@ -284,7 +323,7 @@ export function RealImagePickerModal({
 
       return matchTitle || matchDesc || matchTags;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [allPhotos, searchQuery, selectedCategory]);
 
   const handleSelectAndInsert = (photo: RealSchoolPhoto) => {
     onSelectImage(photo.url, photo.title);

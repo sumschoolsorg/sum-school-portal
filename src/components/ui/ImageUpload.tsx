@@ -18,6 +18,7 @@ import {
   normalizeImageUrl,
   isValidImageUrl,
 } from '@/lib/storage';
+import { mediaAssetRepository } from '@/lib/repositories';
 import { RealImagePickerModal } from './RealImagePickerModal';
 import { toast } from 'sonner';
 
@@ -181,11 +182,31 @@ export function ImageUpload({
 
       setSizeStats({ original: originalBytes, uploaded: finalBytes });
 
-      const { url } = await uploadImageWithUniqueId(fileToUpload, folder);
+      const { url, path } = await uploadImageWithUniqueId(fileToUpload, folder);
       URL.revokeObjectURL(objectUrl);
       setPreview(url);
       setUrlInput(url);
       notifyChange(url);
+
+      // Auto-catalog authentic photo into ZERO AI - School Image Library
+      mediaAssetRepository
+        .create({
+          url,
+          name: fileToUpload.name,
+          title: fileToUpload.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' '),
+          category: folder.replace(/_/g, ' '),
+          folder,
+          storagePath: path,
+          size: originalBytes,
+          optimizedSize: finalBytes,
+          uploadedAt: new Date().toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }),
+          sourceType: 'upload',
+        })
+        .catch((catErr) => console.warn('Auto-catalog media asset warning:', catErr));
 
       if (originalBytes > finalBytes && originalBytes > 1024 * 1024) {
         toast.success(`Photo uploaded to Firebase Storage! (${formatBytes(originalBytes)} → ${formatBytes(finalBytes)})`);

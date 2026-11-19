@@ -167,11 +167,10 @@ service cloud.firestore {
     // 25. mediaAssets/{assetId} (Admin media library metadata)
     //     - url: string (required, 1-4096 chars)
     //     - name: string (required, 1-300 chars)
-    //     - folder: string (optional, 0-100 chars)
-    //     - size: number (optional, 0-104857600)
-    //     - optimizedSize: number (optional, 0-104857600)
-    //     - uploadedAt: string (optional, 0-100 chars)
-    //     - dimensions: string (optional, 0-50 chars)
+    //     - title, description, altText, category, folder, storagePath, dimensions, sourceType: string (optional)
+    //     - tags: list (optional, max 30 items)
+    //     - size, optimizedSize: number (optional, 0-104857600)
+    //     - uploadedAt: string or timestamp (optional)
     //
     // ===============================================================
 
@@ -229,7 +228,7 @@ service cloud.firestore {
     // ===============================================================
 
     function isOptString(data, field, minLen, maxLen) {
-      return !(field in data) || (data[field] is string && data[field].size() >= minLen && data[field].size() <= maxLen);
+      return !(field in data) || data[field] == null || (data[field] is string && data[field].size() >= minLen && data[field].size() <= maxLen);
     }
 
     function isReqString(data, field, minLen, maxLen) {
@@ -262,19 +261,19 @@ service cloud.firestore {
     }
 
     function isOptNumber(data, field, minVal, maxVal) {
-      return !(field in data) || (data[field] is number && data[field] >= minVal && data[field] <= maxVal);
+      return !(field in data) || data[field] == null || (data[field] is number && data[field] >= minVal && data[field] <= maxVal);
     }
 
     function isOptList(data, field, maxSize) {
-      return !(field in data) || (data[field] is list && data[field].size() <= maxSize);
+      return !(field in data) || data[field] == null || (data[field] is list && data[field].size() <= maxSize);
     }
 
     function isOptMap(data, field) {
-      return !(field in data) || data[field] is map;
+      return !(field in data) || data[field] == null || data[field] is map;
     }
 
     function isOptBool(data, field) {
-      return !(field in data) || data[field] is bool;
+      return !(field in data) || data[field] == null || data[field] is bool;
     }
 
     function idUnchanged(docId) {
@@ -614,11 +613,18 @@ service cloud.firestore {
     function isValidMediaAsset(data) {
       return isReqString(data, 'url', 1, 4096)
         && isReqString(data, 'name', 1, 300)
+        && isOptString(data, 'title', 0, 300)
+        && isOptString(data, 'description', 0, 2000)
+        && isOptString(data, 'altText', 0, 500)
+        && isOptList(data, 'tags', 30)
+        && isOptString(data, 'category', 0, 100)
         && isOptString(data, 'folder', 0, 100)
+        && isOptString(data, 'storagePath', 0, 1000)
         && isOptNumber(data, 'size', 0, 104857600)
         && isOptNumber(data, 'optimizedSize', 0, 104857600)
-        && isOptString(data, 'uploadedAt', 0, 100)
-        && isOptString(data, 'dimensions', 0, 50);
+        && (isOptString(data, 'uploadedAt', 0, 100) || isOptNullableDate(data, 'uploadedAt'))
+        && isOptString(data, 'dimensions', 0, 50)
+        && isOptString(data, 'sourceType', 0, 50);
     }
 
     // ===============================================================

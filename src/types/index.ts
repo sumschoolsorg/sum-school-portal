@@ -695,6 +695,12 @@ export interface MediaAsset extends FirestoreDoc {
   uploadedAt: string;
   dimensions?: string;
   sourceType?: 'upload' | 'url';
+  title?: string;
+  description?: string;
+  altText?: string;
+  tags?: string[];
+  category?: string;
+  storagePath?: string;
 }
 
 

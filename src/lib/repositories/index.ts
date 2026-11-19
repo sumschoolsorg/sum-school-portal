@@ -53,6 +53,16 @@ import {
   MediaAsset,
 } from '@/types';
 
+import {
+  defaultSchoolSettings,
+  defaultHomepageContent,
+  defaultAboutContent,
+  defaultAcademicsContent,
+  defaultAdmissionsContent,
+  defaultThemeSettings,
+  defaultWebsiteSettings,
+} from '@/lib/defaultData';
+
 export type DataMode = 'local' | 'firebase';
 
 export function isFirebaseConfigured(): boolean {
@@ -87,18 +97,22 @@ export class SingleDocRepository<T extends { id?: string }> {
   constructor(
     private storeName: StoreName,
     private firestoreCollection: string,
-    private defaultDocId: string = 'default'
+    private defaultDocId: string = 'default',
+    private fallbackProvider?: () => T
   ) {}
 
   async get(): Promise<T> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      const doc = await getDocument<T>(this.firestoreCollection, this.defaultDocId);
-      if (doc) {
-        await putLocal<T>(this.storeName, doc).catch(() => {});
-        return doc;
+      try {
+        const doc = await getDocument<T>(this.firestoreCollection, this.defaultDocId);
+        if (doc) {
+          await putLocal<T>(this.storeName, doc).catch(() => {});
+          return doc;
+        }
+      } catch (cloudErr) {
+        console.warn(`Firestore read warning for ${this.firestoreCollection}/${this.defaultDocId}:`, cloudErr);
       }
-      throw new Error(`Document not found in cloud collection ${this.firestoreCollection}`);
     }
 
     const localDoc = await getLocalById<T>(this.storeName, this.defaultDocId);
@@ -106,6 +120,10 @@ export class SingleDocRepository<T extends { id?: string }> {
 
     const all = await getLocalAll<T>(this.storeName);
     if (all.length > 0) return all[0];
+
+    if (this.fallbackProvider) {
+      return this.fallbackProvider();
+    }
 
     throw new Error(`Document not found in ${this.storeName}`);
   }
@@ -132,20 +150,24 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
   async getAll(): Promise<T[]> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      const docs = await getDocuments<T>(this.firestoreCollection);
-      if (Array.isArray(docs)) {
-        // Mirror cloud state into local cache so offline cache matches Firestore exactly
-        try {
-          await clearLocalStore(this.storeName);
-          for (const cloudDoc of docs) {
-            if (cloudDoc.id) {
-              await putLocal<T>(this.storeName, cloudDoc);
+      try {
+        const docs = await getDocuments<T>(this.firestoreCollection);
+        if (Array.isArray(docs)) {
+          // Mirror cloud state into local cache so offline cache matches Firestore exactly
+          try {
+            await clearLocalStore(this.storeName);
+            for (const cloudDoc of docs) {
+              if (cloudDoc.id) {
+                await putLocal<T>(this.storeName, cloudDoc);
+              }
             }
+          } catch (syncErr) {
+            console.warn(`Local sync cache update warning for ${this.firestoreCollection}:`, syncErr);
           }
-        } catch (syncErr) {
-          console.warn(`Local sync cache update warning for ${this.firestoreCollection}:`, syncErr);
+          return docs;
         }
-        return docs;
+      } catch (cloudErr) {
+        console.warn(`Firestore getAll warning for ${this.firestoreCollection}:`, cloudErr);
       }
     }
 
@@ -155,8 +177,12 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
   async getPublished(): Promise<T[]> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
-      return Array.isArray(docs) ? docs : [];
+      try {
+        const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
+        return Array.isArray(docs) ? docs : [];
+      } catch (cloudErr) {
+        console.warn(`Firestore getPublished warning for ${this.firestoreCollection}:`, cloudErr);
+      }
     }
     const all = await getLocalAll<T>(this.storeName);
     return all.filter((item) => item.status === 'published');
@@ -165,7 +191,11 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
   async getById(id: string): Promise<T | null> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
-      return await getDocument<T>(this.firestoreCollection, id);
+      try {
+        return await getDocument<T>(this.firestoreCollection, id);
+      } catch (cloudErr) {
+        console.warn(`Firestore getById warning for ${this.firestoreCollection}/${id}:`, cloudErr);
+      }
     }
 
     return getLocalById<T>(this.storeName, id);
@@ -223,37 +253,51 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
 // Instantiate specific repositories
 export const schoolRepository = new SingleDocRepository<SchoolSettings>(
   STORES.SCHOOL_SETTINGS,
-  'schoolSettings'
+  'schoolSettings',
+  'default',
+  () => defaultSchoolSettings
 );
 
 export const homepageRepository = new SingleDocRepository<HomepageContent>(
   STORES.HOMEPAGE_CONTENT,
-  'homepageContent'
+  'homepageContent',
+  'default',
+  () => defaultHomepageContent
 );
 
 export const aboutRepository = new SingleDocRepository<AboutContent>(
   STORES.ABOUT_CONTENT,
-  'aboutContent'
+  'aboutContent',
+  'default',
+  () => defaultAboutContent
 );
 
 export const academicsRepository = new SingleDocRepository<AcademicsContent>(
   STORES.ACADEMICS_CONTENT,
-  'academicsContent'
+  'academicsContent',
+  'default',
+  () => defaultAcademicsContent
 );
 
 export const admissionsRepository = new SingleDocRepository<AdmissionsContent>(
   STORES.ADMISSIONS_CONTENT,
-  'admissionsContent'
+  'admissionsContent',
+  'default',
+  () => defaultAdmissionsContent
 );
 
 export const themeRepository = new SingleDocRepository<ThemeSettings>(
   STORES.THEME_SETTINGS,
-  'themeSettings'
+  'themeSettings',
+  'default',
+  () => defaultThemeSettings
 );
 
 export const websiteSettingsRepository = new SingleDocRepository<WebsiteSettings>(
   STORES.WEBSITE_SETTINGS,
-  'websiteSettings'
+  'websiteSettings',
+  'default',
+  () => defaultWebsiteSettings
 );
 
 // Collections

@@ -96,7 +96,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     { href: '/admin/transport', label: 'Bus & Transport', icon: <Bus className="w-4 h-4" />, category: 'Student Services' },
     { href: '/admin/alumni', label: 'Alumni Heritage', icon: <UserCheck className="w-4 h-4" />, category: 'Student Services' },
 
-    { href: '/admin/media', label: 'Image & Media Uploader', icon: <Upload className="w-4 h-4 text-emerald-400" />, category: 'Media & Content' },
+    { href: '/admin/media', label: 'ZERO AI Image Library', icon: <Upload className="w-4 h-4 text-emerald-400" />, category: 'Media & Content' },
     { href: '/admin/banners', label: 'Hero Banners', icon: <Layers className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/homepage', label: 'Homepage Content', icon: <Home className="w-4 h-4" />, category: 'Media & Content' },
     { href: '/admin/about', label: 'About School', icon: <Info className="w-4 h-4" />, category: 'Media & Content' },
@@ -123,11 +123,11 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Mobile Backdrop Overlay - Clean solid alpha scrim without GPU blur distortion */}
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden cursor-pointer transition-opacity"
+          className="fixed inset-0 bg-slate-950/70 z-40 lg:hidden cursor-pointer transition-opacity duration-200"
           aria-label="Close sidebar overlay"
         />
       )}
