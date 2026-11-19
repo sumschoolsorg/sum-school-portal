@@ -11,6 +11,14 @@ import { toast } from 'sonner';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
+
+  // Automatically reset mobile sidebar when route changes without cascading effect
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    setSidebarOpen(false);
+  }
+
   const router = useRouter();
   const { isAdmin, isSchoolAdmin, isSuperAdmin, loading } = useAuth();
   // If on login page, don't show admin sidebar/topbar

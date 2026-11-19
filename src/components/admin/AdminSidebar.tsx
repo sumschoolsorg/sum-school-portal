@@ -49,6 +49,27 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const router = useRouter();
   const { isSuperAdmin, isSchoolAdmin } = useAuth();
 
+  // Close sidebar on Escape key and handle body scroll lock on mobile
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+      if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+        document.body.style.overflow = 'hidden';
+      }
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, onClose]);
+
   const handleLogout = async () => {
     try {
       await signOut();
@@ -106,15 +127,14 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 lg:hidden cursor-pointer transition-opacity"
+          aria-label="Close sidebar overlay"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`admin-sidebar fixed lg:static inset-y-0 left-0 z-50 bg-slate-950 text-slate-300 border-r border-slate-800 flex flex-col justify-between transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        className={`admin-sidebar ${isOpen ? 'open translate-x-0 !transform-none' : '-translate-x-full lg:translate-x-0'} fixed lg:static inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-slate-950 text-slate-300 border-r border-slate-800 flex flex-col justify-between transition-transform duration-300 shadow-2xl lg:shadow-none`}
       >
         <div>
           {/* Header */}

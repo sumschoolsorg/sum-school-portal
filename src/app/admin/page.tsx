@@ -181,7 +181,7 @@ export default function AdminDashboardPage() {
               {dataMode === 'cloud' ? 'Cloud Firestore' : 'Local Preview'}
             </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold font-heading">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold font-heading break-words">
             {schoolName}
           </h2>
           <p className="text-sm text-slate-300 mt-1 max-w-xl">
