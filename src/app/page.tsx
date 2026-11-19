@@ -9,6 +9,7 @@ import { StatsSection } from '@/components/home/StatsSection';
 import { PrincipalMessageSection } from '@/components/home/PrincipalMessageSection';
 import { AcademicsPreviewSection } from '@/components/home/AcademicsPreviewSection';
 import { FacilitiesPreviewSection } from '@/components/home/FacilitiesPreviewSection';
+import { FeaturedTeachersSection } from '@/components/home/FeaturedTeachersSection';
 import { AnnouncementsSection } from '@/components/home/AnnouncementsSection';
 import { EventsSection } from '@/components/home/EventsSection';
 import { AchievementsSection } from '@/components/home/AchievementsSection';
@@ -26,6 +27,7 @@ import {
   aboutRepository,
   academicsRepository,
   facilityRepository,
+  facultyRepository,
   announcementRepository,
   eventRepository,
   achievementRepository,
@@ -36,6 +38,7 @@ import type {
   AboutContent,
   AcademicsContent,
   Facility,
+  Faculty,
   Announcement,
   SchoolEvent,
   Achievement,
@@ -47,6 +50,7 @@ interface HomePageData {
   about: AboutContent;
   academics: AcademicsContent;
   facilities: Facility[];
+  teachers: Faculty[];
   announcements: Announcement[];
   events: SchoolEvent[];
   achievements: Achievement[];
@@ -60,6 +64,7 @@ export default function HomePage() {
     about: defaultAboutContent,
     academics: defaultAcademicsContent,
     facilities: [],
+    teachers: [],
     announcements: [],
     events: [],
     achievements: [],
@@ -75,6 +80,7 @@ export default function HomePage() {
           aboutContent,
           academicsContent,
           facilitiesList,
+          facultyList,
           announcementsList,
           eventsList,
           achievementsList,
@@ -84,11 +90,17 @@ export default function HomePage() {
           aboutRepository.get().catch(() => null),
           academicsRepository.get().catch(() => null),
           facilityRepository.getPublished().catch(() => []),
+          facultyRepository.getPublished().catch(() => []),
           announcementRepository.getPublished().catch(() => []),
           eventRepository.getPublished().catch(() => []),
           achievementRepository.getPublished().catch(() => []),
           testimonialRepository.getPublished().catch(() => []),
         ]);
+
+        // Filter featured, published, and active teachers
+        const featuredTeachers = (facultyList || []).filter(
+          (f: Faculty) => f.isFeatured && f.status === 'published' && f.isActive !== false
+        );
 
         // Populate data with real cloud data
         setData({
@@ -96,6 +108,7 @@ export default function HomePage() {
           about: aboutContent || defaultAboutContent,
           academics: academicsContent || defaultAcademicsContent,
           facilities: facilitiesList || [],
+          teachers: featuredTeachers,
           announcements: announcementsList || [],
           events: eventsList || [],
           achievements: achievementsList || [],
@@ -142,6 +155,7 @@ export default function HomePage() {
         <PrincipalMessageSection content={data.homepage.principalMessage} />
         <AcademicsPreviewSection content={data.academics} />
         {data.facilities.length > 0 && <FacilitiesPreviewSection facilities={data.facilities} />}
+        {data.teachers.length > 0 && <FeaturedTeachersSection teachers={data.teachers} />}
         {data.announcements.length > 0 && <AnnouncementsSection announcements={data.announcements} />}
         {data.events.length > 0 && <EventsSection events={data.events} />}
         {data.achievements.length > 0 && <AchievementsSection achievements={data.achievements} />}

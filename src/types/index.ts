@@ -273,12 +273,18 @@ export interface Faculty extends FirestoreDoc {
   name: string;
   photoUrl: string;
   designation: string;
+  department?: string;
+  staffType?: 'teaching' | 'non-teaching';
   qualification: string;
   subject: string;
+  subjects?: string[];
   section: 'primary' | 'secondary' | 'higher-secondary' | 'administration';
   experience: string;
   biography: string;
+  joiningYear?: string | number;
   status: PublishStatus;
+  isActive?: boolean;
+  isFeatured?: boolean;
   order: number;
 }
 
@@ -595,16 +601,21 @@ export interface AlumniMember extends FirestoreDoc {
   name: string;
   batchYear: number;
   courseCompleted?: string;
+  degree?: string;
   qualification: string;
   currentDesignation: string;
+  profession?: string;
   companyOrOrg: string;
+  organization?: string;
   location: string;
   photoUrl: string;
   message?: string;
+  memories?: string;
   email?: string;
   phone?: string;
   linkedinOrSocial?: string;
   isDistinguished: boolean;
+  isHallOfFame?: boolean;
   distinctionSummary?: string;
   status: 'published' | 'pending' | 'draft';
   order?: number;

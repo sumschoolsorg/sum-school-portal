@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Badge } from '@/components/ui/Badge';
+import { Avatar } from '@/components/ui/Avatar';
 import { facultyRepository } from '@/lib/repositories';
 import { Faculty } from '@/types';
-import { GraduationCap, Briefcase, BookOpen } from 'lucide-react';
+import { GraduationCap, Briefcase, BookOpen, Search, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 
@@ -16,25 +17,44 @@ export default function FacultyPage() {
 
   const [facultyList, setFacultyList] = useState<Faculty[]>([]);
   const [activeSection, setActiveSection] = useState<'all' | 'primary' | 'secondary' | 'higher-secondary'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     let isMounted = true;
-    facultyRepository.getPublished().then((items) => {
-      if (isMounted) {
-        setFacultyList(items || []);
-      }
-    }).catch((err) => {
-      console.warn('Failed to load faculty from repository:', err);
-      if (isMounted) setFacultyList([]);
-    });
+    facultyRepository
+      .getPublished()
+      .then((items) => {
+        if (isMounted) {
+          // Filter to only active educators
+          const active = (items || []).filter((f) => f.isActive !== false);
+          setFacultyList(active);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to load faculty from repository:', err);
+        if (isMounted) setFacultyList([]);
+      });
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const filteredFaculty = activeSection === 'all'
-    ? facultyList
-    : facultyList.filter((f: Faculty) => f.section === activeSection);
+  const filteredFaculty = facultyList.filter((staff) => {
+    // Section tab filter
+    if (activeSection !== 'all' && staff.section !== activeSection) {
+      return false;
+    }
+    // Search query filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      const matchName = staff.name?.toLowerCase().includes(q);
+      const matchSub = staff.subject?.toLowerCase().includes(q);
+      const matchDept = staff.department?.toLowerCase().includes(q);
+      const matchDesig = staff.designation?.toLowerCase().includes(q);
+      return matchName || matchSub || matchDept || matchDesig;
+    }
+    return true;
+  });
 
   const getSectionBadge = (section: string) => {
     if (isTa) {
@@ -43,11 +63,22 @@ export default function FacultyPage() {
           return 'தொடக்கப் பிரிவு';
         case 'secondary':
           return 'உயர்நிலைப் பிரிவு';
-        default:
+        case 'higher-secondary':
           return 'மேல்நிலைப் பிரிவு';
+        default:
+          return 'நிர்வாகப் பிரிவு';
       }
     }
-    return section === 'primary' ? 'Primary' : section === 'secondary' ? 'Secondary' : 'Higher Secondary';
+    switch (section) {
+      case 'primary':
+        return 'Primary Wing';
+      case 'secondary':
+        return 'Secondary Wing';
+      case 'higher-secondary':
+        return 'Higher Secondary';
+      default:
+        return 'Administration';
+    }
   };
 
   return (
@@ -65,55 +96,73 @@ export default function FacultyPage() {
               {t('faculty.heroTitle', 'Faculty & Teaching Staff')}
             </h1>
             <p className="mt-4 text-base sm:text-lg text-blue-100 max-w-2xl mx-auto leading-relaxed">
-              {t('faculty.heroDescription', 'Dedicated, passionate, and certified teachers committed to inspiring intellectual curiosity and academic brilliance.')}
+              {t(
+                'faculty.heroDescription',
+                'Dedicated, passionate, and certified teachers committed to inspiring intellectual curiosity and academic brilliance.'
+              )}
             </p>
           </div>
         </section>
 
-        {/* Section Filter Tabs */}
+        {/* Section Filter Tabs & Search */}
         <section className="section-padding bg-white dark:bg-slate-950">
           <div className="container-main">
-            <div className="flex items-center justify-center gap-2 flex-wrap mb-12">
-              <button
-                onClick={() => setActiveSection('all')}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition cursor-pointer ${
-                  activeSection === 'all'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                }`}
-              >
-                {t('faculty.allDepartments', 'All Departments')}
-              </button>
-              <button
-                onClick={() => setActiveSection('primary')}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition cursor-pointer ${
-                  activeSection === 'primary'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                }`}
-              >
-                {t('faculty.primaryDept', 'Primary Section')}
-              </button>
-              <button
-                onClick={() => setActiveSection('secondary')}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition cursor-pointer ${
-                  activeSection === 'secondary'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                }`}
-              >
-                {t('faculty.secondaryDept', 'Secondary Section')}
-              </button>
-              <button
-                onClick={() => setActiveSection('higher-secondary')}
-                className={`px-5 py-2 rounded-full text-sm font-semibold transition cursor-pointer ${
-                  activeSection === 'higher-secondary'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                }`}
-              >
-                {t('faculty.higherSecondaryDept', 'Higher Secondary')}
-              </button>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10">
+              {/* Category Tabs */}
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setActiveSection('all')}
+                  className={`px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                    activeSection === 'all'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                  }`}
+                >
+                  {t('faculty.allDepartments', 'All Departments')}
+                </button>
+                <button
+                  onClick={() => setActiveSection('primary')}
+                  className={`px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                    activeSection === 'primary'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                  }`}
+                >
+                  {t('faculty.primaryDept', 'Primary Section')}
+                </button>
+                <button
+                  onClick={() => setActiveSection('secondary')}
+                  className={`px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                    activeSection === 'secondary'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                  }`}
+                >
+                  {t('faculty.secondaryDept', 'Secondary Section')}
+                </button>
+                <button
+                  onClick={() => setActiveSection('higher-secondary')}
+                  className={`px-5 py-2 rounded-full text-xs sm:text-sm font-semibold transition cursor-pointer ${
+                    activeSection === 'higher-secondary'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                  }`}
+                >
+                  {t('faculty.higherSecondaryDept', 'Higher Secondary')}
+                </button>
+              </div>
+
+              {/* Search Field */}
+              <div className="relative w-full md:w-72">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={isTa ? 'ஆசிரியர் பெயர் / பாடம் தேடுக...' : 'Search teacher or subject...'}
+                  className="w-full pl-10 pr-4 py-2 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
 
             {/* Faculty Cards Grid */}
@@ -121,81 +170,113 @@ export default function FacultyPage() {
               <div className="text-center py-20 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8">
                 <GraduationCap className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <h3 className="text-lg font-bold text-slate-700 dark:text-slate-300">
-                  {isTa ? 'ஆசிரியர் விவரங்கள் இன்னும் பதிவேற்றப்படவில்லை' : 'Faculty information is being updated'}
+                  {searchQuery
+                    ? isTa
+                      ? 'தேடலுக்குரிய ஆசிரியர் விவரங்கள் கிடைக்கவில்லை'
+                      : 'No faculty members match your search'
+                    : isTa
+                    ? 'ஆசிரியர் விவரங்கள் இன்னும் பதிவேற்றப்படவில்லை'
+                    : 'Faculty information is being updated'}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-md mx-auto">
-                  {isTa
+                  {searchQuery
+                    ? isTa
+                      ? 'வேறு சொல்லைக் கொண்டு தேடவும்.'
+                      : 'Try adjusting your search terms or filter tabs.'
+                    : isTa
                     ? 'பள்ளி நிர்வாகம் விரைவில் ஆசிரியர் விவரங்களை வெளியிடும்.'
                     : 'The school administration will publish faculty details soon. Please check back later.'}
                 </p>
               </div>
             ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {filteredFaculty.map((staff: Faculty) => {
-                const name = getLocalized(staff, 'name');
-                const designation = getLocalized(staff, 'designation');
-                const subject = getLocalized(staff, 'subject');
-                const biography = getLocalized(staff, 'biography');
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                {filteredFaculty.map((staff: Faculty) => {
+                  const name = getLocalized(staff, 'name');
+                  const designation = getLocalized(staff, 'designation');
+                  const subject = getLocalized(staff, 'subject');
+                  const biography = getLocalized(staff, 'biography');
 
-                return (
-                  <div
-                    key={staff.id}
-                    className="bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col group text-center"
-                  >
-                    {/* Photo */}
-                    <div className="relative h-64 w-full overflow-hidden bg-slate-200 dark:bg-slate-800">
-                      {staff.photoUrl ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
+                  return (
+                    <div
+                      key={staff.id}
+                      className="bg-slate-50 dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200/80 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col group text-center"
+                    >
+                      {/* Photo Area */}
+                      <div className="relative pt-8 pb-4 px-6 bg-gradient-to-b from-blue-50/70 to-transparent dark:from-blue-950/20 dark:to-transparent flex flex-col items-center text-center">
+                        <div className="absolute top-3 left-3">
+                          <Badge variant="primary" size="sm">
+                            {getSectionBadge(staff.section)}
+                          </Badge>
+                        </div>
+
+                        {staff.isFeatured && (
+                          <div className="absolute top-3 right-3">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 shadow-xs">
+                              <Sparkles className="w-3 h-3" />
+                              {isTa ? 'சிறப்பு ஆசிரியர்' : 'Featured'}
+                            </span>
+                          </div>
+                        )}
+
+                        <Avatar
                           src={staff.photoUrl}
                           alt={name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          name={name}
+                          size="xl"
+                          className="shadow-lg group-hover:scale-105 transition-transform duration-300"
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-400">
-                          <GraduationCap className="w-16 h-16 opacity-40" />
-                        </div>
-                      )}
-                      <div className="absolute bottom-3 left-3">
-                        <Badge variant="primary">
-                          {getSectionBadge(staff.section)}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Body info */}
-                    <div className="p-6 flex flex-col flex-1 justify-between">
-                      <div>
-                        <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white">
-                          {name}
-                        </h3>
-                        <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mt-1">
-                          {designation}
-                        </p>
-                        <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800 space-y-1.5 text-xs text-slate-600 dark:text-slate-400 text-left">
-                          <div className="flex items-center gap-2">
-                            <GraduationCap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                            <span>{staff.qualification}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <BookOpen className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                            <span>{t('faculty.subjectLabel', 'Subject')}: {subject}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Briefcase className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <span>{t('faculty.experienceLabel', 'Experience')}: {staff.experience}</span>
-                          </div>
-                        </div>
                       </div>
 
-                      <p className="text-xs text-slate-500 dark:text-slate-400 italic mt-4 line-clamp-2">
-                        &ldquo;{biography}&rdquo;
-                      </p>
+                      {/* Body info */}
+                      <div className="p-6 flex flex-col flex-1 justify-between">
+                        <div>
+                          <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white">
+                            {name}
+                          </h3>
+                          <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mt-1">
+                            {designation}
+                          </p>
+                          {staff.department && (
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                              {staff.department}
+                            </p>
+                          )}
+                          <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800 space-y-1.5 text-xs text-slate-600 dark:text-slate-400 text-left">
+                            {staff.qualification && (
+                              <div className="flex items-center gap-2">
+                                <GraduationCap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                <span>{staff.qualification}</span>
+                              </div>
+                            )}
+                            {subject && (
+                              <div className="flex items-center gap-2">
+                                <BookOpen className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                <span>
+                                  {t('faculty.subjectLabel', 'Subject')}: {subject}
+                                </span>
+                              </div>
+                            )}
+                            {staff.experience && (
+                              <div className="flex items-center gap-2">
+                                <Briefcase className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                <span>
+                                  {t('faculty.experienceLabel', 'Experience')}: {staff.experience}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {biography && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 italic mt-4 line-clamp-2">
+                            &ldquo;{biography}&rdquo;
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </section>

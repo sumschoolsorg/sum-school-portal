@@ -10,9 +10,10 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
+import { Avatar } from '@/components/ui/Avatar';
 import { facultyRepository } from '@/lib/repositories';
 import { Faculty } from '@/types';
-import { Plus, Edit2, Trash2, Users } from 'lucide-react';
+import { Plus, Edit2, Trash2, Users, Award, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function FacultyAdminPage() {
@@ -28,9 +29,13 @@ export default function FacultyAdminPage() {
     designation: '',
     qualification: '',
     subject: '',
+    department: '',
+    staffType: 'teaching',
     section: 'secondary',
     experience: '',
     biography: '',
+    isFeatured: false,
+    isActive: true,
     status: 'published',
   });
 
@@ -42,9 +47,13 @@ export default function FacultyAdminPage() {
       designation: '',
       qualification: '',
       subject: '',
+      department: '',
+      staffType: 'teaching',
       section: 'secondary',
       experience: '',
       biography: '',
+      isFeatured: false,
+      isActive: true,
       status: 'published',
     });
     setIsModalOpen(true);
@@ -97,20 +106,28 @@ export default function FacultyAdminPage() {
     }
 
     try {
+      const payload = {
+        name: formData.name?.trim() || 'Faculty Member',
+        designation: formData.designation?.trim() || 'Teacher',
+        qualification: formData.qualification?.trim() || '',
+        subject: formData.subject?.trim() || '',
+        department: formData.department?.trim() || '',
+        staffType: formData.staffType || 'teaching',
+        section: (formData.section as Faculty['section']) || 'secondary',
+        experience: formData.experience?.trim() || '',
+        photoUrl: formData.photoUrl || '',
+        biography: formData.biography?.trim() || '',
+        isFeatured: Boolean(formData.isFeatured),
+        isActive: formData.isActive !== false,
+        status: formData.status || 'published',
+      };
+
       if (editingFaculty && editingFaculty.id) {
-        await facultyRepository.update(editingFaculty.id, formData);
+        await facultyRepository.update(editingFaculty.id, payload);
         toast.success('Faculty profile updated successfully!');
       } else {
         const newEntry = {
-          name: formData.name || 'Faculty Member',
-          designation: formData.designation || 'Teacher',
-          qualification: formData.qualification || '',
-          subject: formData.subject || '',
-          section: (formData.section as Faculty['section']) || 'secondary',
-          experience: formData.experience || '',
-          photoUrl: formData.photoUrl || '',
-          biography: formData.biography || '',
-          status: formData.status || 'published',
+          ...payload,
           order: facultyList.length + 1,
         };
         await facultyRepository.create(newEntry);
@@ -121,6 +138,26 @@ export default function FacultyAdminPage() {
     } catch (err) {
       console.error('Failed to save faculty:', err);
       toast.error((err as Error)?.message || 'Failed to save faculty to Firebase.');
+    }
+  };
+
+  const handleToggleFeatured = async (fac: Faculty) => {
+    if (!fac.id) return;
+    const nextState = !fac.isFeatured;
+    try {
+      setFacultyList((prev) =>
+        prev.map((f) => (f.id === fac.id ? { ...f, isFeatured: nextState } : f))
+      );
+      await facultyRepository.update(fac.id, { isFeatured: nextState });
+      toast.success(
+        nextState
+          ? `${fac.name} is now featured on the homepage!`
+          : `${fac.name} removed from homepage featured list.`
+      );
+    } catch (err) {
+      console.error('Failed to toggle featured:', err);
+      toast.error('Failed to update featured status.');
+      await fetchFaculty();
     }
   };
 
@@ -144,14 +181,22 @@ export default function FacultyAdminPage() {
       header: 'Educator',
       cell: (item) => (
         <div className="flex items-center gap-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={item.photoUrl || '/images/faculty-1.jpg'}
+          <Avatar
+            src={item.photoUrl}
             alt={item.name}
-            className="w-10 h-10 rounded-full object-cover border border-slate-200"
+            name={item.name}
+            size="sm"
+            className="w-10 h-10 rounded-full shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-100 text-xs"
           />
           <div>
-            <div className="font-bold text-slate-900 dark:text-white">{item.name}</div>
+            <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>{item.name}</span>
+              {item.isFeatured && (
+                <span title="Featured Teacher on Homepage">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                </span>
+              )}
+            </div>
             <div className="text-xs text-slate-400">{item.designation}</div>
           </div>
         </div>
@@ -167,15 +212,34 @@ export default function FacultyAdminPage() {
       ),
     },
     {
-      header: 'Qualification',
-      accessorKey: 'qualification',
+      header: 'Homepage',
+      cell: (item) => (
+        <button
+          type="button"
+          onClick={() => handleToggleFeatured(item)}
+          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+            item.isFeatured
+              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700'
+              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200 border border-transparent'
+          }`}
+          title={item.isFeatured ? 'Click to unfeature from Homepage' : 'Click to feature on Homepage'}
+        >
+          <Award className="w-3 h-3" />
+          <span>{item.isFeatured ? 'Featured' : 'Make Featured'}</span>
+        </button>
+      ),
     },
     {
       header: 'Status',
       cell: (item) => (
-        <Badge variant={item.status === 'published' ? 'success' : 'neutral'}>
-          {item.status.toUpperCase()}
-        </Badge>
+        <div className="flex items-center gap-1.5">
+          <Badge variant={item.status === 'published' ? 'success' : 'neutral'}>
+            {item.status.toUpperCase()}
+          </Badge>
+          {item.isActive === false && (
+            <Badge variant="warning">INACTIVE</Badge>
+          )}
+        </div>
       ),
     },
     {
@@ -281,11 +345,31 @@ export default function FacultyAdminPage() {
             />
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Department"
+              placeholder="e.g. Science / Mathematics / Tamil"
+              value={formData.department || ''}
+              onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+            />
+            <Select
+              label="Staff Category"
+              options={[
+                { value: 'teaching', label: 'Teaching Faculty' },
+                { value: 'administrative', label: 'Administrative Staff' },
+                { value: 'support', label: 'Support Staff' },
+                { value: 'non-teaching', label: 'Non-Teaching Staff' },
+              ]}
+              value={formData.staffType || 'teaching'}
+              onChange={(e) => setFormData({ ...formData, staffType: e.target.value as Faculty['staffType'] })}
+            />
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Input
               label="Teaching Subject"
               placeholder="e.g. Mathematics"
-              value={formData.subject}
+              value={formData.subject || ''}
               onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
             />
 
@@ -297,14 +381,14 @@ export default function FacultyAdminPage() {
                 { value: 'higher-secondary', label: 'Higher Secondary' },
                 { value: 'administration', label: 'Administration' },
               ]}
-              value={formData.section}
+              value={formData.section || 'secondary'}
               onChange={(e) => setFormData({ ...formData, section: e.target.value as Faculty['section'] })}
             />
 
             <Input
               label="Experience"
               placeholder="e.g. 12+ Years"
-              value={formData.experience}
+              value={formData.experience || ''}
               onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
             />
           </div>
@@ -312,7 +396,7 @@ export default function FacultyAdminPage() {
           <ImageUpload
             label="Teacher Photograph"
             folder="faculty"
-            currentImageUrl={formData.photoUrl}
+            currentImageUrl={formData.photoUrl || ''}
             onImageUploaded={(url) => setFormData({ ...formData, photoUrl: url })}
           />
 
@@ -320,9 +404,54 @@ export default function FacultyAdminPage() {
             label="Short Biography / Philosophy"
             rows={3}
             placeholder="Brief teaching background or message"
-            value={formData.biography}
+            value={formData.biography || ''}
             onChange={(e) => setFormData({ ...formData, biography: e.target.value })}
           />
+
+          {/* Featured on Homepage Highlight */}
+          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 space-y-2">
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={Boolean(formData.isFeatured)}
+                onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500"
+              />
+              <span className="text-xs font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                <Award className="w-4 h-4 text-amber-500" />
+                Feature on Homepage (&ldquo;Meet Our Dedicated Teachers&rdquo; Section)
+              </span>
+            </label>
+            <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 pl-6.5">
+              When checked, this educator is highlighted directly on the public homepage with a distinctive badge and profile summary.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Select
+              label="Publishing Status"
+              options={[
+                { value: 'published', label: 'Published (Visible on Website)' },
+                { value: 'draft', label: 'Draft (Internal Only)' },
+              ]}
+              value={formData.status || 'published'}
+              onChange={(e) => setFormData({ ...formData, status: e.target.value as Faculty['status'] })}
+            />
+
+            <div className="flex items-center pt-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.isActive !== false}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Active Faculty Member
+                </span>
+              </label>
+            </div>
+          </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
             <Button

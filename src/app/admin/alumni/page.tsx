@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -11,6 +10,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { ImageUpload } from '@/components/ui/ImageUpload';
+import { Avatar } from '@/components/ui/Avatar';
 import { alumniRepository, alumniPrivateRepository } from '@/lib/repositories';
 import { AlumniMember } from '@/types';
 import {
@@ -40,7 +40,7 @@ export default function AdminAlumniPage() {
     currentDesignation: '',
     companyOrOrg: '',
     location: '',
-    photoUrl: '/images/faculty-1.jpg',
+    photoUrl: '',
     message: '',
     email: '',
     phone: '',
@@ -176,7 +176,7 @@ export default function AdminAlumniPage() {
           currentDesignation: formData.currentDesignation || '',
           companyOrOrg: formData.companyOrOrg || '',
           location: formData.location || 'Tamil Nadu',
-          photoUrl: formData.photoUrl || '/images/faculty-1.jpg',
+          photoUrl: formData.photoUrl || '',
           isDistinguished: Boolean(formData.isDistinguished),
           status: formData.status || 'published',
         } as Omit<AlumniMember, 'id'>);
@@ -267,15 +267,13 @@ export default function AdminAlumniPage() {
       label: 'Alumnus',
       render: (item) => (
         <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-100">
-            <Image
-              src={item.photoUrl || '/images/faculty-1.jpg'}
-              alt={item.name}
-              fill
-              sizes="40px"
-              className="object-cover"
-            />
-          </div>
+          <Avatar
+            src={item.photoUrl}
+            alt={item.name}
+            name={item.name}
+            size="sm"
+            className="w-10 h-10 rounded-xl shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-100 text-xs"
+          />
           <div>
             <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <span>{item.name}</span>
@@ -510,8 +508,8 @@ export default function AdminAlumniPage() {
           </div>
 
           <ImageUpload
-            label="Profile Photo"
-            currentImageUrl={formData.photoUrl || '/images/faculty-1.jpg'}
+            label="Profile Photo (Optional)"
+            currentImageUrl={formData.photoUrl || ''}
             onImageUploaded={(url) => setFormData({ ...formData, photoUrl: url })}
             folder="alumni"
           />

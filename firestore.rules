@@ -54,7 +54,11 @@ service cloud.firestore {
     //    - name: string (required, 1-150 chars)
     //    - status: 'published' | 'draft' (required)
     //    - designation, qualification, subject, section, experience, biography: string (optional)
+    //    - department, staffType: string (optional)
+    //    - joiningYear: string (0-50 chars) or number (optional)
+    //    - subjects: list (optional, max 30 items)
     //    - photoUrl: string (optional, max 4096 chars)
+    //    - isFeatured, isActive: bool (optional)
     //    - order: number (optional)
     //
     // 10. facilities/{facilityId}
@@ -147,7 +151,11 @@ service cloud.firestore {
     //     - status: 'published' | 'pending' | 'draft' (required)
     //     - batchYear: number (optional, 1963-2100)
     //     - qualification, currentDesignation, companyOrOrg, location, message: string (optional)
+    //     - courseCompleted, degree, profession, organization, distinctionSummary: string (optional)
+    //     - memories: string (optional, max 3000 chars)
+    //     - isDistinguished, isHallOfFame: bool (optional)
     //     - photoUrl, linkedinOrSocial: string (optional, max 4096 chars)
+    //     - order: number (optional, -1000 to 100000)
     //     - Strictly NO email or phone in public profile
     //
     // 23. alumniPrivate/{alumniId} (Private alumni contact information)
@@ -276,6 +284,13 @@ service cloud.firestore {
       return !(field in data) || data[field] == null || data[field] is bool;
     }
 
+    function isOptStringOrNumber(data, field, minLen, maxLen) {
+      return !(field in data)
+        || data[field] == null
+        || (data[field] is string && data[field].size() >= minLen && data[field].size() <= maxLen)
+        || (data[field] is number);
+    }
+
     function idUnchanged(docId) {
       return !('id' in request.resource.data) || request.resource.data.id == docId;
     }
@@ -381,6 +396,14 @@ service cloud.firestore {
         && isOptString(data, 'subject', 0, 150)
         && isOptString(data, 'photoUrl', 0, 4096)
         && isOptString(data, 'biography', 0, 5000)
+        && isOptBool(data, 'isFeatured')
+        && isOptBool(data, 'isActive')
+        && isOptString(data, 'department', 0, 150)
+        && isOptString(data, 'staffType', 0, 50)
+        && isOptString(data, 'section', 0, 50)
+        && isOptString(data, 'experience', 0, 100)
+        && isOptStringOrNumber(data, 'joiningYear', 0, 50)
+        && isOptList(data, 'subjects', 30)
         && isOptNumber(data, 'order', -1000, 100000);
     }
 
@@ -557,7 +580,10 @@ service cloud.firestore {
       return !('email' in data)
         && !('phone' in data)
         && isReqString(data, 'name', 2, 100)
-        && (isSchoolAdmin() || (data.status == 'pending' && (!('isDistinguished' in data) || data.isDistinguished == false)))
+        && (isSchoolAdmin() || (data.status == 'pending'
+            && (!('isDistinguished' in data) || data.isDistinguished == false || data.isDistinguished == null)
+            && (!('isHallOfFame' in data) || data.isHallOfFame == false || data.isHallOfFame == null)))
+        && ('status' in data && data.status in ['published', 'pending', 'draft'])
         && isOptNumber(data, 'batchYear', 1963, 2100)
         && isOptString(data, 'qualification', 0, 150)
         && isOptString(data, 'currentDesignation', 0, 150)
@@ -565,7 +591,16 @@ service cloud.firestore {
         && isOptString(data, 'location', 0, 150)
         && isOptString(data, 'photoUrl', 0, 4096)
         && isOptString(data, 'linkedinOrSocial', 0, 4096)
-        && isOptString(data, 'message', 0, 2000);
+        && isOptString(data, 'message', 0, 2000)
+        && isOptBool(data, 'isHallOfFame')
+        && isOptBool(data, 'isDistinguished')
+        && isOptString(data, 'courseCompleted', 0, 150)
+        && isOptString(data, 'degree', 0, 150)
+        && isOptString(data, 'profession', 0, 150)
+        && isOptString(data, 'organization', 0, 150)
+        && isOptString(data, 'memories', 0, 3000)
+        && isOptString(data, 'distinctionSummary', 0, 1000)
+        && isOptNumber(data, 'order', -1000, 100000);
     }
 
     function isValidAlumniUpdate(data) {
@@ -580,7 +615,16 @@ service cloud.firestore {
         && isOptString(data, 'location', 0, 150)
         && isOptString(data, 'photoUrl', 0, 4096)
         && isOptString(data, 'linkedinOrSocial', 0, 4096)
-        && isOptString(data, 'message', 0, 2000);
+        && isOptString(data, 'message', 0, 2000)
+        && isOptBool(data, 'isHallOfFame')
+        && isOptBool(data, 'isDistinguished')
+        && isOptString(data, 'courseCompleted', 0, 150)
+        && isOptString(data, 'degree', 0, 150)
+        && isOptString(data, 'profession', 0, 150)
+        && isOptString(data, 'organization', 0, 150)
+        && isOptString(data, 'memories', 0, 3000)
+        && isOptString(data, 'distinctionSummary', 0, 1000)
+        && isOptNumber(data, 'order', -1000, 100000);
     }
 
     // Alumni Private Contacts Validation
@@ -782,8 +826,13 @@ service cloud.firestore {
     // Public collection has no PII (no email/phone). Visitors view published profiles or submit registration.
     match /alumni/{alumniId} {
       allow read: if isPublicAlumni() || isSchoolAdmin();
-      allow create: if isValidAlumniCreate(request.resource.data);
-      allow update: if isSchoolAdmin() && isValidAlumniUpdate(request.resource.data);
+      allow create: if !('email' in request.resource.data)
+        && !('phone' in request.resource.data)
+        && isValidAlumniCreate(request.resource.data);
+      allow update: if isSchoolAdmin()
+        && !('email' in request.resource.data)
+        && !('phone' in request.resource.data)
+        && isValidAlumniUpdate(request.resource.data);
       allow delete: if isSchoolAdmin();
     }
 
