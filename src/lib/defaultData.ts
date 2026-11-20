@@ -618,8 +618,79 @@ export const verifiedAchievements: Achievement[] = [
     status: 'published',
     isFeatured: true,
   },
+  {
+    id: 'ach-kalai-thiruvizha-2026',
+    title: 'Tamil Nadu State Level Kalai Thiruvizha 2026: 1st Prize in Mime, 3rd Prize in Rangoli & Puppetry',
+    title_en: 'Tamil Nadu State Level Kalai Thiruvizha 2026: 1st Prize in Mime, 3rd Prize in Rangoli & Puppetry',
+    title_ta: 'தமிழ்நாடு அரசுப் பள்ளிக்கல்வித்துறை மாநிலக் கலைத் திருவிழா 2026: பாவனை நடிப்பில் மாநில முதலிடம், ரங்கோலி & பொம்மலாட்டத்தில் மூன்றாமிடம்',
+    description: 'S.U.M. Higher Secondary School students brought immense glory to the institution at the Tamil Nadu State Level Kalai Thiruvizha 2026! Our students won 1st Prize (State Champions) in Mime (ஊமை நாடகம் / பாவனை நடிப்பு), and 3rd Prize in Rangoli and Puppetry (பொம்மலாட்டம்) competitions.',
+    description_en: 'S.U.M. Higher Secondary School students brought immense glory to the institution at the Tamil Nadu State Level Kalai Thiruvizha 2026! Our students won 1st Prize (State Champions) in Mime (ஊமை நாடகம் / பாவனை நடிப்பு), and 3rd Prize in Rangoli and Puppetry (பொம்மலாட்டம்) competitions.',
+    description_ta: 'தமிழ்நாடு அரசு பள்ளிக்கல்வித்துறை நடத்திய மாநில அளவிலான கலைத் திருவிழா 2026 போட்டிகளில் நமது பள்ளி மாணவர்கள் கலந்து கொண்டு பாவனை நடிப்பில் (Mime) மாநில அளவில் முதலிடமும், ரங்கோலி மற்றும் பொம்மலாட்டம் (Puppetry) ஆகிய போட்டிகளில் மூன்றாம் இடமும் பெற்று நம் பள்ளிக்குப் பெருமை சேர்த்துள்ளனர்.',
+    date: new Date('2026-01-20T10:00:00.000Z'),
+    category: 'cultural',
+    studentName: 'S.U.M. Cultural Troupe (Mime, Rangoli & Puppetry Teams)',
+    studentName_ta: 'எஸ்.யு.எம். பள்ளி கலைக் குழுவினர் (பாவனை நடிப்பு, ரங்கோலி & பொம்மலாட்டம்)',
+    teamName: 'S.U.M. Kalai Thiruvizha Team',
+    className: 'High School & Higher Secondary (Classes 9 to 12)',
+    academicYear: '2025–2026',
+    examinationName: 'Tamil Nadu School Education Department State Level Kalai Thiruvizha',
+    totalMarks: 0,
+    totalMaxMarks: 0,
+    percentage: 100,
+    rank: 'State 1st Prize (Mime) | State 3rd Prize (Rangoli & Puppetry)',
+    hometown: 'Royappanpatti / Theni District',
+    imageUrl: '/images/kalai-thiruvizha-2026.jpg',
+    awardPhotoUrl: '/images/kalai-thiruvizha-2026.jpg',
+    status: 'published',
+    isFeatured: true,
+  },
 ];
 export const verifiedAnnouncements: Announcement[] = [
+  {
+    id: 'ann-kalai-thiruvizha-2026',
+    title: 'State Level Kalai Thiruvizha 2026: 1st Prize in Mime, 3rd in Rangoli & Puppetry',
+    title_en: 'State Level Kalai Thiruvizha 2026: 1st Prize in Mime, 3rd in Rangoli & Puppetry',
+    title_ta: 'மாநிலக் கலைத் திருவிழா 2026: பாவனை நடிப்பில் முதலிடம், ரங்கோலி & பொம்மலாட்டத்தில் மூன்றாமிடம் வென்று எஸ்.யு.எம். பள்ளி சாதனை!',
+    description: 'S.U.M. Higher Secondary School students won State Level 1st Prize in Mime (பாவனை நடிப்பு) and 3rd Prize in Rangoli and Puppetry at Tamil Nadu Government Kalai Thiruvizha 2026.',
+    description_en: 'S.U.M. Higher Secondary School students won State Level 1st Prize in Mime (பாவனை நடிப்பு) and 3rd Prize in Rangoli and Puppetry at Tamil Nadu Government Kalai Thiruvizha 2026.',
+    description_ta: 'தமிழ்நாடு அரசு பள்ளிக்கல்வித்துறை நடத்திய மாநில அளவிலான கலைத் திருவிழா 2026 போட்டிகளில் நமது பள்ளி மாணவர்கள் பாவனை நடிப்பில் முதலிடமும், ரங்கோலி மற்றும் பொம்மலாட்டத்தில் மூன்றாம் இடமும் பெற்று பெருமை சேர்த்துள்ளனர்.',
+    content: `தமிழ்நாடு அரசு பள்ளிக்கல்வித்துறை மாநிலக் கலைத் திருவிழா 2026 — எஸ்.யு.எம். பள்ளி மாணவர்களின் சாதனை!
+
+மாநில அளவில் நடைபெற்ற தமிழ்நாடு அரசு பள்ளிக்கல்வித்துறையின் கலைத் திருவிழா 2026 போட்டிகளில், ராயப்பன்பட்டி சவரியப்ப உடையார் நினைவு மேல்நிலைப்பள்ளி (S.U.M.) மாணவ-மாணவியர் கலந்து கொண்டு வரலாற்று வெற்றிகளைப் பெற்றுள்ளனர்:
+
+🏆 பாவனை நடிப்பு / ஊமை நாடகம் (Mime Competition):
+மாநில அளவில் முதலிடம் (First Prize) வென்று தங்கக் கோப்பையையும், பாராட்டுச் சான்றிதழ்களையும் பெற்று பள்ளிக்கு பெரும் புகழைத் தேடித் தந்துள்ளனர்!
+
+🥉 ரங்கோலி போட்டி (Rangoli Competition):
+மாநில அளவில் மூன்றாம் இடம் (Third Prize) பெற்று சாதனை.
+
+🥉 பொம்மலாட்டம் போட்டி (Puppetry Competition):
+மாநில அளவில் மூன்றாம் இடம் (Third Prize) பெற்று சாதனை.
+
+மாநில அளவில் சிறப்பிடம் பெற்று பள்ளிக்குப் பெருமை சேர்த்த மாணவ-மாணவியருக்கும், அவர்களுக்குத் திறம்படப் பயிற்சி அளித்த கலை ஆசிரியர்களுக்கும் பள்ளி நிர்வாகம், செயலர் & தாளாளர், தலைமையாசிரியர்கள் மற்றும் ஆசிரியர்கள் மனமார்ந்த வாழ்த்துகளையும் பாராட்டுகளையும் தெரிவித்துக் கொள்கிறார்கள்.`,
+    content_en: `Tamil Nadu School Education Department State Level Kalai Thiruvizha 2026 — S.U.M. Students Achieve Historic Laurels!
+
+At the prestigious Tamil Nadu State Level Kalai Thiruvizha 2026 organized by the Department of School Education, the talented students of Savariyappa Udaiyar Memorial Higher Secondary School delivered stellar performances winning top state honors:
+
+🏆 Mime Competition (பாவனை நடிப்பு / ஊமை நாடகம்):
+Secured State Level First Prize (Champions) with championship trophy and commendation certificates!
+
+🥉 Rangoli Competition (ரங்கோலி):
+Secured State Level Third Prize.
+
+🥉 Puppetry Competition (பொம்மலாட்டம்):
+Secured State Level Third Prize.
+
+The School Management, Secretary & Correspondent, Headmasters, Faculty, and Students warmly congratulate our award-winning students and their guiding art mentors for bringing remarkable glory to our institution!`,
+    date: new Date('2026-01-20T10:00:00.000Z'),
+    category: 'general',
+    imageUrl: '/images/kalai-thiruvizha-2026.jpg',
+    attachmentUrl: '',
+    attachmentName: '',
+    status: 'published',
+    featured: true,
+    priority: 'high',
+  },
   {
     id: 'ann-theni-hockey-2026',
     title: 'Historic Triumph: S.U.M. School Hockey Team Wins 1st Place in Theni District (State Qualified)',
@@ -823,6 +894,26 @@ export const verifiedGalleryImages: GalleryImage[] = [
     month: 'November',
     status: 'published',
     order: 2,
+    isFeatured: true,
+  },
+  {
+    id: 'gal-kalai-thiruvizha-2026',
+    title: 'Tamil Nadu State Level Kalai Thiruvizha 2026 Laureates',
+    title_en: 'Tamil Nadu State Level Kalai Thiruvizha 2026 Laureates',
+    title_ta: 'மாநிலக் கலைத் திருவிழா 2026: முதலிடம் மற்றும் மூன்றாமிடம் பெற்ற மாணவர்கள்',
+    imageUrl: '/images/kalai-thiruvizha-2026.jpg',
+    thumbnailUrl: '/images/kalai-thiruvizha-2026.jpg',
+    albumId: 'cultural-kalai-thiruvizha-2026',
+    albumName: 'Cultural & Kalai Thiruvizha',
+    description: 'S.U.M. Higher Secondary School students proudly holding their State Level 1st Prize trophy in Mime alongside 3rd Prize winners in Rangoli and Puppetry on the grand stage.',
+    description_en: 'S.U.M. Higher Secondary School students proudly holding their State Level 1st Prize trophy in Mime alongside 3rd Prize winners in Rangoli and Puppetry on the grand stage.',
+    description_ta: 'தமிழ்நாடு அரசு மாநிலக் கலைத் திருவிழா மேடையில் பாவனை நடிப்பில் முதலிடக் கோப்பை மற்றும் ரங்கோலி, பொம்மலாட்டத்தில் மூன்றாமிடம் பெற்ற பள்ளி மாணவ-மாணவியர்.',
+    eventCategory: 'cultural',
+    academicYear: '2025–2026',
+    calendarYear: 2026,
+    month: 'January',
+    status: 'published',
+    order: 3,
     isFeatured: true,
   },
 ];
