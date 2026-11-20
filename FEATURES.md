@@ -172,14 +172,25 @@ The school crest is embedded across all modern browser specifications using a mu
 - **Historical Timeline Journey:** Milestones spanning from 1963 primary school inception, high school upgrade, higher secondary elevation, golden jubilee, up to modern smart campus transformation.
 
 ### 3.3 Academics & Curricular Streams (`/academics`)
-- **Primary Section (Classes 1–5):** Bilingual (Tamil & English) foundational learning, activity-based methodology, smart visual aids. UDISE: 33250800105.
-- **Middle & High School (Classes 6–10):** Tamil Nadu State Board (Samacheer Kalvi) syllabus, rigorous science and mathematics training, social sciences, computer education, and language mastery.
-- **Higher Secondary Streams (Classes 11–12):**
-  - *Group 1:* Physics, Chemistry, Biology, Mathematics (Bio-Maths)
-  - *Group 2:* Physics, Chemistry, Computer Science, Mathematics (Computer-Maths)
-  - *Group 3:* Commerce, Accountancy, Economics, Computer Applications / Business Mathematics
-- **Teaching Methodology & Pedagogy:** Laboratory experiments, experiential learning, project-based assignments, remedial coaching for slow learners, and merit acceleration for high achievers.
-- **Evaluation & Examination System:** Formative assessments, unit tests, quarterly/half-yearly examinations, and intensive model board exams.
+- **Medium of Instruction:** Tamil Nadu State Board (Samacheer Kalvi) syllabus offered in **both Tamil Medium & English Medium** from 6th Standard through 12th Standard.
+- **Primary Section (Classes 1–5):** Foundational bilingual learning, activity-based methodology (ABM), phonics, numbers, environmental studies, moral education, and creative arts. UDISE: 33250800105.
+- **Secondary Section (Classes 6–10):**
+  - Dual-medium streams (Tamil Medium & English Medium).
+  - Rigorous preparation for 10th Standard SSLC Public Examinations.
+  - **Special Sections for NMMS Scholarship Exam (Class 8):** Dedicated coaching and guidance for the National Means-cum-Merit Scholarship.
+  - **Special Training for Rural Talent (TRUST) Exam (Class 9):** Targeted coaching and model test series for the Tamil Nadu Rural Students Talent Search Exam.
+- **Higher Secondary Streams (Classes 11 & 12) — All available in Tamil & English Medium:**
+  - **Group I (Option A) — Bio-Maths:** Mathematics, Physics, Chemistry, Biology. *Pathways: NEET, JEE, TNEA Engineering, ICAR Agriculture.*
+  - **Group I (Option B) — Computer Science:** Mathematics, Physics, Chemistry, Computer Science. *Pathways: B.E/B.Tech, BCA, B.Sc Computer Science, IT.*
+  - **Group II — Pure Science:** Physics, Chemistry, Botany, Zoology. *Pathways: MBBS, BDS, Pharmacy, Nursing, Paramedical & Biological Research.*
+  - **Group III — Arts & Commerce Streams:**
+    - *Option (i):* History, Commerce, Accountancy, Economics
+    - *Option (ii):* Computer Applications, Commerce, Accountancy, Economics
+    - *Option (iii):* Business Mathematics, Commerce, Accountancy, Economics
+    *Pathways: B.Com, BBA, CA, CMA, CS, Banking Exams & Law.*
+  - **Group IV — Vocational Stream:** Commerce, Auditing, Accountancy, Employment Skills. *Pathways: Corporate Auditing, Tax Consulting, Accounts Executive & Direct Employment.*
+- **Teaching Methodology & Pedagogy:** Laboratory practicals (Physics, Chemistry, Biology, Atal Tinkering STEM & Computer Lab), interactive smart classrooms, continuous model exam series, and 100% board exam pass mentoring.
+- **Evaluation & Examination System:** Continuous and Comprehensive Evaluation (CCE) for Classes 1 to 9, quarterly/half-yearly examinations, intensive model board exams for Classes 10 & 12, and specialized scholarship assessments.
 
 ### 3.4 Online Admissions & Real-Time Tracking (`/admissions`)
 - **Admissions Overview:** Clear breakdown of age criteria, required documentation (Transfer Certificate, Birth Certificate, Aadhaar card, Community Certificate), and government-aided fee structures.

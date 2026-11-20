@@ -20,6 +20,14 @@ import {
   Award,
   Trophy,
   ArrowRight,
+  BookOpen,
+  GraduationCap,
+  Calculator,
+  Briefcase,
+  Languages,
+  Laptop,
+  Medal,
+  FlaskConical,
 } from 'lucide-react';
 
 export default function AcademicsPage() {
@@ -143,15 +151,22 @@ export default function AcademicsPage() {
                   <img
                     src={secondary.imageUrl || '/images/facility-science-lab.jpg'}
                     alt={getLocalized(secondary, 'title')}
-                    className="w-full h-[380px] object-cover"
+                    className="w-full h-[400px] object-cover"
                   />
                 </div>
               </div>
 
-              <div className="lg:col-span-6 space-y-6">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  {t('academics.stage2Tag', 'Stage 2: Secondary Wing (SSLC)')}
-                </span>
+              <div className="lg:col-span-6 space-y-5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+                    {t('academics.stage2Tag', 'Stage 2: Secondary Wing (SSLC)')}
+                  </span>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 flex items-center gap-1">
+                    <Languages className="w-3.5 h-3.5" />
+                    {language === 'ta' ? 'தமிழ் & ஆங்கில வழி (6 முதல் 10)' : 'Tamil & English Medium (6th to 10th)'}
+                  </span>
+                </div>
+
                 <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-slate-900 dark:text-white">
                   {getLocalized(secondary, 'title')}
                 </h2>
@@ -159,13 +174,40 @@ export default function AcademicsPage() {
                   {getLocalized(secondary, 'description')}
                 </p>
 
+                {/* Special Scholarship Badges */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50">
+                    <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300 font-bold text-xs uppercase tracking-wider">
+                      <Medal className="w-4 h-4 text-amber-600" />
+                      {language === 'ta' ? 'NMMS கல்வி உதவித்தொகை' : 'NMMS Scholarship Exam'}
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                      {language === 'ta'
+                        ? '8-ஆம் வகுப்பு மாணவர்களுக்கு சிறப்புப் பிரிவுகள் மற்றும் மத்திய அரசு உதவித்தொகைக்கான பிரத்யேக பயிற்சி.'
+                        : 'Dedicated special sections and intensive coaching for Class 8 students with annual scholarship grant.'}
+                    </p>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/50">
+                    <div className="flex items-center gap-2 text-blue-800 dark:text-blue-300 font-bold text-xs uppercase tracking-wider">
+                      <Award className="w-4 h-4 text-blue-600" />
+                      {language === 'ta' ? 'ஊரகத் திறனாய்வுத் தேர்வு' : 'Rural Talent (TRUST) Exam'}
+                    </div>
+                    <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+                      {language === 'ta'
+                        ? 'கிராமப்புற மாணவர்களின் திறனை ஊக்குவிக்க தமிழ்நாடு அரசின் TRUST தேர்வுக்கான மாதிரித் தேர்வுகள்.'
+                        : 'Specialized training for Tamil Nadu Rural Students Talent Search (TRUST) Examination.'}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="pt-2">
                   <h4 className="text-sm font-bold font-heading text-slate-900 dark:text-white uppercase tracking-wider mb-3">
-                    {language === 'ta' ? 'அடிப்படைப் பாடங்கள்:' : 'Core Academic Subjects:'}
+                    {language === 'ta' ? 'அடிப்படைப் பாடங்கள் & சிறப்பம்சங்கள்:' : 'Core Academic Disciplines:'}
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {secondarySubjects.map((sub, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                      <div key={idx} className="flex items-center gap-2 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                         <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                         <span>{sub}</span>
                       </div>
@@ -177,44 +219,265 @@ export default function AcademicsPage() {
           </div>
         </section>
 
-        {/* Section 3: Higher Secondary Education */}
+        {/* Section 3: Higher Secondary Education (11th & 12th Groups) */}
         <section className="section-padding bg-white dark:bg-slate-950">
           <div className="container-main">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-6 order-2 lg:order-1 space-y-6">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-500">
+            <div className="text-center max-w-3xl mx-auto mb-14">
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-500 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
                   {t('academics.stage3Tag', 'Stage 3: Higher Secondary (+1 & +2 HSC)')}
                 </span>
-                <h2 className="text-3xl sm:text-4xl font-extrabold font-heading text-slate-900 dark:text-white">
-                  {getLocalized(higherSecondary, 'title')}
-                </h2>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {getLocalized(higherSecondary, 'description')}
-                </p>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 flex items-center gap-1">
+                  <Languages className="w-3.5 h-3.5" />
+                  {language === 'ta' ? 'அனைத்து குரூப்களும் தமிழ் & ஆங்கில வழியில்' : 'All Groups in Tamil & English Medium'}
+                </span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-heading text-slate-900 dark:text-white tracking-tight">
+                {language === 'ta'
+                  ? '11 & 12-ஆம் வகுப்பு பாடப்பிரிவுகள் (Groups)'
+                  : '11th & 12th Standard Higher Secondary Groups'}
+              </h2>
+              <p className="mt-4 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                {language === 'ta'
+                  ? 'மருத்துவம், பொறியியல், கணினி அறிவியல், ஆராய்ச்சி, தணிக்கையியல் (CA/Auditing) மற்றும் அரசுத் துறைப் பணிகளுக்கான தமிழ்நாடு அரசுப் பாடத்திட்டத்தின் 4 பிரதான குரூப்கள்.'
+                  : 'State Board curriculum tailored for Medicine, Engineering, IT, Research, Chartered Accountancy (CA/Auditing), and Civil Services across 4 structured streams.'}
+              </p>
+            </div>
 
-                <div className="pt-2">
-                  <h4 className="text-sm font-bold font-heading text-slate-900 dark:text-white uppercase tracking-wider mb-3">
-                    {t('academics.streamsAvailable', 'Academic Groups & Streams Offered:')}
-                  </h4>
-                  <div className="space-y-2.5">
-                    {higherSecondarySubjects.map((sub, idx) => (
-                      <div key={idx} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
-                        <CheckCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                        <span>{sub}</span>
+            {/* Structured 4 Groups Display */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              
+              {/* Group I (A): Bio-Maths */}
+              <div className="rounded-3xl p-6 bg-gradient-to-b from-blue-50/60 to-white dark:from-slate-900 dark:to-slate-950 border-2 border-blue-200 dark:border-blue-900/60 shadow-lg hover:shadow-xl transition flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-extrabold font-mono px-3 py-1 rounded-full bg-blue-600 text-white">
+                      GROUP I (Option A)
+                    </span>
+                    <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300">
+                      {language === 'ta' ? 'தமிழ் & ஆங்கில வழி' : 'Tamil & English'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                    <Calculator className="w-5 h-5 text-blue-600" />
+                    {language === 'ta' ? 'பயோ-மேக்ஸ் (Bio-Maths)' : 'Bio-Mathematics'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                    {language === 'ta'
+                      ? 'மருத்துவம், பொறியியல், மற்றும் வேளாண் அறிவியல் வாய்ப்புகளுக்கான பிரிவு.'
+                      : 'Premier pathway for Medical, Engineering, Biotechnology, and Agricultural Sciences.'}
+                  </p>
+                  <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                      {language === 'ta' ? 'பாடங்கள்:' : 'Subjects:'}
+                    </div>
+                    {['Mathematics (கணிதம்)', 'Physics (இயற்பியல்)', 'Chemistry (வேதியியல்)', 'Biology (உயிரியல்)'].map((s, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200">
+                        <CheckCircle className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <span>{s}</span>
                       </div>
                     ))}
                   </div>
                 </div>
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                  {language === 'ta' ? '➔ NEET, JEE, TNEA, ICAR தேர்வுகள்' : '➔ NEET, JEE, TNEA, ICAR Ready'}
+                </div>
               </div>
 
-              <div className="lg:col-span-6 order-1 lg:order-2">
-                <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-100 dark:border-slate-800">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={higherSecondary.imageUrl || '/images/facility-computer-lab.jpg'}
-                    alt={getLocalized(higherSecondary, 'title')}
-                    className="w-full h-[380px] object-cover"
-                  />
+              {/* Group I (B): Computer Science */}
+              <div className="rounded-3xl p-6 bg-gradient-to-b from-indigo-50/60 to-white dark:from-slate-900 dark:to-slate-950 border-2 border-indigo-200 dark:border-indigo-900/60 shadow-lg hover:shadow-xl transition flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-extrabold font-mono px-3 py-1 rounded-full bg-indigo-600 text-white">
+                      GROUP I (Option B)
+                    </span>
+                    <span className="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">
+                      {language === 'ta' ? 'தமிழ் & ஆங்கில வழி' : 'Tamil & English'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                    <Laptop className="w-5 h-5 text-indigo-600" />
+                    {language === 'ta' ? 'கணினி அறிவியல் (Computer Science)' : 'Computer Science'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                    {language === 'ta'
+                      ? 'மென்பொருள் பொறியியல், AI, டேட்டா சயின்ஸ் மற்றும் தொழில்நுட்பப் படிப்புகள்.'
+                      : 'Focused stream for Computer Engineering, AI, Data Science, and IT careers.'}
+                  </p>
+                  <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                      {language === 'ta' ? 'பாடங்கள்:' : 'Subjects:'}
+                    </div>
+                    {['Mathematics (கணிதம்)', 'Physics (இயற்பியல்)', 'Chemistry (வேதியியல்)', 'Computer Science (கணினி அறிவியல்)'].map((s, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200">
+                        <CheckCircle className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                        <span>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-indigo-600 dark:text-indigo-400 font-medium">
+                  {language === 'ta' ? '➔ B.E/B.Tech, BCA, B.Sc Computer Science' : '➔ B.E/B.Tech, BCA, IT & Software'}
+                </div>
+              </div>
+
+              {/* Group II: Pure Science */}
+              <div className="rounded-3xl p-6 bg-gradient-to-b from-emerald-50/60 to-white dark:from-slate-900 dark:to-slate-950 border-2 border-emerald-200 dark:border-emerald-900/60 shadow-lg hover:shadow-xl transition flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-extrabold font-mono px-3 py-1 rounded-full bg-emerald-600 text-white">
+                      GROUP II
+                    </span>
+                    <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                      {language === 'ta' ? 'தமிழ் & ஆங்கில வழி' : 'Tamil & English'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                    <FlaskConical className="w-5 h-5 text-emerald-600" />
+                    {language === 'ta' ? 'தூய அறிவியல் (Pure Science)' : 'Pure Science'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                    {language === 'ta'
+                      ? 'தாவரவியல் மற்றும் விலங்கியலுடன் கூடிய முழுமையான மருத்துவ மற்றும் அறிவியல் ஆய்வுப் பிரிவு.'
+                      : 'Specialized bio-stream for MBBS, BDS, Pharmacy, Nursing, and Biological Research.'}
+                  </p>
+                  <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                      {language === 'ta' ? 'பாடங்கள்:' : 'Subjects:'}
+                    </div>
+                    {['Physics (இயற்பியல்)', 'Chemistry (வேதியியல்)', 'Botany (தாவரவியல்)', 'Zoology (விலங்கியல்)'].map((s, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200">
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                        <span>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                  {language === 'ta' ? '➔ மருத்துவப் படிப்புகள், மருந்தியல், நர்சிங்' : '➔ Medical, Allied Health, Research'}
+                </div>
+              </div>
+
+              {/* Group III: Arts & Commerce Streams */}
+              <div className="rounded-3xl p-6 bg-gradient-to-b from-amber-50/60 to-white dark:from-slate-900 dark:to-slate-950 border-2 border-amber-200 dark:border-amber-900/60 shadow-lg hover:shadow-xl transition flex flex-col justify-between md:col-span-2 lg:col-span-2">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-extrabold font-mono px-3 py-1 rounded-full bg-amber-600 text-white">
+                      GROUP III (Options i, ii, iii)
+                    </span>
+                    <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                      {language === 'ta' ? 'தமிழ் & ஆங்கில வழி' : 'Tamil & English'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-amber-600" />
+                    {language === 'ta' ? 'வணிகவியல் மற்றும் கலைப் பிரிவுகள்' : 'Commerce & Humanities Streams'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                    {language === 'ta'
+                      ? 'சார்ட்டர்ட் அக்கவுண்டன்சி (CA), வங்கிப் பணிகள், வணிக மேலாண்மை மற்றும் சிவில் சர்வீசஸ்.'
+                      : 'Versatile foundation for Chartered Accountancy (CA), Banking, Corporate Finance, and Law.'}
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-amber-100 dark:border-slate-800">
+                      <span className="text-[10px] font-bold font-mono text-amber-700 dark:text-amber-400 uppercase">Option (i) History</span>
+                      <ul className="mt-2 space-y-1 text-xs text-slate-700 dark:text-slate-300">
+                        <li>• History (வரலாறு)</li>
+                        <li>• Commerce (வணிகவியல்)</li>
+                        <li>• Accountancy (கணக்குப்பதிவியல்)</li>
+                        <li>• Economics (பொருளியல்)</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-amber-100 dark:border-slate-800">
+                      <span className="text-[10px] font-bold font-mono text-amber-700 dark:text-amber-400 uppercase">Option (ii) Comp. App.</span>
+                      <ul className="mt-2 space-y-1 text-xs text-slate-700 dark:text-slate-300">
+                        <li>• Computer Applications</li>
+                        <li>• Commerce (வணிகவியல்)</li>
+                        <li>• Accountancy (கணக்குப்பதிவியல்)</li>
+                        <li>• Economics (பொருளியல்)</li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-amber-100 dark:border-slate-800">
+                      <span className="text-[10px] font-bold font-mono text-amber-700 dark:text-amber-400 uppercase">Option (iii) Bus. Maths</span>
+                      <ul className="mt-2 space-y-1 text-xs text-slate-700 dark:text-slate-300">
+                        <li>• Business Maths (வணிகக் கணிதம்)</li>
+                        <li>• Commerce (வணிகவியல்)</li>
+                        <li>• Accountancy (கணக்குப்பதிவியல்)</li>
+                        <li>• Economics (பொருளியல்)</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+                  {language === 'ta' ? '➔ B.Com, BBA, CA, CMA, CS, வங்கித் தேர்வுகள், சட்டம் (Law)' : '➔ B.Com, BBA, CA, CMA, CS, Banking Exams & Law'}
+                </div>
+              </div>
+
+              {/* Group IV: Vocational Stream */}
+              <div className="rounded-3xl p-6 bg-gradient-to-b from-purple-50/60 to-white dark:from-slate-900 dark:to-slate-950 border-2 border-purple-200 dark:border-purple-900/60 shadow-lg hover:shadow-xl transition flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-extrabold font-mono px-3 py-1 rounded-full bg-purple-600 text-white">
+                      GROUP IV
+                    </span>
+                    <span className="text-[11px] font-semibold text-purple-700 dark:text-purple-300">
+                      {language === 'ta' ? 'தமிழ் & ஆங்கில வழி' : 'Tamil & English'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-purple-600" />
+                    {language === 'ta' ? 'தொழிற்கல்வி — ஆடிட்டிங்' : 'Vocational Commerce & Auditing'}
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                    {language === 'ta'
+                      ? 'தணிக்கையியல் மற்றும் வேலைவாய்ப்புத் திறன்களுடன் கூடிய நேரடி தொழில் வழிகாட்டல் பிரிவு.'
+                      : 'Career-focused vocational curriculum in Auditing, Taxation, and Corporate Employment Skills.'}
+                  </p>
+                  <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                      {language === 'ta' ? 'பாடங்கள்:' : 'Subjects:'}
+                    </div>
+                    {[
+                      'Commerce (வணிகவியல்)',
+                      'Auditing (தணிக்கையியல்)',
+                      'Accountancy (கணக்குப்பதிவியல்)',
+                      'Employment Skills (வேலைவாய்ப்புத் திறன்)',
+                    ].map((s, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200">
+                        <CheckCircle className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                        <span>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-[11px] text-purple-600 dark:text-purple-400 font-medium">
+                  {language === 'ta' ? '➔ ஆடிட்டிங் அசிஸ்டெண்ட், GST கணக்காளர், B.Com Corporate' : '➔ Auditing Executive, GST Accounting, B.Com'}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Visual Classroom / Lab Image Card */}
+            <div className="rounded-3xl overflow-hidden shadow-xl border-4 border-slate-100 dark:border-slate-800 relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={higherSecondary.imageUrl || '/images/facility-computer-lab.jpg'}
+                alt={getLocalized(higherSecondary, 'title')}
+                className="w-full h-[320px] sm:h-[400px] object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent flex items-end p-6 sm:p-10">
+                <div className="text-white">
+                  <span className="text-xs font-mono uppercase tracking-widest text-amber-300">
+                    S.U.M. HIGHER SECONDARY SCHOOL • ROYAPPANPATTI
+                  </span>
+                  <h3 className="text-xl sm:text-2xl font-bold font-heading mt-1">
+                    {language === 'ta'
+                      ? 'அனுபவமிக்க முதுகலை ஆசிரியர்கள் மற்றும் நவீன செய்முறை ஆய்வகங்கள்'
+                      : 'Experienced Post-Graduate Faculty & Advanced Practical Laboratories'}
+                  </h3>
                 </div>
               </div>
             </div>

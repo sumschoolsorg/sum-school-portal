@@ -92,14 +92,18 @@ export default function AdmissionsPage() {
         { value: 'Grade 3', label: '3-ஆம் வகுப்பு' },
         { value: 'Grade 4', label: '4-ஆம் வகுப்பு' },
         { value: 'Grade 5', label: '5-ஆம் வகுப்பு' },
-        { value: 'Grade 6', label: '6-ஆம் வகுப்பு' },
-        { value: 'Grade 7', label: '7-ஆம் வகுப்பு' },
-        { value: 'Grade 8', label: '8-ஆம் வகுப்பு' },
-        { value: 'Grade 9', label: '9-ஆம் வகுப்பு' },
-        { value: 'Grade 10', label: '10-ஆம் வகுப்பு (SSLC)' },
-        { value: 'Grade 11 (Science)', label: '11-ஆம் வகுப்பு – அறிவியல் பிரிவு' },
-        { value: 'Grade 11 (Commerce)', label: '11-ஆம் வகுப்பு – வணிகவியல் பிரிவு' },
-        { value: 'Grade 11 (Arts)', label: '11-ஆம் வகுப்பு – கலைப்பிரிவு' },
+        { value: 'Grade 6', label: '6-ஆம் வகுப்பு (தமிழ் & ஆங்கில வழி)' },
+        { value: 'Grade 7', label: '7-ஆம் வகுப்பு (தமிழ் & ஆங்கில வழி)' },
+        { value: 'Grade 8', label: '8-ஆம் வகுப்பு (NMMS உதவித்தொகை சிறப்புப் பிரிவு)' },
+        { value: 'Grade 9', label: '9-ஆம் வகுப்பு (TRUST ஊரகத் திறனாய்வுப் பயிற்சி)' },
+        { value: 'Grade 10', label: '10-ஆம் வகுப்பு (SSLC அரசுப் பொதுத்தேர்வு)' },
+        { value: 'Grade 11 - Group I (Bio-Maths)', label: '11-ஆம் வகுப்பு – குரூப் I: பயோ-மேக்ஸ் (கணிதம், இயற்பியல், வேதியியல், உயிரியல்)' },
+        { value: 'Grade 11 - Group I (Computer Science)', label: '11-ஆம் வகுப்பு – குரூப் I: கணினி அறிவியல் (கணிதம், இயற்பியல், வேதியியல், CS)' },
+        { value: 'Grade 11 - Group II (Pure Science)', label: '11-ஆம் வகுப்பு – குரூப் II: தூய அறிவியல் (இயற்பியல், வேதியியல், தாவரவியல், விலங்கியல்)' },
+        { value: 'Grade 11 - Group III (Commerce & CA)', label: '11-ஆம் வகுப்பு – குரூப் III (ii): வணிகவியல், கணக்குப்பதிவியல், பொருளியல், கணினிப் பயன்பாடுகள்' },
+        { value: 'Grade 11 - Group III (Commerce & BM)', label: '11-ஆம் வகுப்பு – குரூப் III (iii): வணிகவியல், கணக்குப்பதிவியல், பொருளியல், வணிகக் கணிதம்' },
+        { value: 'Grade 11 - Group III (Commerce & History)', label: '11-ஆம் வகுப்பு – குரூப் III (i): வணிகவியல், கணக்குப்பதிவியல், பொருளியல், வரலாறு' },
+        { value: 'Grade 11 - Group IV (Vocational Auditing)', label: '11-ஆம் வகுப்பு – குரூப் IV தொழிற்கல்வி: வணிகவியல், தணிக்கையியல் (Auditing), கணக்குப்பதிவியல், வேலைவாய்ப்புத் திறன்' },
       ]
     : [
         { value: 'LKG', label: 'LKG (Lower Kindergarten)' },
@@ -109,14 +113,18 @@ export default function AdmissionsPage() {
         { value: 'Grade 3', label: 'Grade 3' },
         { value: 'Grade 4', label: 'Grade 4' },
         { value: 'Grade 5', label: 'Grade 5' },
-        { value: 'Grade 6', label: 'Grade 6' },
-        { value: 'Grade 7', label: 'Grade 7' },
-        { value: 'Grade 8', label: 'Grade 8' },
-        { value: 'Grade 9', label: 'Grade 9' },
-        { value: 'Grade 10', label: 'Grade 10' },
-        { value: 'Grade 11 (Science)', label: 'Grade 11 – Science Stream' },
-        { value: 'Grade 11 (Commerce)', label: 'Grade 11 – Commerce Stream' },
-        { value: 'Grade 11 (Arts)', label: 'Grade 11 – Arts / Humanities Stream' },
+        { value: 'Grade 6', label: 'Grade 6 (Tamil & English Medium)' },
+        { value: 'Grade 7', label: 'Grade 7 (Tamil & English Medium)' },
+        { value: 'Grade 8', label: 'Grade 8 (NMMS Scholarship Coaching)' },
+        { value: 'Grade 9', label: 'Grade 9 (TRUST Exam Coaching)' },
+        { value: 'Grade 10', label: 'Grade 10 (SSLC Board Preparation)' },
+        { value: 'Grade 11 - Group I (Bio-Maths)', label: 'Grade 11 – Group I (Bio-Maths): Maths, Physics, Chemistry, Biology' },
+        { value: 'Grade 11 - Group I (Computer Science)', label: 'Grade 11 – Group I (Computer Science): Maths, Physics, Chemistry, Computer Science' },
+        { value: 'Grade 11 - Group II (Pure Science)', label: 'Grade 11 – Group II (Pure Science): Physics, Chemistry, Botany, Zoology' },
+        { value: 'Grade 11 - Group III (Commerce & CA)', label: 'Grade 11 – Group III (ii): Commerce, Accountancy, Economics, Computer Applications' },
+        { value: 'Grade 11 - Group III (Commerce & BM)', label: 'Grade 11 – Group III (iii): Commerce, Accountancy, Economics, Business Maths' },
+        { value: 'Grade 11 - Group III (Commerce & History)', label: 'Grade 11 – Group III (i): Commerce, Accountancy, Economics, History' },
+        { value: 'Grade 11 - Group IV (Vocational Auditing)', label: 'Grade 11 – Group IV (Vocational): Commerce, Auditing, Accountancy, Employment Skills' },
       ];
 
   const genderOptions = [
@@ -897,11 +905,19 @@ export default function AdmissionsPage() {
                 },
                 {
                   q: isTa
-                    ? 'மேல்நிலை வகுப்பில் (11 & 12) என்னென்ன பாடப்பிரிவுகள் உள்ளன?'
+                    ? 'மேல்நிலை வகுப்பில் (11 & 12) என்னென்ன பாடப்பிரிவுகள் (Groups) உள்ளன?'
                     : 'What groups are available for Higher Secondary (Class 11 & 12)?',
                   a: isTa
-                    ? 'தமிழ்நாடு அரசுப் பாடத்திட்டத்தின் கீழ் கணிதம்-உயிரியல் (Bio-Maths), கணினி அறிவியல் (Computer Science), அறிவியல் மற்றும் வணிகவியல்/கணக்குப்பதிவியல் (Commerce & Accountancy) பிரிவுகள் தமிழ் மற்றும் ஆங்கில வழியில் பயிற்றுவிக்கப்படுகின்றன.'
-                    : 'Under the Tamil Nadu State Board curriculum, we offer Bio-Maths, Computer Science with Mathematics, Pure Science, and Commerce with Accountancy & Computer Applications in both Tamil and English mediums.',
+                    ? 'தமிழ்நாடு மாநிலப் பாடத்திட்டத்தின் கீழ் அனைத்துப் பிரிவுகளும் தமிழ் மற்றும் ஆங்கில வழியில் கற்பிக்கப்படுகின்றன: \n• குரூப் I (A): பயோ-மேக்ஸ் (கணிதம், இயற்பியல், வேதியியல், உயிரியல்)\n• குரூப் I (B): கணினி அறிவியல் (கணிதம், இயற்பியல், வேதியியல், கணினி அறிவியல்)\n• குரூப் II: தூய அறிவியல் (இயற்பியல், வேதியியல், தாவரவியல், விலங்கியல்)\n• குரூப் III: வணிகவியல், கணக்குப்பதிவியல், பொருளியல் (வரலாறு / கணினி பயன்பாடுகள் / வணிகக் கணிதம்)\n• குரூப் IV (தொழிற்கல்வி): வணிகவியல், தணிக்கையியல் (Auditing), கணக்குப்பதிவியல், வேலைவாய்ப்புத் திறன்கள்.'
+                    : 'All streams are offered in both Tamil Medium & English Medium under the Tamil Nadu State Board:\n• Group I (A): Bio-Maths (Mathematics, Physics, Chemistry, Biology)\n• Group I (B): Computer Science (Mathematics, Physics, Chemistry, Computer Science)\n• Group II: Pure Science (Physics, Chemistry, Botany, Zoology)\n• Group III: Commerce, Accountancy, Economics (with History / Computer Applications / Business Maths options)\n• Group IV (Vocational Stream): Commerce, Auditing, Accountancy, and Employment Skills.',
+                },
+                {
+                  q: isTa
+                    ? 'NMMS மற்றும் TRUST உதவித்தொகைத் தேர்வுகளுக்கு பள்ளியில் பயிற்சி அளிக்கப்படுகிறதா?'
+                    : 'Does the school offer coaching for NMMS and TRUST scholarship examinations?',
+                  a: isTa
+                    ? 'ஆம்! 8-ஆம் வகுப்பு மாணவர்களுக்கு தேசிய வருவாய் வழி மற்றும் திறன் படிப்புதவித் தொகைத் தேர்வுக்கு (NMMS) தனிப் பிரிவுகள் இயங்குகின்றன. மேலும் 9-ஆம் வகுப்பு மாணவர்களுக்கு தமிழ்நாடு ஊரகத் திறனாய்வுத் தேர்வுக்கான (TRUST Exam) சிறப்பு மாதிரித் தேர்வுகள் மற்றும் பயிற்சி வகுப்புகள் நடத்தப்படுகின்றன.'
+                    : 'Yes! We conduct dedicated special sections for Class 8 students preparing for the National Means-cum-Merit Scholarship (NMMS) Exam. In addition, comprehensive coaching and model test series are provided for the Tamil Nadu Rural Students Talent Search (TRUST) Examination in Class 9.',
                 },
                 {
                   q: isTa
