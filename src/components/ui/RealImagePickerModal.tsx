@@ -91,10 +91,10 @@ export const VERIFIED_REAL_SCHOOL_PHOTOS: RealSchoolPhoto[] = [
   },
   {
     url: '/images/facility-computer-lab.jpg',
-    title: '40-Desktop ICT Computer Laboratory',
+    title: 'Modern Computer Science & ICT Laboratory Session',
     category: 'Laboratories',
-    description: 'Real photograph of modern computer systems with broadband connectivity.',
-    tags: ['computer', 'lab', 'technology', 'it', 'desktops', 'digital'],
+    description: 'Authentic photograph of S.U.M. School students actively learning programming and computer science in the computer lab with faculty guidance and smart projector display.',
+    tags: ['computer', 'lab', 'technology', 'it', 'desktops', 'digital', 'students', 'projector', 'smart class', 'programming'],
   },
   {
     url: '/images/facility-smart-class.jpg',

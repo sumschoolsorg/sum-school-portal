@@ -450,10 +450,89 @@ Teachers, Staff and Students.`,
 ];
 export const verifiedTimelineEntries: TimelineEntry[] = [];
 export const verifiedGalleryImages: GalleryImage[] = [];
-export const verifiedFacilities: Facility[] = [];
+export const verifiedFacilities: Facility[] = [
+  {
+    id: 'fac-computer-lab',
+    title: 'Modern Computer Science & ICT Laboratory',
+    title_en: 'Modern Computer Science & ICT Laboratory',
+    title_ta: 'நவீன கணினி அறிவியல் & தகவல் தொழில்நுட்ப ஆய்வகம்',
+    description: 'High-speed networked computer systems with broadband internet, interactive smart projector display, programming environments (Python, C++, Scratch), and dedicated faculty guidance.',
+    description_en: 'High-speed networked computer systems with broadband internet, interactive smart projector display, programming environments (Python, C++, Scratch), and dedicated faculty guidance.',
+    description_ta: 'அதிவேக இணைய வசதியுடன் கூடிய கணினி அமைப்புகள், பெரிய ஸ்மார்ட் ப்ரொஜெக்டர் திரை, நிரலாக்கப் பயிற்சிகள் மற்றும் ஆசிரியர்களின் நேரடி வழிகாட்டலுடன் இயங்கும் நவீன கணினி ஆய்வகம்.',
+    imageUrl: '/images/facility-computer-lab.jpg',
+    icon: 'Laptop',
+    status: 'published',
+    order: 1,
+  },
+  {
+    id: 'fac-science-lab',
+    title: 'Composite Science Laboratory (Physics, Chemistry & Biology)',
+    title_en: 'Composite Science Laboratory (Physics, Chemistry & Biology)',
+    title_ta: 'முழு வசதிகளுடன் கூடிய அறிவியல் ஆய்வகம் (வேதியியல், இயற்பியல், உயிரியல்)',
+    description: 'Equipped with chemical reagents, periodic tables, compound microscopes, and dedicated practical workstations enabling hands-on experimental learning.',
+    description_en: 'Equipped with chemical reagents, periodic tables, compound microscopes, and dedicated practical workstations enabling hands-on experimental learning.',
+    description_ta: 'முழுமையான வேதியியல் உபகரணங்கள், தனிம வரிசை அட்டவணை, நுண்ணோக்கிகள் மற்றும் நேரடி செய்முறைப் பயிற்சி வசதிகள் கொண்ட அறிவியல் ஆய்வகம்.',
+    imageUrl: '/images/facility-science-lab.jpg',
+    icon: 'FlaskConical',
+    status: 'published',
+    order: 2,
+  },
+  {
+    id: 'fac-smart-class',
+    title: 'Interactive Multimedia Smart Classrooms',
+    title_en: 'Interactive Multimedia Smart Classrooms',
+    title_ta: 'டிஜிட்டல் ஸ்மார்ட் வகுப்பறைகள்',
+    description: 'High-definition digital projection displays, audiovisual teaching aids, and animated syllabus modules fostering intuitive conceptual mastery.',
+    description_en: 'High-definition digital projection displays, audiovisual teaching aids, and animated syllabus modules fostering intuitive conceptual mastery.',
+    description_ta: 'ஒலி-ஒளிக் கருவிகள், ஸ்மார்ட் திரைகள் மற்றும் நவீன அனிமேஷன் கல்வி முறையில் பாடங்களைக் கற்பிக்கும் வசதி.',
+    imageUrl: '/images/facility-smart-class.jpg',
+    icon: 'MonitorPlay',
+    status: 'published',
+    order: 3,
+  },
+  {
+    id: 'fac-atl-robotics',
+    title: 'Atal Tinkering Lab (ATL) & Robotics Center',
+    title_en: 'Atal Tinkering Lab (ATL) & Robotics Center',
+    title_ta: 'அடல் டிங்கரிங் ஆய்வகம் (ATL) & ரோபாட்டிக்ஸ் மையம்',
+    description: 'NITI Aayog recognized innovation hub with Arduino microcontrollers, sensors, 3D modelling tools, and hands-on STEM project stations.',
+    description_en: 'NITI Aayog recognized innovation hub with Arduino microcontrollers, sensors, 3D modelling tools, and hands-on STEM project stations.',
+    description_ta: 'ரோபாட்டிக்ஸ், சென்சார்கள், எலக்ட்ரானிக்ஸ் மற்றும் அறிவியல் கண்டுபிடிப்புகளுக்கான நிதி ஆயோக் அங்கீகாரம் பெற்ற அடல் டிங்கரிங் மையம்.',
+    imageUrl: '/images/atl/atl-workshop-learning-6.jpeg',
+    icon: 'Cpu',
+    status: 'published',
+    order: 4,
+  },
+  {
+    id: 'fac-library',
+    title: 'Central Reference Library & Reading Room',
+    title_en: 'Central Reference Library & Reading Room',
+    title_ta: 'மைய நூலகம் மற்றும் வாசிப்பகம்',
+    description: 'Over 5,000 academic books, encyclopedias, Tamil classical literature, competitive exam primers, and educational periodicals.',
+    description_en: 'Over 5,000 academic books, encyclopedias, Tamil classical literature, competitive exam primers, and educational periodicals.',
+    description_ta: 'ஆயிரக்கணக்கான பாடப் புத்தகங்கள், தமிழ் இலக்கிய நூல்கள், போட்டித் தேர்வு வழிகாட்டிகள் மற்றும் நாளிதழ்கள் கொண்ட அமைதியான நூலகம்.',
+    imageUrl: '/images/students-collab.jpg',
+    icon: 'BookOpen',
+    status: 'published',
+    order: 5,
+  },
+  {
+    id: 'fac-sports',
+    title: 'Spacious Athletic Grounds & Sports Amenities',
+    title_en: 'Spacious Athletic Grounds & Sports Amenities',
+    title_ta: 'பிரம்மாண்ட விளையாட்டு மைதானம் & தடகளப் பகுதி',
+    description: 'Dedicated courts for Volleyball, Kabaddi, Kho-Kho, traditional Silambam, and track events preparing students for district and state tournaments.',
+    description_en: 'Dedicated courts for Volleyball, Kabaddi, Kho-Kho, traditional Silambam, and track events preparing students for district and state tournaments.',
+    description_ta: 'கைப்பந்து, கபடி, கோ-கோ, சிலம்பம் பயிற்சி மற்றும் தடகளப் போட்டிகளுக்கான பள்ளி விளையாட்டு மைதானம்.',
+    imageUrl: '/images/og-image.jpg',
+    icon: 'Trophy',
+    status: 'published',
+    order: 6,
+  },
+];
 export const verifiedHeroBanners: HeroBanner[] = [];
 export const defaultFaculty: Faculty[] = [];
-export const defaultFacilities: Facility[] = [];
+export const defaultFacilities: Facility[] = verifiedFacilities;
 export const defaultEvents: SchoolEvent[] = [
   {
     id: 'event-annual-day-63',

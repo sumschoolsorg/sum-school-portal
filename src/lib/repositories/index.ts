@@ -64,6 +64,7 @@ import {
   defaultWebsiteSettings,
   verifiedAnnouncements,
   defaultEvents,
+  verifiedFacilities,
 } from '@/lib/defaultData';
 
 export type DataMode = 'local' | 'firebase';
@@ -358,7 +359,8 @@ export const facultyRepository = new CollectionRepository<Faculty>(
 
 export const facilityRepository = new CollectionRepository<Facility>(
   STORES.FACILITIES,
-  'facilities'
+  'facilities',
+  () => verifiedFacilities
 );
 
 export const announcementRepository = new CollectionRepository<Announcement>(
