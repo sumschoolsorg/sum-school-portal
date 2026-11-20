@@ -260,6 +260,14 @@ The school crest is embedded across all modern browser specifications using a mu
 - **Bilingual Empty States:** Graceful handling when no records match a filter.
 
 ### 3.12 Achievements, Honors & State Accolades (`/achievements`)
+- **Tamil Nadu State Level Athletics Championship (67-வது குடியரசு தின மாநில தடகளப் போட்டிகள், Salem 2026):**
+  - **S. Jaswanth (எஸ். ஜஸ்வந்த்):** **Double Gold Medalist (இரட்டைத் தங்கப் பதக்கம் — State Champion)**:
+    - 🥇 **Gold Medal in Shot-Put (குண்டு எறிதல் — முதலிடம்)**
+    - 🥇 **Gold Medal in Discus Throw (வட்டு எறிதல் — முதலிடம்)**
+    - Official podium photograph: [achievement-jaswanth-shotput-discus-gold.jpg](file:///d:/project/sum/public/images/achievement-jaswanth-shotput-discus-gold.jpg)
+  - **G. Tamilarasan (ஜி. தமிழரசன்):** **Bronze Medalist (வெண்கலப் பதக்கம் — State 3rd Place)**:
+    - 🥉 **Bronze Medal in Triple Jump (மும்முறை தாண்டுதல் — மூன்றாமிடம்)**
+    - Official presentation ceremony photograph with physical directors and officials: [achievement-tamilarasan-triple-jump-bronze.jpg](file:///d:/project/sum/public/images/achievement-tamilarasan-triple-jump-bronze.jpg)
 - **Theni Revenue District Hockey Tournament Champions & State Qualifiers (2026):**
   - **Junior Category (ஜூனியர் பிரிவு):** **1st Place (முதலிடம் — Winners / Gold)** and officially qualified for the **Tamil Nadu State Level Hockey Tournament** (மாநில போட்டிக்கு தகுதி).
   - **Senior Category (சீனியர் பிரிவு):** **2nd Place (இரண்டாம் இடம் — Runners-Up / Silver)**.

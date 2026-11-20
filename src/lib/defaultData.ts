@@ -107,24 +107,54 @@ export const defaultHomepageContent: HomepageContent = {
 };
 
 export const defaultAboutContent: AboutContent = {
-  introduction: '',
-  introduction_en: '',
-  introduction_ta: '',
-  history: '',
-  history_en: '',
-  history_ta: '',
-  vision: '',
-  vision_en: '',
-  vision_ta: '',
-  mission: '',
-  mission_en: '',
-  mission_ta: '',
-  coreValues: [],
-  coreValues_en: [],
-  coreValues_ta: [],
-  educationalPhilosophy: '',
-  educationalPhilosophy_en: '',
-  educationalPhilosophy_ta: '',
+  introduction:
+    'Savariyappa Udaiyar Memorial (S.U.M.) Higher Secondary and Primary Schools in Royappanpatti, Theni District, have been serving the cause of education for over 60 years. Situated at the foothills of the Western Ghats, the institution provides quality English and Tamil medium education to over 4,500 students.',
+  introduction_en:
+    'Savariyappa Udaiyar Memorial (S.U.M.) Higher Secondary and Primary Schools in Royappanpatti, Theni District, have been serving the cause of education for over 60 years. Situated at the foothills of the Western Ghats, the institution provides quality English and Tamil medium education to over 4,500 students.',
+  introduction_ta:
+    'தேனி மாவட்டம் மேற்குத் தொடர்ச்சி மலை அடிவாரத்தில் அமைந்துள்ள ராயப்பன்பட்டி கிராமத்தில், 60 ஆண்டுகளுக்கும் மேலாக 4,500-க்கும் மேற்பட்ட மாணவ, மாணவிகளுக்கு தமிழ் மற்றும் ஆங்கில வழிக் கல்வியை வழங்கி வருகிறது சவரியப்ப உடையார் நினைவு (எஸ்.யு.எம்.) பள்ளி.',
+  history:
+    'Established on 20th May 1963 by philanthropist Founder M. Savarimuthu Udaiyar in sacred memory of his father M. Savariyappa Udaiyar. In 1964, Chief Minister M. Bhaktavatsalam presided over the Annual Day; in 1965, Madras University Vice-Chancellor N.D. Sundaravadivelu visited; and in 1966, Minister Kakkan inaugurated the hostel. Upgraded to Higher Secondary School in 1970, the school has produced over 64 doctors, 1,617 engineers, and maintains a consecutive 100% board examination pass record.',
+  history_en:
+    'Established on 20th May 1963 by philanthropist Founder M. Savarimuthu Udaiyar in sacred memory of his father M. Savariyappa Udaiyar. In 1964, Chief Minister M. Bhaktavatsalam presided over the Annual Day; in 1965, Madras University Vice-Chancellor N.D. Sundaravadivelu visited; and in 1966, Minister Kakkan inaugurated the hostel. Upgraded to Higher Secondary School in 1970, the school has produced over 64 doctors, 1,617 engineers, and maintains a consecutive 100% board examination pass record.',
+  history_ta:
+    'கடந்த 20.05.1963 அன்று நிறுவனர் சவரிமுத்து உடையார் தனது தந்தையின் பெயரில் தொடக்க மற்றும் உயர்நிலைப் பள்ளிகளைத் தொடங்கினார். 1964-ல் தமிழக முதல்வர் பக்தவத்சலம், 1965-ல் சென்னை பல்கலைக்கழக துணைவேந்தர் நெ.து. சுந்தரவடிவேலு வருகை தந்தனர். 1966-ல் அமைச்சர் கக்கன் அவர்களால் பள்ளி விடுதி திறக்கப்பட்டது. 1970-ல் மேல்நிலைப் பள்ளியாக தரம் உயர்த்தப்பட்டு, 64 மருத்துவர்கள், 1,617 பொறியாளர்களை உருவாக்கி, தொடர் 100% தேர்ச்சியுடன் இயங்கி வருகிறது.',
+  vision:
+    'To empower rural youth with value-based, high-standard education, fostering moral character, intellectual curiosity, and state-level excellence in academics and sports.',
+  vision_en:
+    'To empower rural youth with value-based, high-standard education, fostering moral character, intellectual curiosity, and state-level excellence in academics and sports.',
+  vision_ta:
+    'கிராமப்புற மாணவர்களுக்கு நற்பண்புகள் மற்றும் உயர்ந்த கல்வித் தரத்தை வழங்கி, ஒழுக்கம், அறிவியல் சிந்தனை, கல்வி மற்றும் விளையாட்டுகளில் மாநில அளவிலான சாதனைகளைப் படைக்கச் செய்தல்.',
+  mission:
+    'Providing accessible Tamil and English medium education, modern science and computer laboratories, specialized scholarship training, and dedicated hostel care for rural students.',
+  mission_en:
+    'Providing accessible Tamil and English medium education, modern science and computer laboratories, specialized scholarship training, and dedicated hostel care for rural students.',
+  mission_ta:
+    'தமிழ் மற்றும் ஆங்கில வழிக் கல்வி, நவீன ஆய்வக வசதிகள், NMMS மற்றும் TRUST உதவித்தொகை சிறப்புப் பயிற்சிகள் மற்றும் கிராமப்புற மாணவர்களுக்கான அரவணைப்பு விடுதி வசதிகளைச் செவ்வனே வழங்குதல்.',
+  coreValues: [
+    'Academic Excellence & 100% Pass Culture',
+    'Discipline, Integrity & Moral Character',
+    'Inclusivity & Support for Rural Plantation Children',
+    'State-Level Sports & Cultural Leadership',
+  ],
+  coreValues_en: [
+    'Academic Excellence & 100% Pass Culture',
+    'Discipline, Integrity & Moral Character',
+    'Inclusivity & Support for Rural Plantation Children',
+    'State-Level Sports & Cultural Leadership',
+  ],
+  coreValues_ta: [
+    'கல்வித் தரச் சிறப்பு & தொடர் 100% தேர்ச்சி',
+    'ஒழுக்கம், நேர்மை மற்றும் நன்னெறி பண்புகள்',
+    'கிராமப்புற மற்றும் ஏலத்தோட்ட தொழிலாளர் குழந்தைகளுக்கு முன்னுரிமை',
+    'விளையாட்டு மற்றும் கலைத்திருவிழாவில் மாநில அளவிலான தலைமை',
+  ],
+  educationalPhilosophy:
+    'Blending the timeless humanitarian vision of our founders with modern technological and pedagogical tools to build responsible, successful citizens.',
+  educationalPhilosophy_en:
+    'Blending the timeless humanitarian vision of our founders with modern technological and pedagogical tools to build responsible, successful citizens.',
+  educationalPhilosophy_ta:
+    'நிறுவனர்களின் மகத்தான மக்கள் தொண்டையும், நவீன தொழில்நுட்பம் மற்றும் தனிமனித ஒழுக்கத்தையும் ஒன்றிணைத்து தன்னம்பிக்கை கொண்ட எதிர்காலத் தலைமுறையினரை உருவாக்குதல்.',
   management: [
     {
       name: 'Mrs. K. Rajeswari Suresh',
@@ -593,6 +623,58 @@ export const sampleEnquiriesSeed: Enquiry[] = [];
 export const defaultEnquiries: Enquiry[] = [];
 export const verifiedAchievements: Achievement[] = [
   {
+    id: 'ach-jaswanth-shotput-discus-gold-2026',
+    title: 'State Level Athletics Championship: S. Jaswanth Wins Double Gold in Shot-Put and Discus Throw',
+    title_en: 'State Level Athletics Championship: S. Jaswanth Wins Double Gold in Shot-Put and Discus Throw',
+    title_ta: 'மாநில அளவிலான தடகளப் போட்டி: எஸ். ஜஸ்வந்த் குண்டு எறிதல் & வட்டு எறிதலில் இரட்டைத் தங்கப் பதக்கம் வென்று வரலாற்று சாதனை!',
+    description: 'S. Jaswanth brought stellar athletic pride to S.U.M. Higher Secondary School by winning two Gold Medals (Double Gold) in Shot-Put and Discus Throw at the 67th Republic Day State Level Athletics Championship organized by the Tamil Nadu School Education Department in Salem.',
+    description_en: 'S. Jaswanth brought stellar athletic pride to S.U.M. Higher Secondary School by winning two Gold Medals (Double Gold) in Shot-Put and Discus Throw at the 67th Republic Day State Level Athletics Championship organized by the Tamil Nadu School Education Department in Salem.',
+    description_ta: 'சேலம் மாவட்டத்தில் தமிழ்நாடு அரசு பள்ளிக்கல்வித்துறை நடத்திய 67-வது குடியரசு தின மாநில அளவிலான தடகளப் போட்டிகளில், நம் எஸ்.யு.எம். மேல்நிலைப்பள்ளி மாணவர் எஸ். ஜஸ்வந்த் குண்டு எறிதல் (Shot-Put) மற்றும் வட்டு எறிதல் (Discus Throw) ஆகிய இரு பிரிவுகளிலும் முதலிடம் பெற்று 2 தங்கப் பதக்கங்களை வென்று வரலாறு படைத்துள்ளார்!',
+    date: new Date('2026-11-02T16:00:00.000Z'),
+    category: 'sports',
+    studentName: 'S. Jaswanth',
+    studentName_ta: 'எஸ். ஜஸ்வந்த்',
+    teamName: 'S.U.M. Athletics Squad',
+    className: 'Higher Secondary Athletics Division',
+    academicYear: '2026–2027',
+    examinationName: 'Tamil Nadu School Education Dept 67th Republic Day State Level Athletics Championship (Salem)',
+    totalMarks: 0,
+    totalMaxMarks: 0,
+    percentage: 100,
+    rank: 'Double Gold Medalist (Shot-Put & Discus Throw) - State 1st Place',
+    hometown: 'Royappanpatti / Theni District',
+    imageUrl: '/images/achievement-jaswanth-shotput-discus-gold.jpg',
+    awardPhotoUrl: '/images/achievement-jaswanth-shotput-discus-gold.jpg',
+    status: 'published',
+    isFeatured: true,
+  },
+  {
+    id: 'ach-tamilarasan-triple-jump-bronze-2026',
+    title: 'State Level Athletics Championship: G. Tamilarasan Wins Bronze Medal in Triple Jump',
+    title_en: 'State Level Athletics Championship: G. Tamilarasan Wins Bronze Medal in Triple Jump',
+    title_ta: 'மாநில அளவிலான தடகளப் போட்டி: ஜி. தமிழரசன் மும்முறை தாண்டுதலில் வெண்கலப் பதக்கம் வென்று சாதனை!',
+    description: 'G. Tamilarasan achieved outstanding athletic glory for S.U.M. Higher Secondary School by winning the Bronze Medal in Triple Jump at the Tamil Nadu State Level Athletics Championship, felicitated by physical education officials.',
+    description_en: 'G. Tamilarasan achieved outstanding athletic glory for S.U.M. Higher Secondary School by winning the Bronze Medal in Triple Jump at the Tamil Nadu State Level Athletics Championship, felicitated by physical education officials.',
+    description_ta: 'தமிழ்நாடு அரசு பள்ளிக்கல்வித்துறை நடத்திய மாநில அளவிலான தடகளப் போட்டிகளில், நம் எஸ்.யு.எம். மேல்நிலைப்பள்ளி மாணவர் ஜி. தமிழரசன் மும்முறை தாண்டுதல் (Triple Jump) போட்டியில் 3-ஆம் இடம் பிடித்து வெண்கலப் பதக்கம் (Bronze Medal) மற்றும் மாநில சான்றிதழ் வென்று பள்ளிக்குப் பெருமை சேர்த்துள்ளார்!',
+    date: new Date('2026-11-02T17:00:00.000Z'),
+    category: 'sports',
+    studentName: 'G. Tamilarasan',
+    studentName_ta: 'ஜி. தமிழரசன்',
+    teamName: 'S.U.M. Athletics Squad',
+    className: 'Higher Secondary Athletics Division',
+    academicYear: '2026–2027',
+    examinationName: 'Tamil Nadu School Education Dept State Level Athletics Championship',
+    totalMarks: 0,
+    totalMaxMarks: 0,
+    percentage: 100,
+    rank: 'Bronze Medalist (Triple Jump) - State 3rd Place',
+    hometown: 'Royappanpatti / Theni District',
+    imageUrl: '/images/achievement-tamilarasan-triple-jump-bronze.jpg',
+    awardPhotoUrl: '/images/achievement-tamilarasan-triple-jump-bronze.jpg',
+    status: 'published',
+    isFeatured: true,
+  },
+  {
     id: 'ach-theni-hockey-2026',
     title: 'Theni Revenue District Hockey Tournament: Junior Team Champions (State Qualified), Senior & Super Senior Runners-Up',
     title_en: 'Theni Revenue District Hockey Tournament: Junior Team Champions (State Qualified), Senior & Super Senior Runners-Up',
@@ -646,6 +728,135 @@ export const verifiedAchievements: Achievement[] = [
   },
 ];
 export const verifiedAnnouncements: Announcement[] = [
+  {
+    id: 'ann-state-athletics-champions-2026',
+    title: 'State Level Athletics Laurels: S. Jaswanth (Double Gold in Shot-Put & Discus) & G. Tamilarasan (Bronze in Triple Jump)',
+    title_en: 'State Level Athletics Laurels: S. Jaswanth (Double Gold in Shot-Put & Discus) & G. Tamilarasan (Bronze in Triple Jump)',
+    title_ta: 'மாநில தடகளப் போட்டியில் எஸ்.யு.எம். பள்ளிக்கு வரலாற்று வெற்றி! குண்டு & வட்டு எறிதலில் எஸ். ஜஸ்வந்த் இரட்டைத் தங்கம், மும்முறை தாண்டுதலில் ஜி. தமிழரசன் வெண்கலப் பதக்கம்!',
+    description: 'Hearty congratulations to S. Jaswanth for clinching two Gold Medals in Shot-Put and Discus Throw, and G. Tamilarasan for winning Bronze in Triple Jump at the 67th State Level Republic Day Athletics Championship in Salem.',
+    description_en: 'Hearty congratulations to S. Jaswanth for clinching two Gold Medals in Shot-Put and Discus Throw, and G. Tamilarasan for winning Bronze in Triple Jump at the 67th State Level Republic Day Athletics Championship in Salem.',
+    description_ta: 'சேலம் 67-வது குடியரசு தின மாநில தடகளப் போட்டிகளில் குண்டு எறிதல் மற்றும் வட்டு எறிதலில் 2 தங்கப் பதக்கங்களை வென்ற எஸ். ஜஸ்வந்த், மற்றும் மும்முறை தாண்டுதலில் வெண்கலப் பதக்கம் வென்ற ஜி. தமிழரசன் ஆகிய மாணவ வீரர்களுக்கும் உடற்கல்வி ஆசிரியர்களுக்கும் பாராட்டுக்கள்!',
+    content: `மாநில அளவிலான தடகளப் போட்டிகள் 2026 — எஸ்.யு.எம். பள்ளி மாணவர்களின் வரலாறு காணாத சாதனை!
+
+சேலம் மாவட்டத்தில் தமிழ்நாடு அரசு பள்ளிக்கல்வித்துறை சார்பில் நடைபெற்ற 67-வது குடியரசு தின மாநில அளவிலான தடகளப் போட்டிகளில் (29.10.2026 – 02.11.2026), ராயப்பன்பட்டி சவரியப்ப உடையார் நினைவு மேல்நிலைப்பள்ளி (S.U.M.) மாணவர்கள் கலந்து கொண்டு தமிழ்நாடு அளவில் மாபெரும் சாதனைகளைப் படைத்துள்ளனர்:
+
+🥇 எஸ். ஜஸ்வந்த் (S. Jaswanth):
+• குண்டு எறிதல் (Shot-Put): மாநில அளவில் முதலிடம் — தங்கப் பதக்கம் (Gold Medal)
+• வட்டு எறிதல் (Discus Throw): மாநில அளவில் முதலிடம் — தங்கப் பதக்கம் (Gold Medal)
+ஒரே தடகளப் போட்டியில் இரண்டு பிரதான எறிதல் பிரிவுகளிலும் மாநில அளவில் முதலிடம் பெற்று இரட்டைத் தங்கப் பதக்கங்களை வென்று பள்ளிக்கு அளப்பரிய புகழைத் தேடித் தந்துள்ளார்!
+
+🥉 ஜி. தமிழரசன் (G. Tamilarasan):
+• மும்முறை தாண்டுதல் (Triple Jump): மாநில அளவில் மூன்றாம் இடம் — வெண்கலப் பதக்கம் (Bronze Medal) மற்றும் சிறப்புச் சான்றிதழ் வென்று பெருமை சேர்த்துள்ளார்!
+
+மாநில அளவில் பதக்கங்களை அள்ளிக்குவித்து பள்ளிக்கு பெருமை சேர்த்த தடகள வீரர்களான எஸ். ஜஸ்வந்த், ஜி. தமிழரசன் ஆகியோருக்கும், அவர்களுக்கு சிறந்த முறையில் பயிற்சி அளித்த உடற்கல்வி இயக்குநர்கள் மற்றும் ஆசிரியர்களுக்கும் பள்ளி நிர்வாகம், செயலர் & தாளாளர் உயர்திரு. M.S. பிரபாகர் M.A., தலைமையாசிரியர்கள் மற்றும் இருபால் ஆசிரியப் பெருமக்கள் நெஞ்சார்ந்த வாழ்த்துகளையும் பாராட்டுகளையும் தெரிவித்துக் கொள்கிறார்கள்.`,
+    content_en: `Tamil Nadu State Level Athletics Championship 2026 — Glorious Triumph for S.U.M. Higher Secondary School!
+
+At the 67th Republic Day State Level Athletics Championship organized by the Tamil Nadu Department of School Education in Salem (29.10.2026 – 02.11.2026), the student athletes of Savariyappa Udaiyar Memorial Higher Secondary School delivered peerless performances:
+
+🥇 S. Jaswanth:
+• Shot-Put: State 1st Place — Gold Medal
+• Discus Throw: State 1st Place — Gold Medal
+Achieved the extraordinary feat of winning Double Gold medals across two premier throwing events at the state level!
+
+🥉 G. Tamilarasan:
+• Triple Jump: State 3rd Place — Bronze Medal & State Merit Certificate
+Showcased remarkable athletic discipline to clinch a podium finish among top competitors from across Tamil Nadu.
+
+The School Management, Correspondent Thiru. M.S. Prabakar M.A., Headmaster Mr. S. Thomas, Physical Education Directors, and Faculty warmly salute and congratulate our medal winners on their historic victory!`,
+    content_ta: `மாநில அளவிலான தடகளப் போட்டிகள் 2026 — எஸ்.யு.எம். பள்ளி மாணவர்களின் வரலாறு காணாத சாதனை!
+
+சேலம் மாவட்டத்தில் தமிழ்நாடு அரசு பள்ளிக்கல்வித்துறை சார்பில் நடைபெற்ற 67-வது குடியரசு தின மாநில அளவிலான தடகளப் போட்டிகளில் (29.10.2026 – 02.11.2026), ராயப்பன்பட்டி சவரியப்ப உடையார் நினைவு மேல்நிலைப்பள்ளி (S.U.M.) மாணவர்கள் கலந்து கொண்டு தமிழ்நாடு அளவில் மாபெரும் சாதனைகளைப் படைத்துள்ளனர்:
+
+🥇 எஸ். ஜஸ்வந்த் (S. Jaswanth):
+• குண்டு எறிதல் (Shot-Put): மாநில அளவில் முதலிடம் — தங்கப் பதக்கம் (Gold Medal)
+• வட்டு எறிதல் (Discus Throw): மாநில அளவில் முதலிடம் — தங்கப் பதக்கம் (Gold Medal)
+ஒரே தடகளப் போட்டியில் இரண்டு பிரதான எறிதல் பிரிவுகளிலும் மாநில அளவில் முதலிடம் பெற்று இரட்டைத் தங்கப் பதக்கங்களை வென்று பள்ளிக்கு அளப்பரிய புகழைத் தேடித் தந்துள்ளார்!
+
+🥉 ஜி. தமிழரசன் (G. Tamilarasan):
+• மும்முறை தாண்டுதல் (Triple Jump): மாநில அளவில் மூன்றாம் இடம் — வெண்கலப் பதக்கம் (Bronze Medal) மற்றும் சிறப்புச் சான்றிதழ் வென்று பெருமை சேர்த்துள்ளார்!
+
+மாநில அளவில் பதக்கங்களை அள்ளிக்குவித்து பள்ளிக்கு பெருமை சேர்த்த தடகள வீரர்களான எஸ். ஜஸ்வந்த், ஜி. தமிழரசன் ஆகியோருக்கும், அவர்களுக்கு சிறந்த முறையில் பயிற்சி அளித்த உடற்கல்வி இயக்குநர்கள் மற்றும் ஆசிரியர்களுக்கும் பள்ளி நிர்வாகம், செயலர் & தாளாளர் உயர்திரு. M.S. பிரபாகர் M.A., தலைமையாசிரியர்கள் மற்றும் இருபால் ஆசிரியப் பெருமக்கள் நெஞ்சார்ந்த வாழ்த்துகளையும் பாராட்டுகளையும் தெரிவித்துக் கொள்கிறார்கள்.`,
+    date: new Date('2026-11-03T10:00:00.000Z'),
+    publishDate: '2026-11-03',
+    category: 'general',
+    imageUrl: '/images/achievement-jaswanth-shotput-discus-gold.jpg',
+    attachmentUrl: '/images/achievement-tamilarasan-triple-jump-bronze.jpg',
+    attachmentName: 'State-Athletics-Medalists-Tamilarasan-Jaswanth.jpg',
+    status: 'published',
+    featured: true,
+    priority: 'high',
+  },
+  {
+    id: 'ann-dinamani-feature-2026',
+    title: 'Dinamani Daily Feature: 60+ Years of Glorious Educational Service by S.U.M. School, Royappanpatti',
+    title_en: 'Dinamani Daily Feature: 60+ Years of Glorious Educational Service by S.U.M. School, Royappanpatti',
+    title_ta: 'தினமணி நாளிதழ் சிறப்புச் செய்தி: கல்விச் சேவையில் ராயப்பன்பட்டி எஸ்.யு.எம். பள்ளி!',
+    description: 'Prominent feature published in Dinamani daily highlighting the 60+ year educational legacy of S.U.M. Higher Secondary & Primary School, 100% board exam pass records, hostel facilities, and distinguished alumni.',
+    description_en: 'Prominent feature published in Dinamani daily highlighting the 60+ year educational legacy of S.U.M. Higher Secondary & Primary School, 100% board exam pass records, hostel facilities, and distinguished alumni.',
+    description_ta: 'தினமணி நாளிதழின் "தொழில்மலர்" பகுதியில் எஸ்.யு.எம். பள்ளியின் 60 ஆண்டுகால கல்விப் பணிகள், 100% அரசு பொதுத்தேர்வு தேர்ச்சி, மற்றும் பள்ளி உள்கட்டமைப்பு பற்றிய பிரத்யேக சிறப்புக் கட்டுரை.',
+    content: `கல்விச் சேவையில் ராயப்பன்பட்டி எஸ்.யு.எம். பள்ளி — தினமணி நாளிதழ் (தொழில்மலர்) சிறப்புக் கட்டுரை!
+(நாள்: திங்கள்கிழமை, 19 அக்டோபர் 2026)
+
+தேனி மாவட்டம், மேற்குத் தொடர்ச்சி மலை அடிவாரத்தில் இயற்கை சூழலில் அமைந்துள்ள ராயப்பன்பட்டி கிராமத்தில், 60 ஆண்டுகளுக்கும் மேலாக கல்விச் சேவையில் சிறந்து விளங்கி வருகிறது எஸ்.யு.எம். பள்ளி.
+
+வரலாற்றுப் பின்னணி:
+கடந்த 20.05.1963 அன்று கல்வி எனும் மாமருந்து கடைக்கோடி மாணவர்க்கும் கிடைக்க வேண்டும் என்ற உயரிய எண்ணத்தில் கம்பம் பள்ளத்தாக்கில் இப்பள்ளி தொடங்கப்பட்டது. சவரிமுத்து உடையார் தனது தந்தையின் பெயரில் 'சவரியப்ப உடையார் நினைவு தொடக்கப் பள்ளி, உயர்நிலைப் பள்ளி' என இரு பள்ளிகளைத் தொடங்கினார். பின்னர் 1970-ஆம் ஆண்டு மேல்நிலைப் பள்ளியாகத் தரம் உயர்த்தப்பட்டது.
+
+பள்ளியின் முக்கியச் சிறப்பம்சங்கள்:
+• இருபாலர் படிக்கும் இப்பள்ளியில் தமிழ், ஆங்கில வழிக் கல்வியில் மொத்தம் 4,500 மாணவ, மாணவிகள் பயின்று வருகின்றனர்.
+• பள்ளித் தாளாளர் திரு. M.S. பிரபாகர் M.A. அவர்களின் தலைமையில் 62 அரசு உதவி பெறும் ஆசிரியர்களும், 30 நிர்வாக ஊழியர்களும் சிறப்பாகப் பணியாற்றி வருகின்றனர்.
+• சிறந்த கல்வி, ஒழுக்கம், உடற்கல்வி உள்ளிட்டவற்றைத் தரும் இப்பள்ளியில் தேனி மாவட்டத்தைச் சேர்ந்த மாணவ, மாணவிகள் மட்டுமின்றி, கேரள ஏலத்தோட்டத்தில் பணிபுரியும் தமிழக கூலித் தொழிலாளர்களின் குழந்தைகளும் பயின்று வருகின்றனர்.
+• 1966-ஆம் ஆண்டு அப்போதைய அமைச்சர் கக்கன் அவர்களால் திறந்து வைக்கப்பட்ட பள்ளி விடுதியில் தற்போது 1,500 மாணவ, மாணவிகள் தங்கிப் படித்து வருகின்றனர்.
+
+வரலாற்று சிறப்புமிக்க தலைவர்கள் வருகை:
+• 1964-ஆம் ஆண்டு நடைபெற்ற ஆண்டு விழாவில் அப்போதைய தமிழக முதல்வர் பக்தவத்சலம் அவர்கள் கலந்து கொண்டார்.
+• 1965-ஆம் ஆண்டு சென்னை பல்கலைக்கழக துணைவேந்தரும் பள்ளிக் கல்வித்துறை இயக்குநருமான நெ.து. சுந்தரவடிவேலு கலந்து கொண்டு சிறப்பித்தார்.
+
+அரசு பொதுத்தேர்வில் 100% தேர்ச்சி:
+• பிளஸ் 2 பொதுத்தேர்வில் தொடர்ந்து 9 ஆண்டுகளாக 100% தேர்ச்சி. சமீபத்திய தேர்வில் 467 மாணவ, மாணவிகளும் தேர்ச்சி பெற்று பள்ளிக்குப் பெருமை சேர்த்துள்ளனர்.
+• பொதுத்தேர்வில் சிறந்த மதிப்பெண்கள் பெறும் ஏழை மாணவ, மாணவிகளின் உயர்கல்விக்கான செலவுகளை பள்ளி நிர்வாகமே ஏற்றுக்கொள்கிறது.
+• 2013-14 ஆம் கல்வியாண்டில் கணக்குப்பதிவியல் மற்றும் தணிக்கையியல் பாடத்தில் 200/200 மதிப்பெண் பெற்று மாநில அளவில் முதலிடம் பெற்று சாதனை படைத்தனர்.
+
+முன்னாள் மாணவர் சாதனைகள்:
+இப்பள்ளியில் பயின்ற மாணவர்களில் 64 பேர் மருத்துவர்களாகவும், 1,617 பேர் உள் மற்றும் வெளிநாடுகளில் பொறியாளர்களாகவும் பணியாற்றி வருகின்றனர் என்பது குறிப்பிடத்தக்கது.
+
+தொடர்புக்கு:
+தொலைபேசி: 04554-253224, 253424
+மின்னஞ்சல்: roysumschool@yahoo.com`,
+    content_en: `Dinamani Daily Feature: S.U.M. School Royappanpatti in Educational Service
+(Date: Monday, 19 October 2026 — Thozhil Malar Edition)
+
+In the picturesque lap of the Western Ghats in Royappanpatti, Theni District, Savariyappa Udaiyar Memorial (S.U.M.) Higher Secondary and Primary Schools have been rendering stellar educational service for over six decades.
+
+Founding Vision:
+Established on 20th May 1963 by philanthropist Founder M. Savarimuthu Udaiyar in loving memory of his father Savariyappa Udaiyar, ensuring that the light of education reaches every child in the Cumbum Valley. Upgraded to Higher Secondary School in 1970.
+
+Key Institutional Highlights:
+• Over 4,500 students studying in both Tamil and English mediums across Co-educational streams.
+• Managed under the visionary leadership of Correspondent Mr. M.S. Prabakar M.A., supported by 62 Government-Aided faculty members and 30 staff.
+• Catering not only to Theni District scholars, but also providing subsidized hostel accommodation for children of Tamil plantation workers from Kerala cardamom estates.
+• Dedicated hostel facility inaugurated in 1966 by the revered Minister Kakkan, currently housing 1,500 resident students.
+
+Historic Dignitary Visits:
+• In 1964, Chief Minister of Tamil Nadu M. Bhaktavatsalam presided over the Annual Day.
+• In 1965, Madras University Vice-Chancellor & Director of School Education N.D. Sundaravadivelu visited and felicitated the school.
+
+Cent Percent Academic Track Record:
+• 100% pass rate in +2 Public Examinations for 9 consecutive years; recently all 467 students passed with distinction.
+• Management sponsors higher educational expenses for meritorious students from economically challenged backgrounds.
+• State First Rank with 200/200 Centum in Accountancy & Auditing in 2013-14.
+
+Alumni Legacy:
+Proud alma mater to 64 Doctors and 1,617 Engineers contributing across India and across the globe.`,
+    date: new Date('2026-10-19T09:00:00.000Z'),
+    category: 'circular',
+    imageUrl: '/images/dinamani-news-2026.jpg',
+    attachmentUrl: '/images/dinamani-news-2026.jpg',
+    attachmentName: 'Dinamani-S.U.M.-Feature-Article.jpg',
+    status: 'published',
+    featured: true,
+    priority: 'high',
+  },
   {
     id: 'ann-kalai-thiruvizha-2026',
     title: 'State Level Kalai Thiruvizha 2026: 1st Prize in Mime, 3rd in Rangoli & Puppetry',
@@ -854,8 +1065,156 @@ Teachers, Staff and Students.`,
     link: '/events',
   },
 ];
-export const verifiedTimelineEntries: TimelineEntry[] = [];
+export const verifiedTimelineEntries: TimelineEntry[] = [
+  {
+    id: 'time-1963-founding',
+    year: '1963',
+    title: 'Founding of S.U.M. Primary and High School',
+    title_en: 'Founding of S.U.M. Primary and High School',
+    title_ta: 'எஸ்.யு.எம். தொடக்கப்பள்ளி மற்றும் உயர்நிலைப்பள்ளி தொடக்கம்',
+    description: 'Founded on 20.05.1963 by philanthropist M. Savarimuthu Udaiyar in sacred memory of his father M. Savariyappa Udaiyar to bring quality education to rural children in Cumbum Valley.',
+    description_en: 'Founded on 20.05.1963 by philanthropist M. Savarimuthu Udaiyar in sacred memory of his father M. Savariyappa Udaiyar to bring quality education to rural children in Cumbum Valley.',
+    description_ta: 'கம்பம் பள்ளத்தாக்கின் கடைக்கோடி மாணவர்க்கும் கல்வி கிடைக்க வேண்டும் என்ற நோக்கில் 20.05.1963 அன்று நிறுவனர் சவரிமுத்து உடையார் தனது தந்தை சவரியப்ப உடையார் நினைவாக தொடக்க மற்றும் உயர்நிலைப் பள்ளிகளைத் தொடங்கினார்.',
+    category: 'founding',
+    imageUrl: '/images/hero-campus.jpg',
+    order: 1,
+    status: 'published',
+  },
+  {
+    id: 'time-1964-cm-visit',
+    year: '1964',
+    title: 'Tamil Nadu Chief Minister M. Bhaktavatsalam Presides over Annual Day',
+    title_en: 'Tamil Nadu Chief Minister M. Bhaktavatsalam Presides over Annual Day',
+    title_ta: 'தமிழக முதல்வர் பக்தவத்சலம் அவர்கள் பள்ளி ஆண்டு விழாவில் பங்கேற்பு',
+    description: 'The Honourable Chief Minister of Tamil Nadu, Thiru M. Bhaktavatsalam, visited the school and presided over the grand Annual Day celebrations.',
+    description_en: 'The Honourable Chief Minister of Tamil Nadu, Thiru M. Bhaktavatsalam, visited the school and presided over the grand Annual Day celebrations.',
+    description_ta: '1964-ஆம் ஆண்டு நடைபெற்ற பள்ளி ஆண்டு விழாவில் அப்போதைய மாண்புமிகு தமிழக முதல்வர் திரு. பக்தவத்சலம் அவர்கள் நேரில் கலந்து கொண்டு சிறப்பித்தார்.',
+    category: 'milestone',
+    order: 2,
+    status: 'published',
+  },
+  {
+    id: 'time-1965-vc-visit',
+    year: '1965',
+    title: 'Madras University Vice-Chancellor N.D. Sundaravadivelu Visits',
+    title_en: 'Madras University Vice-Chancellor N.D. Sundaravadivelu Visits',
+    title_ta: 'சென்னை பல்கலைக்கழக துணைவேந்தர் நெ.து. சுந்தரவடிவேலு அவர்களின் வருகை',
+    description: 'Renowned educationist, Madras University Vice-Chancellor, and Director of School Education N.D. Sundaravadivelu presided over school celebrations.',
+    description_en: 'Renowned educationist, Madras University Vice-Chancellor, and Director of School Education N.D. Sundaravadivelu presided over school celebrations.',
+    description_ta: '1965-ஆம் ஆண்டு சென்னை பல்கலைக்கழக துணைவேந்தரும் பள்ளிக் கல்வித்துறை இயக்குநருமான நெ.து. சுந்தரவடிவேலு அவர்கள் கலந்து கொண்டு சிறப்பித்தார்.',
+    category: 'milestone',
+    order: 3,
+    status: 'published',
+  },
+  {
+    id: 'time-1966-hostel',
+    year: '1966',
+    title: 'Inauguration of Student Hostel by Minister Kakkan',
+    title_en: 'Inauguration of Student Hostel by Minister Kakkan',
+    title_ta: 'அமைச்சர் கக்கன் அவர்களால் பள்ளி விடுதி திறந்து வைக்கப்பட்டது',
+    description: 'Revered Minister P. Kakkan inaugurated the school student hostel, which today shelters 1,500 rural boys and girls, including children of plantation workers.',
+    description_en: 'Revered Minister P. Kakkan inaugurated the school student hostel, which today shelters 1,500 rural boys and girls, including children of plantation workers.',
+    description_ta: '1966-ஆம் ஆண்டு அப்போதைய அமைச்சர் கக்கன் அவர்களால் திறந்து வைக்கப்பட்ட பள்ளி விடுதியில் இன்று 1,500 மாணவ, மாணவிகள் தங்கி கல்வி பயின்று வருகின்றனர்.',
+    category: 'infrastructure',
+    order: 4,
+    status: 'published',
+  },
+  {
+    id: 'time-1970-hsc',
+    year: '1970',
+    title: 'Elevation to Higher Secondary School',
+    title_en: 'Elevation to Higher Secondary School',
+    title_ta: 'மேல்நிலைப் பள்ளியாகத் தரம் உயர்த்தப்பட்டது',
+    description: 'Upgraded to a Higher Secondary institution offering diverse science, mathematics, commerce, and vocational streams.',
+    description_en: 'Upgraded to a Higher Secondary institution offering diverse science, mathematics, commerce, and vocational streams.',
+    description_ta: '1970-ஆம் ஆண்டு அறிவியல், கணிதம், வணிகவியல் மற்றும் தொழிற்கல்வி பிரிவுகளுடன் மேல்நிலைப் பள்ளியாகத் தரம் உயர்த்தப்பட்டது.',
+    category: 'academics',
+    order: 5,
+    status: 'published',
+  },
+  {
+    id: 'time-2013-golden-jubilee',
+    year: '2013',
+    title: 'Golden Jubilee Celebration & Memorial Arch (1963–2013)',
+    title_en: 'Golden Jubilee Celebration & Memorial Arch (1963–2013)',
+    title_ta: 'பள்ளி பொன்விழா கொண்டாட்டம் மற்றும் பொன்விழா நினைவு வளைவு',
+    description: 'Completed 50 years of exceptional educational service. Dedicated the grand Golden Jubilee Arch and celebrated 9 consecutive years of 100% board exam pass rates.',
+    description_en: 'Completed 50 years of exceptional educational service. Dedicated the grand Golden Jubilee Arch and celebrated 9 consecutive years of 100% board exam pass rates.',
+    description_ta: '50-வது ஆண்டு பொன்விழா கொண்டாட்டம். பள்ளி பொன்விழா வளைவு நிறுவப்பட்டு, தொடர்ச்சியாக 9 ஆண்டுகள் 100% அரசு பொதுத்தேர்வு தேர்ச்சி மைல்கல் எட்டப்பட்டது.',
+    category: 'jubilee',
+    imageUrl: '/images/dinamani-news-2026.jpg',
+    order: 6,
+    status: 'published',
+  },
+  {
+    id: 'time-2014-state-centum',
+    year: '2014',
+    title: 'State 1st Rank with 200/200 Centum in Accountancy & Auditing',
+    title_en: 'State 1st Rank with 200/200 Centum in Accountancy & Auditing',
+    title_ta: 'கணக்குப்பதிவியல் & தணிக்கையியலில் 200/200 பெற்று மாநில முதலிடம்',
+    description: 'In academic year 2013–14, S.U.M. School students achieved a historic 200/200 centum in Accountancy & Auditing securing State First Rank.',
+    description_en: 'In academic year 2013–14, S.U.M. School students achieved a historic 200/200 centum in Accountancy & Auditing securing State First Rank.',
+    description_ta: '2013-14 ஆம் கல்வியாண்டில் கணக்குப்பதிவியல் மற்றும் தணிக்கையியல் பாடத்தில் 200/200 மதிப்பெண் பெற்று மாநில அளவில் முதல் மதிப்பெண் பெற்று சாதனை.',
+    category: 'academics',
+    order: 7,
+    status: 'published',
+  },
+  {
+    id: 'time-2026-dinamani-feature',
+    year: '2026',
+    title: 'Dinamani Daily Special Feature: Over 4,500 Scholars & 1,600+ Engineers',
+    title_en: 'Dinamani Daily Special Feature: Over 4,500 Scholars & 1,600+ Engineers',
+    title_ta: 'தினமணி நாளிதழ் சிறப்புச் செய்தி: 4,500+ மாணவர்கள், 1,600+ பொறியாளர்கள்',
+    description: 'Prominently featured in Dinamani Thozhil Malar celebrating 4,500+ enrolled students, 64 doctors, 1,617 engineers, and 100% pass record in board exams.',
+    description_en: 'Prominently featured in Dinamani Thozhil Malar celebrating 4,500+ enrolled students, 64 doctors, 1,617 engineers, and 100% pass record in board exams.',
+    description_ta: 'தினமணி நாளிதழில் 4,500+ மாணவர்கள், 64 மருத்துவர்கள், 1,617 பொறியாளர்கள் மற்றும் தொடர் 100% தேர்ச்சி குறித்து சிறப்புக் கட்டுரை வெளியானது.',
+    category: 'milestone',
+    imageUrl: '/images/dinamani-news-2026.jpg',
+    order: 8,
+    status: 'published',
+  },
+];
 export const verifiedGalleryImages: GalleryImage[] = [
+  {
+    id: 'gal-jaswanth-shotput-discus-gold-2026',
+    title: 'S. Jaswanth — State Double Gold Medalist in Shot-Put & Discus Throw',
+    title_en: 'S. Jaswanth — State Double Gold Medalist in Shot-Put & Discus Throw',
+    title_ta: 'எஸ். ஜஸ்வந்த் — குண்டு எறிதல் & வட்டு எறிதலில் மாநில இரட்டைத் தங்கப் பதக்க வெற்றியாளர்',
+    imageUrl: '/images/achievement-jaswanth-shotput-discus-gold.jpg',
+    thumbnailUrl: '/images/achievement-jaswanth-shotput-discus-gold.jpg',
+    albumId: 'sports-meet-2026',
+    albumName: 'Sports & Athletics',
+    description: 'S. Jaswanth on the victory podium holding his Gold Medal at the 67th Republic Day State Level Athletics Championship in Salem.',
+    description_en: 'S. Jaswanth on the victory podium holding his Gold Medal at the 67th Republic Day State Level Athletics Championship in Salem.',
+    description_ta: 'சேலம் 67-வது குடியரசு தின மாநில தடகளப் போட்டியில் குண்டு எறிதல் மற்றும் வட்டு எறிதலில் தங்கப் பதக்கம் வென்று வெற்றி மேடையில் நிற்கும் எஸ். ஜஸ்வந்த்.',
+    eventCategory: 'sports',
+    academicYear: '2026–2027',
+    calendarYear: 2026,
+    month: 'November',
+    status: 'published',
+    order: 1,
+    isFeatured: true,
+  },
+  {
+    id: 'gal-tamilarasan-triple-jump-bronze-2026',
+    title: 'G. Tamilarasan — State Bronze Medalist in Triple Jump with Mentors',
+    title_en: 'G. Tamilarasan — State Bronze Medalist in Triple Jump with Mentors',
+    title_ta: 'ஜி. தமிழரசன் — மும்முறை தாண்டுதலில் மாநில வெண்கலப் பதக்கம் மற்றும் சான்றிதழுடன்',
+    imageUrl: '/images/achievement-tamilarasan-triple-jump-bronze.jpg',
+    thumbnailUrl: '/images/achievement-tamilarasan-triple-jump-bronze.jpg',
+    albumId: 'sports-meet-2026',
+    albumName: 'Sports & Athletics',
+    description: 'G. Tamilarasan holding his Bronze Medal and state merit certificate alongside Physical Education Directors and officials.',
+    description_en: 'G. Tamilarasan holding his Bronze Medal and state merit certificate alongside Physical Education Directors and officials.',
+    description_ta: 'மும்முறை தாண்டுதலில் மாநில அளவில் வெண்கலப் பதக்கம் மற்றும் சான்றிதழ் வென்று உடற்கல்வி ஆசிரியர்களுடன் நிற்கும் மாணவர் ஜி. தமிழரசன்.',
+    eventCategory: 'sports',
+    academicYear: '2026–2027',
+    calendarYear: 2026,
+    month: 'November',
+    status: 'published',
+    order: 2,
+    isFeatured: true,
+  },
   {
     id: 'gal-hockey-2026',
     title: 'Theni Revenue District Hockey Tournament Winners & Runners-Up',
@@ -873,7 +1232,7 @@ export const verifiedGalleryImages: GalleryImage[] = [
     calendarYear: 2026,
     month: 'October',
     status: 'published',
-    order: 1,
+    order: 3,
     isFeatured: true,
   },
   {
@@ -893,7 +1252,7 @@ export const verifiedGalleryImages: GalleryImage[] = [
     calendarYear: 2026,
     month: 'November',
     status: 'published',
-    order: 2,
+    order: 4,
     isFeatured: true,
   },
   {
@@ -913,7 +1272,27 @@ export const verifiedGalleryImages: GalleryImage[] = [
     calendarYear: 2026,
     month: 'January',
     status: 'published',
-    order: 3,
+    order: 5,
+    isFeatured: true,
+  },
+  {
+    id: 'gal-dinamani-news-2026',
+    title: 'Dinamani Daily Feature Article on S.U.M. School Heritage & Excellence',
+    title_en: 'Dinamani Daily Feature Article on S.U.M. School Heritage & Excellence',
+    title_ta: 'தினமணி நாளிதழ் சிறப்பு மலரில் எஸ்.யு.எம். பள்ளி பற்றிய வரலாற்றுக் கட்டுரை',
+    imageUrl: '/images/dinamani-news-2026.jpg',
+    thumbnailUrl: '/images/dinamani-news-2026.jpg',
+    albumId: 'press-media-coverage',
+    albumName: 'Press & Media Coverage',
+    description: 'Special feature in Dinamani daily (Thozhil Malar) highlighting 60+ years of educational service, 100% board exam pass rates, 4500+ students, and golden jubilee legacy.',
+    description_en: 'Special feature in Dinamani daily (Thozhil Malar) highlighting 60+ years of educational service, 100% board exam pass rates, 4500+ students, and golden jubilee legacy.',
+    description_ta: 'தினமணி நாளிதழின் தொழில்மலர் பகுதியில் எஸ்.யு.எம். பள்ளியின் 60 ஆண்டுகால கல்வி சேவை, 4500+ மாணவர்கள், 100% தேர்ச்சி மற்றும் பொன்விழா வளைவு குறித்த சிறப்புக் கட்டுரை.',
+    eventCategory: 'general',
+    academicYear: '2026–2027',
+    calendarYear: 2026,
+    month: 'October',
+    status: 'published',
+    order: 6,
     isFeatured: true,
   },
 ];
@@ -1032,7 +1411,7 @@ export const defaultEvents: SchoolEvent[] = [
 ];
 export const defaultAchievements: Achievement[] = verifiedAchievements;
 export const defaultGalleryImages: GalleryImage[] = verifiedGalleryImages;
-export const defaultTimelineEntries: TimelineEntry[] = [];
+export const defaultTimelineEntries: TimelineEntry[] = verifiedTimelineEntries;
 export const defaultAnnouncements: Announcement[] = verifiedAnnouncements;
 export const defaultTestimonials: Testimonial[] = [];
 export const defaultHeroBanners: HeroBanner[] = [];

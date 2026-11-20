@@ -67,6 +67,7 @@ import {
   verifiedFacilities,
   verifiedAchievements,
   verifiedGalleryImages,
+  verifiedTimelineEntries,
 } from '@/lib/defaultData';
 
 export type DataMode = 'local' | 'firebase';
@@ -391,7 +392,8 @@ export const achievementRepository = new CollectionRepository<Achievement>(
 
 export const timelineRepository = new CollectionRepository<TimelineEntry>(
   STORES.TIMELINE,
-  'timelineEntries'
+  'timelineEntries',
+  () => verifiedTimelineEntries
 );
 
 export const testimonialRepository = new CollectionRepository<Testimonial>(
