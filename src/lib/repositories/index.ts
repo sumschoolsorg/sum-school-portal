@@ -14,6 +14,7 @@ import {
   clearAllLocalData,
   exportAllLocalData,
   importAllLocalData,
+  getDeletedTombstones,
 } from '@/lib/db/indexedDB';
 
 import {
@@ -61,6 +62,8 @@ import {
   defaultAdmissionsContent,
   defaultThemeSettings,
   defaultWebsiteSettings,
+  verifiedAnnouncements,
+  defaultEvents,
 } from '@/lib/defaultData';
 
 export type DataMode = 'local' | 'firebase';
@@ -144,7 +147,8 @@ export class SingleDocRepository<T extends { id?: string }> {
 export class CollectionRepository<T extends { id?: string; status?: string; order?: number }> {
   constructor(
     private storeName: StoreName,
-    private firestoreCollection: string
+    private firestoreCollection: string,
+    private defaultItems?: () => T[]
   ) {}
 
   async getAll(): Promise<T[]> {
@@ -152,7 +156,7 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection);
-        if (Array.isArray(docs)) {
+        if (Array.isArray(docs) && docs.length > 0) {
           // Mirror cloud state into local cache so offline cache matches Firestore exactly
           try {
             await clearLocalStore(this.storeName);
@@ -171,7 +175,17 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
       }
     }
 
-    return getLocalAll<T>(this.storeName);
+    const localItems = await getLocalAll<T>(this.storeName);
+    if (localItems && localItems.length > 0) {
+      return localItems;
+    }
+
+    if (this.defaultItems) {
+      const tombstones = getDeletedTombstones();
+      return this.defaultItems().filter((item) => !item.id || !tombstones.has(item.id));
+    }
+
+    return [];
   }
 
   async getPublished(): Promise<T[]> {
@@ -179,26 +193,52 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
-        return Array.isArray(docs) ? docs : [];
+        if (Array.isArray(docs) && docs.length > 0) {
+          return docs;
+        }
       } catch (cloudErr) {
         console.warn(`Firestore getPublished warning for ${this.firestoreCollection}:`, cloudErr);
       }
     }
     const all = await getLocalAll<T>(this.storeName);
-    return all.filter((item) => item.status === 'published');
+    const published = all.filter((item) => item.status === 'published');
+    if (published && published.length > 0) {
+      return published;
+    }
+
+    if (this.defaultItems) {
+      const tombstones = getDeletedTombstones();
+      return this.defaultItems().filter(
+        (item) => (item.status ? item.status === 'published' : true) && (!item.id || !tombstones.has(item.id))
+      );
+    }
+
+    return [];
   }
 
   async getById(id: string): Promise<T | null> {
     const mode = getCurrentDataMode();
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
-        return await getDocument<T>(this.firestoreCollection, id);
+        const doc = await getDocument<T>(this.firestoreCollection, id);
+        if (doc) return doc;
       } catch (cloudErr) {
         console.warn(`Firestore getById warning for ${this.firestoreCollection}/${id}:`, cloudErr);
       }
     }
 
-    return getLocalById<T>(this.storeName, id);
+    const localDoc = await getLocalById<T>(this.storeName, id);
+    if (localDoc) return localDoc;
+
+    if (this.defaultItems) {
+      const tombstones = getDeletedTombstones();
+      if (!tombstones.has(id)) {
+        const found = this.defaultItems().find((item) => item.id === id);
+        if (found) return found;
+      }
+    }
+
+    return null;
   }
 
   async save(data: T): Promise<T> {
@@ -323,12 +363,14 @@ export const facilityRepository = new CollectionRepository<Facility>(
 
 export const announcementRepository = new CollectionRepository<Announcement>(
   STORES.ANNOUNCEMENTS,
-  'announcements'
+  'announcements',
+  () => verifiedAnnouncements
 );
 
 export const eventRepository = new CollectionRepository<SchoolEvent>(
   STORES.EVENTS,
-  'events'
+  'events',
+  () => defaultEvents
 );
 
 export const galleryRepository = new CollectionRepository<GalleryImage>(

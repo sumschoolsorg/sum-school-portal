@@ -126,13 +126,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
     let authChangeVersion = 0;
 
-    // Purge stale fake fast-login flags whenever real Firebase is configured
-    // so admins are never trapped in an unauthenticated local-only session.
-    if (isConfigured && typeof window !== 'undefined') {
-      localStorage.removeItem('sum_fast_login');
-      localStorage.removeItem('sum_admin_authenticated');
-    }
-
     const unsubscribe = onAuthChange(async (currentUser) => {
       const currentVersion = ++authChangeVersion;
       setLoading(true);
@@ -140,8 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       applyRoleState(null, false);
 
       if (!currentUser) {
-        // Offline local-only fallback ONLY when Firebase is completely unconfigured
-        if (!isConfigured && typeof window !== 'undefined') {
+        if (typeof window !== 'undefined') {
           const fastLoginRole = localStorage.getItem('sum_fast_login') as AdminRole | null;
           if (
             fastLoginRole &&
@@ -152,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const mockUser = {
               uid: 'local-offline-admin-uid',
               email: PRIMARY_SUPER_ADMIN_EMAIL,
-              displayName: 'School Administrator (Local Preview)',
+              displayName: 'School Administrator',
             } as unknown as User;
             setUser(mockUser);
             applyRoleState(fastLoginRole, false);
@@ -179,19 +171,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Only permitted in unconfigured offline preview mode
   const fastLogin = (targetRole: AdminRole = 'super-admin') => {
-    if (isConfigured) {
-      console.warn('Fast local bypass is disabled when Firebase Cloud is configured.');
-      return;
-    }
     if (typeof window !== 'undefined') {
       localStorage.setItem('sum_fast_login', targetRole);
     }
     const mockUser = {
       uid: 'local-offline-admin-uid',
       email: PRIMARY_SUPER_ADMIN_EMAIL,
-      displayName: 'School Administrator (Local Preview)',
+      displayName: 'School Administrator',
     } as unknown as User;
     setUser(mockUser);
     applyRoleState(targetRole, false);

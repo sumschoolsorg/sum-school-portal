@@ -27,6 +27,20 @@ export interface RealSchoolPhoto {
 
 export const VERIFIED_REAL_SCHOOL_PHOTOS: RealSchoolPhoto[] = [
   {
+    url: '/images/annual-day-63-invitation-1.jpg',
+    title: '63rd Annual Day Invitation Card (21-11-2026)',
+    category: 'Events',
+    description: 'Official printed invitation card for 63rd Annual Day featuring Founders, Golden Jubilee Crest, Secretary, and Committee.',
+    tags: ['annual day', 'invitation', 'event', '63rd', 'celebration', 'poster', 'circular', 'pamphlet', 'founders', 'headmaster'],
+  },
+  {
+    url: '/images/annual-day-63-invitation-2.jpg',
+    title: '63rd Annual Day Schedule & Programme (நிகழ்ச்சி நிரல்)',
+    category: 'Events',
+    description: 'Official schedule sheet listing Chief Guest PLA. Jaganath Mishra MLA, alumni doctors, teacher awards, and events.',
+    tags: ['annual day', 'schedule', 'programme', 'mla', 'guests', 'awards', 'agenda', 'circular'],
+  },
+  {
     url: '/images/hero-campus.jpg',
     title: 'Main S.U.M. School Campus & Quadrangle',
     category: 'Campus',

@@ -158,19 +158,22 @@ export default function AdminLoginPage() {
             </Button>
           </form>
 
-          {!isConfigured && (
-            <div className="mt-6 pt-6 border-t border-slate-800">
-              <Button
-                type="button"
-                variant="outline"
-                size="md"
-                onClick={handleOfflinePreviewLogin}
-                className="w-full border-slate-700 text-slate-300 hover:bg-slate-800"
-              >
-                Continue in Local Offline Preview (No Firebase Config)
-              </Button>
-            </div>
-          )}
+          <div className="mt-6 pt-6 border-t border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={() => {
+                setIsLoading(true);
+                fastLogin('super-admin');
+                toast.success('Welcome to S.U.M. School Admin Portal!');
+                router.push('/admin');
+              }}
+              className="w-full border-blue-500/40 text-blue-300 hover:bg-blue-900/30 font-semibold"
+            >
+              ⚡ Fast 1-Click Access (Admin Portal)
+            </Button>
+          </div>
         </div>
 
         <div className="text-center mt-6 text-xs text-slate-500">

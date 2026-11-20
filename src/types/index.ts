@@ -352,6 +352,9 @@ export interface SchoolEvent extends FirestoreDoc {
   calendarYear?: number;
   month?: string;
   chiefGuest?: string;
+  chiefGuest_en?: string;
+  chiefGuest_ta?: string;
+  organizer?: string;
   registrationLink?: string;
   status: PublishStatus;
   isFeatured?: boolean;
