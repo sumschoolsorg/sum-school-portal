@@ -260,12 +260,17 @@ The school crest is embedded across all modern browser specifications using a mu
 - **Bilingual Empty States:** Graceful handling when no records match a filter.
 
 ### 3.12 Achievements, Honors & State Accolades (`/achievements`)
+- **Theni Revenue District Hockey Tournament Champions & State Qualifiers (2026):**
+  - **Junior Category (ஜூனியர் பிரிவு):** **1st Place (முதலிடம் — Winners / Gold)** and officially qualified for the **Tamil Nadu State Level Hockey Tournament** (மாநில போட்டிக்கு தகுதி).
+  - **Senior Category (சீனியர் பிரிவு):** **2nd Place (இரண்டாம் இடம் — Runners-Up / Silver)**.
+  - **Super Senior Category (சூப்பர் சீனியர் பிரிவு):** **2nd Place (இரண்டாம் இடம் — Runners-Up / Silver)**.
+  - Complete squad photograph archived and published across admin and public portals: [public/images/hockey-tournament-theni-2026.jpg](file:///d:/project/sum/public/images/hockey-tournament-theni-2026.jpg).
 - **Kalai Thiruvizha 2026 State Level Victories:**
   - *Mime (ஊமை நாடகம்):* State Level 1st Prize Winner with trophy, medals, and state commendation.
   - *Rangoli (ரங்கோலி):* State Level 3rd Prize Winner.
   - *Puppetry (பொம்மலாட்டம்):* State Level 3rd Prize Winner.
 - **Academic Honors:** 100% pass percentages in 10th and 12th standard public examinations, school toppers, and centum scorers.
-- **Sports & Athletics Championships:** District, zonal, and state-level medals in volleyball, athletics, kabaddi, and silambam.
+- **Sports & Athletics Championships:** District, zonal, and state-level medals in hockey, volleyball, athletics, kabaddi, and silambam.
 - **Co-Curricular Accolades:** Science exhibition state winners, essay/oratorical prizes, quiz competitions.
 - **Youth Organizations:** National Cadet Corps (NCC), National Service Scheme (NSS), Bharat Scouts & Guides, Junior Red Cross (JRC), and Green Corps activities.
 

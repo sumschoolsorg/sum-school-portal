@@ -591,8 +591,80 @@ export const defaultAlumni: AlumniMember[] = [];
 export const defaultStudentResults: StudentResult[] = [];
 export const sampleEnquiriesSeed: Enquiry[] = [];
 export const defaultEnquiries: Enquiry[] = [];
-export const verifiedAchievements: Achievement[] = [];
+export const verifiedAchievements: Achievement[] = [
+  {
+    id: 'ach-theni-hockey-2026',
+    title: 'Theni Revenue District Hockey Tournament: Junior Team Champions (State Qualified), Senior & Super Senior Runners-Up',
+    title_en: 'Theni Revenue District Hockey Tournament: Junior Team Champions (State Qualified), Senior & Super Senior Runners-Up',
+    title_ta: 'தேனி வருவாய் மாவட்ட அளவிலான ஹாக்கி போட்டி: ஜூனியர் அணி முதலிடம் (மாநிலப் போட்டிக்கு தகுதி), சீனியர் & சூப்பர் சீனியர் அணிகள் இரண்டாமிடம்',
+    description: 'S.U.M. Higher Secondary School Hockey Teams achieved historic glory at the Theni Revenue District Hockey Championship. The Junior Team emerged as Champions securing 1st Place and qualified for the Tamil Nadu State Level Tournament. Senior and Super Senior teams bagged 2nd Place.',
+    description_en: 'S.U.M. Higher Secondary School Hockey Teams achieved historic glory at the Theni Revenue District Hockey Championship. The Junior Team emerged as Champions securing 1st Place and qualified for the Tamil Nadu State Level Tournament. Senior and Super Senior teams bagged 2nd Place.',
+    description_ta: 'தேனி வருவாய் மாவட்ட அளவில் நடைபெற்ற ஹாக்கி போட்டியில் நம் எஸ்.யு.எம். பள்ளி ஜூனியர் பிரிவில் முதலிடம் பெற்று வரலாற்று சாதனையுடன் மாநில போட்டிக்கு தகுதி பெற்றுள்ளது. மேலும் சீனியர் மற்றும் சூப்பர் சீனியர் பிரிவுகளில் இரண்டாம் இடம் பிடித்து பள்ளிக்குப் பெருமை சேர்த்துள்ளனர்.',
+    date: new Date('2026-10-15T14:00:00.000Z'),
+    category: 'sports',
+    studentName: 'S.U.M. School Hockey Teams (Junior, Senior, Super Senior)',
+    studentName_ta: 'எஸ்.யு.எம். பள்ளி ஹாக்கி அணிகள் (ஜூனியர், சீனியர், சூப்பர் சீனியர்)',
+    teamName: 'S.U.M. Hockey Squad',
+    className: 'Sports Squad',
+    academicYear: '2026–2027',
+    examinationName: 'Theni Revenue District Annual Inter-School Hockey Championship',
+    totalMarks: 0,
+    totalMaxMarks: 0,
+    percentage: 100,
+    rank: 'Junior: 1st Place (State Qualified) | Senior & Super Senior: 2nd Place',
+    hometown: 'Royappanpatti / Theni District',
+    imageUrl: '/images/hockey-tournament-theni-2026.jpg',
+    awardPhotoUrl: '/images/hockey-tournament-theni-2026.jpg',
+    status: 'published',
+    isFeatured: true,
+  },
+];
 export const verifiedAnnouncements: Announcement[] = [
+  {
+    id: 'ann-theni-hockey-2026',
+    title: 'Historic Triumph: S.U.M. School Hockey Team Wins 1st Place in Theni District (State Qualified)',
+    title_en: 'Historic Triumph: S.U.M. School Hockey Team Wins 1st Place in Theni District (State Qualified)',
+    title_ta: 'வரலாற்று வெற்றி: தேனி வருவாய் மாவட்ட ஹாக்கி போட்டியில் எஸ்.யு.எம். பள்ளி ஜூனியர் அணி முதலிடம் (மாநிலப் போட்டிக்கு தகுதி!)',
+    description: 'S.U.M. Higher Secondary School Hockey Junior Team won 1st Place in the Theni Revenue District Hockey Tournament and qualified for the State Tournament. Senior & Super Senior teams won 2nd Place.',
+    description_en: 'S.U.M. Higher Secondary School Hockey Junior Team won 1st Place in the Theni Revenue District Hockey Tournament and qualified for the State Tournament. Senior & Super Senior teams won 2nd Place.',
+    description_ta: 'தேனி வருவாய் மாவட்ட அளவில் நடைபெற்ற ஹாக்கி போட்டியில் நம் பள்ளி ஜூனியர் அணி முதலிடம் பெற்று மாநிலப் போட்டிக்குத் தகுதி பெற்றுள்ளது! சீனியர் மற்றும் சூப்பர் சீனியர் அணிகள் 2-ஆம் இடம் பெற்று பெருமை சேர்த்துள்ளனர்.',
+    content: `தேனி வருவாய் மாவட்ட ஹாக்கி போட்டி — எஸ்.யு.எம். பள்ளிக்கு மாபெரும் வெற்றி!
+
+தேனி வருவாய் மாவட்ட அளவில் நடைபெற்ற பள்ளி மாணவர்களுக்கான ஹாக்கி போட்டியில், ராயப்பன்பட்டி சவரியப்ப உடையார் நினைவு மேல்நிலைப்பள்ளி (S.U.M.) மாணவர்கள் அபார திறமையை வெளிப்படுத்தி மாபெரும் வெற்றி வாகை சூடியுள்ளனர்:
+
+🏆 ஜூனியர் பிரிவு:
+முதலிடம் (1st Place - Winners) பெற்று தங்கக் கோப்பையை வென்று, தமிழ்நாடு மாநில அளவிலான போட்டிக்கு தகுதி பெற்றுள்ளனர்!
+
+🥈 சீனியர் பிரிவு:
+இரண்டாம் இடம் (2nd Place - Runners-up) பிடித்து சாதனை படைத்துள்ளனர்.
+
+🥈 சூப்பர் சீனியர் பிரிவு:
+இரண்டாம் இடம் (2nd Place - Runners-up) பிடித்து சாதனை படைத்துள்ளனர்.
+
+பள்ளிக்கு பெருமை சேர்த்த மாணவர்களுக்கும், அவர்களை சிறப்புடன் வழிநடத்திய உடற்கல்வி இயக்குநர்கள் மற்றும் ஆசிரியப் பெருமக்களுக்கும் பள்ளி நிர்வாகம், தாளாளர், தலைமையாசிரியர்கள் மற்றும் ஆசிரியர்கள் மனமார்ந்த வாழ்த்துகளையும் பாராட்டுகளையும் தெரிவித்துக் கொள்கிறார்கள்.`,
+    content_en: `Theni Revenue District Hockey Tournament — Historic Victory for S.U.M. Higher Secondary School!
+
+At the Theni Revenue District Annual Inter-School Hockey Tournament, the talented hockey squads of Savariyappa Udaiyar Memorial Higher Secondary School delivered stellar performances across all age divisions:
+
+🏆 Junior Division:
+Secured 1st Place (District Champions) and officially qualified to represent Theni District at the Tamil Nadu State Level Tournament!
+
+🥈 Senior Division:
+Secured 2nd Place (Runners-Up) with commendable performance.
+
+🥈 Super Senior Division:
+Secured 2nd Place (Runners-Up) with high sporting spirit.
+
+The School Management, Correspondent, Headmaster, Faculty, and Students warmly congratulate our victorious players and Physical Education Directors for bringing immense honor and pride to our institution!`,
+    date: new Date('2026-10-15T14:00:00.000Z'),
+    category: 'general',
+    imageUrl: '/images/hockey-tournament-theni-2026.jpg',
+    attachmentUrl: '',
+    attachmentName: '',
+    status: 'published',
+    featured: true,
+    priority: 'high',
+  },
   {
     id: 'ann-annual-day-63',
     title: '63rd Annual Day Celebration Invitation — S.U.M. Higher Secondary & Primary School',
@@ -712,7 +784,28 @@ Teachers, Staff and Students.`,
   },
 ];
 export const verifiedTimelineEntries: TimelineEntry[] = [];
-export const verifiedGalleryImages: GalleryImage[] = [];
+export const verifiedGalleryImages: GalleryImage[] = [
+  {
+    id: 'gal-hockey-2026',
+    title: 'Theni Revenue District Hockey Tournament Winners & Runners-Up',
+    title_en: 'Theni Revenue District Hockey Tournament Winners & Runners-Up',
+    title_ta: 'தேனி வருவாய் மாவட்ட ஹாக்கி போட்டியில் வெற்றி பெற்ற பள்ளி மாணவ வீரர்கள்',
+    imageUrl: '/images/hockey-tournament-theni-2026.jpg',
+    thumbnailUrl: '/images/hockey-tournament-theni-2026.jpg',
+    albumId: 'sports-meet-2026',
+    albumName: 'Sports & Athletics',
+    description: 'Junior team 1st place winners & state level qualifiers with senior and super senior runners-up.',
+    description_en: 'Junior team 1st place winners & state level qualifiers with senior and super senior runners-up.',
+    description_ta: 'ஜூனியர் பிரிவு முதலிடம் மற்றும் மாநில போட்டி தகுதி பெற்ற மாணவர்கள், சீனியர் மற்றும் சூப்பர் சீனியர் இரண்டாமிடம் பெற்ற வீரர்கள்.',
+    eventCategory: 'sports',
+    academicYear: '2026–2027',
+    calendarYear: 2026,
+    month: 'October',
+    status: 'published',
+    order: 1,
+    isFeatured: true,
+  },
+];
 export const verifiedFacilities: Facility[] = [
   {
     id: 'fac-computer-lab',
@@ -826,8 +919,8 @@ export const defaultEvents: SchoolEvent[] = [
     isFeatured: true,
   },
 ];
-export const defaultAchievements: Achievement[] = [];
-export const defaultGalleryImages: GalleryImage[] = [];
+export const defaultAchievements: Achievement[] = verifiedAchievements;
+export const defaultGalleryImages: GalleryImage[] = verifiedGalleryImages;
 export const defaultTimelineEntries: TimelineEntry[] = [];
 export const defaultAnnouncements: Announcement[] = verifiedAnnouncements;
 export const defaultTestimonials: Testimonial[] = [];

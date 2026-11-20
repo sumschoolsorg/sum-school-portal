@@ -65,6 +65,8 @@ import {
   verifiedAnnouncements,
   defaultEvents,
   verifiedFacilities,
+  verifiedAchievements,
+  verifiedGalleryImages,
 } from '@/lib/defaultData';
 
 export type DataMode = 'local' | 'firebase';
@@ -377,12 +379,14 @@ export const eventRepository = new CollectionRepository<SchoolEvent>(
 
 export const galleryRepository = new CollectionRepository<GalleryImage>(
   STORES.GALLERY,
-  'gallery'
+  'gallery',
+  () => verifiedGalleryImages
 );
 
 export const achievementRepository = new CollectionRepository<Achievement>(
   STORES.ACHIEVEMENTS,
-  'achievements'
+  'achievements',
+  () => verifiedAchievements
 );
 
 export const timelineRepository = new CollectionRepository<TimelineEntry>(
