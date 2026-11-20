@@ -245,13 +245,13 @@ The school crest is embedded across all modern browser specifications using a mu
 
 ### 3.10 Campus Facilities & Infrastructure (`/facilities`)
 - **Interactive Facility Profiles:** Detailed cards showcasing:
-  - Smart Classrooms with interactive digital displays.
-  - Fully equipped Science Laboratories (Verified Chemistry Lab, Physics Lab, Biology Lab).
-  - High-Speed Computer Science Laboratory.
-  - Central Library with extensive reference books, periodicals, and vernacular literature.
-  - Athletic Grounds (Volleyball, Football, Kabaddi, Kho-Kho, Track & Field).
-  - Safe Drinking Water (RO filtration systems) and modern sanitation facilities.
-  - Multipurpose Auditorium & Assembly Hall.
+  - **Modern Computer Science & ICT Laboratory:** Real students computing environment with smart projection: [public/images/facility-computer-lab.jpg](file:///d:/project/sum/public/images/facility-computer-lab.jpg).
+  - **Advanced Science & Chemistry Practical Laboratory:** Authentic laboratory featuring wall-mounted Periodic Table of Elements, glass apparatus, reagent racks, and teacher-guided practical sessions: [public/images/facility-science-lab.jpg](file:///d:/project/sum/public/images/facility-science-lab.jpg).
+  - **Interactive Multimedia Smart Classrooms:** Audio-visual digital displays and animated lesson modules.
+  - **Atal Tinkering Lab (ATL) & Robotics Center:** NITI Aayog STEM innovation hub.
+  - **Central Library & Reading Room:** Extensive reference collection, periodicals, and vernacular literature.
+  - **Athletic Grounds & Sports Amenities:** Dedicated courts for volleyball, kabaddi, kho-kho, silambam, and track & field.
+  - **Campus Security & Hygiene:** 24/7 CCTV surveillance, purified RO drinking water stations, and clean sanitation.
 
 ### 3.11 Faculty & Staff Directory (`/faculty`)
 - **Teaching & Non-Teaching Roster:** Comprehensive list of educators and support staff.
