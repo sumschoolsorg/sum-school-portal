@@ -50,14 +50,6 @@ export default function AdminLoginPage() {
     }
   };
 
-  const handleOfflinePreviewLogin = () => {
-    if (isConfigured) return;
-    setIsLoading(true);
-    fastLogin('super-admin');
-    toast.success('Entered offline local preview mode.');
-    router.push('/admin');
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-12 relative overflow-hidden">
       {/* Background glow effects */}

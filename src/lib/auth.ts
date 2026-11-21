@@ -43,11 +43,13 @@ export async function signIn(
 }
 
 // --- Sign out ---
-// --- Sign out ---
 export async function signOut(): Promise<void> {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('sum_fast_login');
     localStorage.removeItem('sum_admin_authenticated');
+    localStorage.removeItem('sum_auth_user');
+    localStorage.removeItem('sum_data_mode');
+    sessionStorage.clear();
   }
   try {
     await firebaseSignOut(auth);

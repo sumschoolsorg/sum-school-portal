@@ -35,7 +35,6 @@ import {
   Cpu,
   Upload,
 } from 'lucide-react';
-import { signOut } from '@/lib/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -47,7 +46,7 @@ export interface AdminSidebarProps {
 export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { isSuperAdmin, isSchoolAdmin } = useAuth();
+  const { isSuperAdmin, isSchoolAdmin, logout } = useAuth();
 
   // Close sidebar on Escape key and handle body scroll lock on mobile
   React.useEffect(() => {
@@ -71,12 +70,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   }, [isOpen, onClose]);
 
   const handleLogout = async () => {
-    try {
-      await signOut();
-    } catch {
-      // ignore
-    }
-    localStorage.removeItem('sum_admin_authenticated');
+    await logout();
     toast.success('Signed out of Admin Portal.');
     router.push('/admin/login');
   };

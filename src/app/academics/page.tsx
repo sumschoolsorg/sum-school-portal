@@ -21,7 +21,6 @@ import {
   Trophy,
   ArrowRight,
   BookOpen,
-  GraduationCap,
   Calculator,
   Briefcase,
   Languages,
@@ -61,11 +60,6 @@ export default function AcademicsPage() {
     (language === 'ta' && secondary?.subjects_ta
       ? secondary.subjects_ta
       : secondary?.subjects_en || secondary?.subjects) || [];
-
-  const higherSecondarySubjects =
-    (language === 'ta' && higherSecondary?.subjects_ta
-      ? higherSecondary.subjects_ta
-      : higherSecondary?.subjects_en || higherSecondary?.subjects) || [];
 
   const academicActivities =
     (language === 'ta' && content?.academicActivities_ta

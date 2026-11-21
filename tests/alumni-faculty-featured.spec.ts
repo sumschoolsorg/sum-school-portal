@@ -140,4 +140,37 @@ test.describe('Alumni, Faculty & Featured Teachers Production Verification', () 
     const dummyImages = page.locator('img[src*="faculty-1.jpg"]');
     expect(await dummyImages.count()).toBe(0);
   });
+
+  test('Complete Admin Logout cleans all sessions and denies access to protected routes', async ({
+    page,
+  }) => {
+    // 1. Log in as super admin
+    await adminLogin(page);
+    await page.goto('/admin', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('body')).toBeVisible();
+
+    // 2. Click Logout in Admin Topbar or Sidebar
+    const logoutBtn = page.locator('button[aria-label="Sign out"], button:has-text("Sign Out")').first();
+    await expect(logoutBtn).toBeVisible();
+    await logoutBtn.click();
+
+    // 3. Verify redirect to /admin/login
+    await page.waitForURL('**/admin/login', { timeout: 10000 });
+    await expect(page.locator('input[type="email"]')).toBeVisible();
+
+    // 4. Verify all auth storage is wiped
+    const storageState = await page.evaluate(() => ({
+      fastLogin: localStorage.getItem('sum_fast_login'),
+      adminAuth: localStorage.getItem('sum_admin_authenticated'),
+      authUser: localStorage.getItem('sum_auth_user'),
+    }));
+    expect(storageState.fastLogin).toBeNull();
+    expect(storageState.adminAuth).toBeNull();
+    expect(storageState.authUser).toBeNull();
+
+    // 5. Try accessing protected route directly -> must redirect back to /admin/login
+    await page.goto('/admin/faculty');
+    await page.waitForURL('**/admin/login', { timeout: 10000 });
+    await expect(page.locator('input[type="email"]')).toBeVisible();
+  });
 });
