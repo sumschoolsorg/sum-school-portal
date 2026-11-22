@@ -63,6 +63,7 @@ import {
   defaultAdmissionsContent,
   defaultThemeSettings,
   defaultWebsiteSettings,
+  defaultHeroBanners,
   verifiedAnnouncements,
   defaultEvents,
   verifiedFacilities,
@@ -449,7 +450,8 @@ export const websiteSettingsRepository = new SingleDocRepository<WebsiteSettings
 // Collections
 export const heroBannerRepository = new CollectionRepository<HeroBanner>(
   STORES.HERO_BANNERS,
-  'heroBanners'
+  'heroBanners',
+  () => defaultHeroBanners
 );
 
 export const researchRepository = new CollectionRepository<ResearchRecord>(

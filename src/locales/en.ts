@@ -105,11 +105,12 @@ export const en = {
 
   home: {
     hero: {
-      defaultEyebrow: 'Savariyappa Udaiyar Memorial School • Est. 1963',
-      defaultTitle: 'Inspiring Wisdom, Integrity & Academic Distinction Since 1963',
+      defaultEyebrow: 'S.U.M. SCHOOLS – ANNUAL DAY CELEBRATION',
+      defaultTitle: 'Celebrating Excellence, Talent & Togetherness – Annual Day 2026',
       defaultDescription:
-        'A prestigious, government-aided minority institution in Royappanpatti, Theni District, Tamil Nadu. Nurturing students from primary grades through state board higher secondary examinations with moral grounding and academic excellence.',
-      applyBtn: 'Apply for Admission',
+        "Join us for a memorable celebration of our students' achievements, creativity, cultural performances and talents. Let's celebrate learning, dedication and success together!",
+      applyBtn: 'Explore Annual Day',
+      viewGalleryBtn: 'View Photo Gallery',
       exploreStreamsBtn: 'Explore Academic Streams',
       pauseAutoPlay: 'Pause automatic rotation',
       playAutoPlay: 'Resume automatic rotation',

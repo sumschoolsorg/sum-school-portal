@@ -70,15 +70,27 @@ export const defaultSchoolSettings: SchoolSettings = {
 
 export const defaultHomepageContent: HomepageContent = {
   hero: {
-    title: 'Savariyappa Udaiyar Memorial Higher Secondary & Primary School',
-    subtitle: 'Royappanpatti, Theni District, Tamil Nadu • Established 1963',
+    title: 'Celebrating Excellence, Talent & Togetherness – Annual Day 2026',
+    title_en: 'Celebrating Excellence, Talent & Togetherness – Annual Day 2026',
+    title_ta: 'கல்விச் சிறப்பு, தனித்திறன் & ஒற்றுமை கொண்டாட்டம் – ஆண்டு விழா 2026',
+    subtitle: 'S.U.M. SCHOOLS – ANNUAL DAY CELEBRATION',
+    subtitle_en: 'S.U.M. SCHOOLS – ANNUAL DAY CELEBRATION',
+    subtitle_ta: 'எஸ்.யு.எம். பள்ளிகள் – ஆண்டு விழா கொண்டாட்டம்',
     description:
-      'Government-aided institution dedicated to value-rich, accessible, and high-quality education from Primary through Higher Secondary.',
+      "Join us for a memorable celebration of our students' achievements, creativity, cultural performances and talents. Let's celebrate learning, dedication and success together!",
+    description_en:
+      "Join us for a memorable celebration of our students' achievements, creativity, cultural performances and talents. Let's celebrate learning, dedication and success together!",
+    description_ta:
+      'எங்கள் மாணவர்களின் சாதனைகள், படைப்பாற்றல், கலை நிகழ்ச்சிகள் மற்றும் திறமைகளைக் கொண்டாடும் இந்த மறக்கமுடியாத விழாவில் இணையுங்கள். கற்றலையும் வெற்றியையும் ஒன்றிணைந்து கொண்டாடுவோம்!',
     imageUrl: '/images/hero-campus.jpg',
-    ctaText: 'Apply for Admission',
-    ctaLink: '/admissions',
-    secondaryCtaText: 'Explore Academics',
-    secondaryCtaLink: '/academics',
+    ctaText: 'Explore Annual Day',
+    ctaText_en: 'Explore Annual Day',
+    ctaText_ta: 'ஆண்டு விழா விவரங்கள்',
+    ctaLink: '/events#event-annual-day-63',
+    secondaryCtaText: 'View Photo Gallery',
+    secondaryCtaText_en: 'View Photo Gallery',
+    secondaryCtaText_ta: 'புகைப்பட தொகுப்பு',
+    secondaryCtaLink: '/gallery',
   },
   stats: {
     yearsOfExcellence: '60+ Years',
@@ -1393,7 +1405,62 @@ export const verifiedFacilities: Facility[] = [
     order: 6,
   },
 ];
-export const verifiedHeroBanners: HeroBanner[] = [];
+export const verifiedHeroBanners: HeroBanner[] = [
+  {
+    id: 'banner-annual-day-2026',
+    title: 'Celebrating Excellence, Talent & Togetherness – Annual Day 2026',
+    title_en: 'Celebrating Excellence, Talent & Togetherness – Annual Day 2026',
+    title_ta: 'கல்விச் சிறப்பு, தனித்திறன் & ஒற்றுமை கொண்டாட்டம் – ஆண்டு விழா 2026',
+    subtitle: 'S.U.M. SCHOOLS – ANNUAL DAY CELEBRATION',
+    subtitle_en: 'S.U.M. SCHOOLS – ANNUAL DAY CELEBRATION',
+    subtitle_ta: 'எஸ்.யு.எம். பள்ளிகள் – ஆண்டு விழா கொண்டாட்டம்',
+    description:
+      "Join us for a memorable celebration of our students' achievements, creativity, cultural performances and talents. Let's celebrate learning, dedication and success together!",
+    description_en:
+      "Join us for a memorable celebration of our students' achievements, creativity, cultural performances and talents. Let's celebrate learning, dedication and success together!",
+    description_ta:
+      'எங்கள் மாணவர்களின் சாதனைகள், படைப்பாற்றல், கலை நிகழ்ச்சிகள் மற்றும் திறமைகளைக் கொண்டாடும் இந்த மறக்கமுடியாத விழாவில் இணையுங்கள். கற்றலையும் வெற்றியையும் ஒன்றிணைந்து கொண்டாடுவோம்!',
+    imageUrl: '/images/hero-campus.jpg',
+    ctaText: 'Explore Annual Day',
+    ctaText_en: 'Explore Annual Day',
+    ctaText_ta: 'ஆண்டு விழா விவரங்கள்',
+    ctaLink: '/events#event-annual-day-63',
+    secondaryCtaText: 'View Photo Gallery',
+    secondaryCtaText_en: 'View Photo Gallery',
+    secondaryCtaText_ta: 'புகைப்பட தொகுப்பு',
+    secondaryCtaLink: '/gallery',
+    order: 1,
+    status: 'published',
+    animationStyle: 'fade',
+  },
+  {
+    id: 'banner-school-heritage',
+    title: 'Inspiring Wisdom, Integrity & Academic Excellence Since 1963',
+    title_en: 'Inspiring Wisdom, Integrity & Academic Excellence Since 1963',
+    title_ta: '1963 முதல் அறிவையும் ஒழுக்கத்தையும் வளர்க்கும் உன்னத பள்ளி',
+    subtitle: 'SAVARIYAPPA UDAIYAR MEMORIAL SCHOOLS',
+    subtitle_en: 'SAVARIYAPPA UDAIYAR MEMORIAL SCHOOLS',
+    subtitle_ta: 'சவரியப்ப உடையார் நினைவுப் பள்ளிகள்',
+    description:
+      'Government-aided institution dedicated to value-rich, accessible, and high-quality education from Primary through Higher Secondary.',
+    description_en:
+      'Government-aided institution dedicated to value-rich, accessible, and high-quality education from Primary through Higher Secondary.',
+    description_ta:
+      'தொடக்கப் பள்ளி முதல் மேல்நிலைப் பள்ளி வரை நற்பண்புகளுடன் கூடிய தரமான கல்வியை வழங்கும் அரசு உதவிபெறும் உன்னத பள்ளி.',
+    imageUrl: '/images/about-school.jpg',
+    ctaText: 'Apply for Admission',
+    ctaText_en: 'Apply for Admission',
+    ctaText_ta: 'சேர்க்கைக்கு விண்ணப்பிக்க',
+    ctaLink: '/admissions',
+    secondaryCtaText: 'Our School Heritage',
+    secondaryCtaText_en: 'Our School Heritage',
+    secondaryCtaText_ta: 'எங்கள் பாரம்பரியம்',
+    secondaryCtaLink: '/about',
+    order: 2,
+    status: 'published',
+    animationStyle: 'zoom',
+  },
+];
 export const defaultFaculty: Faculty[] = [];
 export const defaultFacilities: Facility[] = verifiedFacilities;
 export const defaultEvents: SchoolEvent[] = [
@@ -1431,6 +1498,6 @@ export const defaultGalleryImages: GalleryImage[] = verifiedGalleryImages;
 export const defaultTimelineEntries: TimelineEntry[] = verifiedTimelineEntries;
 export const defaultAnnouncements: Announcement[] = verifiedAnnouncements;
 export const defaultTestimonials: Testimonial[] = [];
-export const defaultHeroBanners: HeroBanner[] = [];
+export const defaultHeroBanners: HeroBanner[] = verifiedHeroBanners;
 export const defaultResearchRecords: ResearchRecord[] = [];
 export const defaultTransportRoutes: TransportRoute[] = [];

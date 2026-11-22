@@ -33,7 +33,7 @@ export function HeroSection(props?: {
     }
     return false;
   });
-  const { t, getLocalized, language } = useLanguage();
+  const { t, getLocalized, language, isTamil } = useLanguage();
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
@@ -148,8 +148,8 @@ export function HeroSection(props?: {
       <div className="container-main relative z-10 py-20 lg:py-28 flex flex-col items-center text-center">
         {/* Official Dual Logos Header Banner */}
         <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mb-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg group hover:bg-white/15 transition">
-            <div className="w-8 h-8 rounded-lg bg-white p-0.5 flex items-center justify-center shadow-xs">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg group hover:bg-white/15 transition">
+            <div className="w-8 h-8 rounded-lg bg-white p-0.5 flex items-center justify-center shadow-xs shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/school-crest.png"
@@ -157,12 +157,21 @@ export function HeroSection(props?: {
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="text-white text-xs sm:text-sm font-bold tracking-wide">
-              {t('about.officialCrest')}
-            </span>
+            <div className="flex flex-col text-left">
+              <span className="text-white text-xs sm:text-sm font-bold tracking-wide">
+                {isTamil
+                  ? 'சவரியப்ப உடையார் நினைவு மேல்நிலை & தொடக்கப் பள்ளி'
+                  : 'Savariyappa Udaiyar Memorial Higher Secondary & Primary School'}
+              </span>
+              <span className="text-amber-200/90 text-[10px] sm:text-[11px] font-medium leading-tight">
+                {isTamil
+                  ? 'அரசு உதவிபெறும் பள்ளி • ராயப்பன்பட்டி, தேனி'
+                  : 'Government-Aided Recognized Minority Institution • Royappanpatti'}
+              </span>
+            </div>
           </div>
 
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-md border border-amber-400/40 shadow-lg group hover:border-amber-400/60 transition">
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-md border border-amber-400/40 shadow-lg group hover:border-amber-400/60 transition">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/diamond-jubilee-logo.png"
@@ -181,7 +190,7 @@ export function HeroSection(props?: {
         </div>
 
         {/* Subtitle / Eyebrow Pill */}
-        <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-amber-300 text-xs sm:text-sm font-semibold tracking-wide mb-6 shadow-glow">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-400/40 text-amber-300 text-xs sm:text-sm font-bold tracking-wide mb-6 shadow-glow">
           <Sparkles className="w-4 h-4 text-amber-400" />
           <span>{bannerSubtitle}</span>
         </div>
