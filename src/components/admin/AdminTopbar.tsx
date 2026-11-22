@@ -43,7 +43,7 @@ const ROUTE_TITLES: Record<string, string> = {
 
 export function AdminTopbar({ onToggleSidebar, title }: AdminTopbarProps) {
   const { user, isSuperAdmin, isSchoolAdmin, isCloudAuthenticated, role, logout } = useAuth();
-  const { status, lastSyncTime, lastError } = useSyncStatus();
+  const { status, isOnline, isCloudConnected, lastSyncTime, lastError, checkConnection } = useSyncStatus();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -89,40 +89,59 @@ export function AdminTopbar({ onToggleSidebar, title }: AdminTopbarProps) {
           let badgeIcon = <Cloud className="w-3.5 h-3.5" />;
           let badgeLabel = 'CONNECTING';
 
-          if (status === 'ONLINE' && isCloudAuthenticated) {
-            badgeClasses = 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800';
-            badgeIcon = <Cloud className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />;
-            badgeLabel = 'ONLINE';
-          } else if (status === 'SYNCING') {
+          const isConnectedOnline = isOnline && (status === 'ONLINE' || isCloudConnected || isCloudAuthenticated);
+
+          if (status === 'SYNCING') {
             badgeClasses = 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800 animate-pulse';
             badgeIcon = <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600 dark:text-blue-400" />;
             badgeLabel = 'SYNCING';
-          } else if (status === 'SYNC_ERROR') {
-            badgeClasses = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800';
-            badgeIcon = <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />;
-            badgeLabel = 'SYNC ERROR';
+          } else if (isConnectedOnline) {
+            badgeClasses = 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 cursor-pointer';
+            badgeIcon = <Cloud className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />;
+            badgeLabel = 'ONLINE';
           } else if (status === 'CONNECTING') {
-            badgeClasses = 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800';
+            badgeClasses = 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/40 cursor-pointer';
             badgeIcon = <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 dark:text-amber-400" />;
             badgeLabel = 'CONNECTING';
+          } else if (status === 'SYNC_ERROR') {
+            badgeClasses = 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-700 hover:bg-amber-100 cursor-pointer';
+            badgeIcon = <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />;
+            badgeLabel = 'SYNC WARNING';
           } else {
-            badgeClasses = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800';
+            badgeClasses = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800 hover:bg-rose-100 cursor-pointer';
             badgeIcon = <CloudOff className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />;
             badgeLabel = 'OFFLINE';
           }
 
           const tooltip = lastSyncTime
-            ? `Status: ${badgeLabel} • Cloud Firestore synchronized at ${lastSyncTime.toLocaleTimeString()}`
-            : (lastError ? `Status: ${badgeLabel} • ${lastError}` : `Firebase Status: ${badgeLabel}`);
+            ? `Status: ${badgeLabel} • Cloud Firestore synchronized at ${lastSyncTime.toLocaleTimeString()} (Click to verify connection)`
+            : (lastError ? `Status: ${badgeLabel} • ${lastError} (Click to re-check)` : `Firebase Status: ${badgeLabel} (Click to verify)`);
+
+          const handleBadgeClick = async () => {
+            toast.loading('Checking Firebase Cloud Database connection...', { id: 'sync-status-check' });
+            try {
+              const ok = await checkConnection();
+              if (ok) {
+                toast.success('Firebase Cloud Firestore & Storage is connected and synchronized (ONLINE)!', { id: 'sync-status-check' });
+              } else {
+                toast.warning('Working with local cached data. Cloud synchronization will resume automatically when connected.', { id: 'sync-status-check' });
+              }
+            } catch {
+              toast.error('Could not reach Firebase. Check your internet connection.', { id: 'sync-status-check' });
+            }
+          };
 
           return (
-            <span
+            <button
+              type="button"
+              onClick={handleBadgeClick}
               className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${badgeClasses}`}
               title={tooltip}
+              aria-label={`Database synchronization status: ${badgeLabel}. Click to verify.`}
             >
               {badgeIcon}
               <span>{badgeLabel}</span>
-            </span>
+            </button>
           );
         })()}
 

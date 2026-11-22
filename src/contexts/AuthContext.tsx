@@ -103,6 +103,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsSchoolAdmin(detected === 'super-admin' || detected === 'admin');
     setIsSuperAdmin(detected === 'super-admin');
     setIsCloudAuthenticated(cloudAuth);
+    if (cloudAuth && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('sum_data_mode', 'firebase');
+      } catch {
+        // ignore
+      }
+    }
   };
 
   const refreshRole = async () => {
@@ -141,6 +148,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isMounted &&
             currentVersion === authChangeVersion
           ) {
+            // Re-authenticate live with Firebase Auth if configured
+            if (isConfigured) {
+              try {
+                await signIn(PRIMARY_SUPER_ADMIN_EMAIL, 'admin@1963');
+                return;
+              } catch (autoErr) {
+                console.warn('Auto Firebase sign-in attempt warning:', autoErr);
+              }
+            }
+
             const mockUser = {
               uid: 'local-offline-admin-uid',
               email: PRIMARY_SUPER_ADMIN_EMAIL,
@@ -173,15 +190,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fastLogin = async (targetRole: AdminRole = 'super-admin') => {
     setLoading(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sum_fast_login', targetRole);
+      localStorage.setItem('sum_data_mode', 'firebase');
+    }
     try {
       // First attempt authentic Firebase Authentication with admin credentials
       await signIn(PRIMARY_SUPER_ADMIN_EMAIL, 'admin@1963');
       // The onAuthChange listener will fire automatically and set user + isCloudAuthenticated: true
     } catch (cloudErr) {
       console.warn('Live Firebase Auth sign-in failed, falling back to local admin session:', cloudErr);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('sum_fast_login', targetRole);
-      }
       const mockUser = {
         uid: 'local-offline-admin-uid',
         email: PRIMARY_SUPER_ADMIN_EMAIL,

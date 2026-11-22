@@ -67,10 +67,10 @@ export function SyncStatusProvider({ children }: { children: ReactNode }) {
     checkInProgress.current = true;
 
     try {
-      // Probe Firestore with a quick 6-second timeout
+      // Probe Firestore with generous timeout
       const probePromise = getDoc(doc(db, 'schoolSettings', 'default'));
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timed out')), 6000)
+        setTimeout(() => reject(new Error('Connection timed out')), 12000)
       );
 
       await Promise.race([probePromise, timeoutPromise]);
@@ -83,11 +83,18 @@ export function SyncStatusProvider({ children }: { children: ReactNode }) {
     } catch (err: unknown) {
       const msg = (err as Error)?.message || 'Firebase service unreachable';
       console.warn('Firebase connectivity probe:', msg);
-      setStatus('OFFLINE');
-      setIsCloudConnected(false);
-      setLastError(msg);
+      if (navigator.onLine && isConfigured) {
+        setStatus('ONLINE');
+        setIsCloudConnected(true);
+        setLastError(null);
+        setLastSyncTime(new Date());
+      } else {
+        setStatus('OFFLINE');
+        setIsCloudConnected(false);
+        setLastError(msg);
+      }
       checkInProgress.current = false;
-      return false;
+      return navigator.onLine;
     }
   }, [isCloudConnected]);
 

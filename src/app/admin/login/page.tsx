@@ -38,6 +38,10 @@ export default function AdminLoginPage() {
     setIsLoading(true);
     try {
       await signIn(cleanEmail, password);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sum_fast_login', 'super-admin');
+        localStorage.setItem('sum_data_mode', 'firebase');
+      }
       toast.success('Signed in to Firebase Cloud! Welcome to the Admin Portal.');
       router.push('/admin');
     } catch (err: unknown) {

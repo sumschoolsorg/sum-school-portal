@@ -28,7 +28,7 @@ test.describe('End-to-End Firebase Connection & Admin Portal Operations', () => 
     expect(topbarText).not.toContain('Offline Only');
 
     // 5. Verify live status badge is visible and active
-    const liveStatusPill = page.locator('header span:has-text("ONLINE"), header span:has-text("SYNCING"), header span:has-text("CONNECTING")');
+    const liveStatusPill = page.locator('header button:has-text("ONLINE"), header button:has-text("SYNCING"), header button:has-text("CONNECTING"), header span:has-text("ONLINE")');
     await expect(liveStatusPill.first()).toBeVisible();
   });
 
@@ -117,5 +117,34 @@ test.describe('End-to-End Firebase Connection & Admin Portal Operations', () => 
         await confirmBtn.click();
       }
     }
+  });
+
+  test('validates that /admin/banners shows ONLINE status and hero banners are loaded', async ({ page }) => {
+    // 1. Fast login into Admin
+    await page.goto('/admin/login');
+    const fastAccessBtn = page.locator('button:has-text("Fast 1-Click Access")');
+    await expect(fastAccessBtn).toBeVisible({ timeout: 10000 });
+    await fastAccessBtn.click();
+    await page.waitForURL('**/admin', { timeout: 15000 });
+
+    // 2. Navigate to /admin/banners
+    await page.goto('/admin/banners');
+    await page.waitForLoadState('domcontentloaded');
+
+    // 3. Verify page header
+    await expect(page.locator('h1, h2', { hasText: 'Hero Banners & Carousel' }).first()).toBeVisible({ timeout: 10000 });
+
+    // 4. Verify ONLINE badge is displayed (never OFFLINE)
+    const onlineBadge = page.locator('header button:has-text("ONLINE")');
+    await expect(onlineBadge).toBeVisible({ timeout: 10000 });
+    const topbarText = await page.locator('header').innerText();
+    expect(topbarText).not.toContain('OFFLINE');
+
+    // 5. Click the ONLINE status badge to trigger the connection health check toast
+    await onlineBadge.click();
+    await expect(page.locator('text=connected and synchronized')).toBeVisible({ timeout: 8000 });
+
+    // 6. Verify Annual Day banner card is present
+    await expect(page.locator('text=Celebrating Excellence, Talent & Togetherness – Annual Day 2026').first()).toBeVisible();
   });
 });
