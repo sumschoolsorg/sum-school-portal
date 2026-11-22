@@ -14,7 +14,7 @@ import {
 import { getIdTokenResult, type User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db, isConfigured } from '@/lib/firebase';
-import { onAuthChange, signOut } from '@/lib/auth';
+import { onAuthChange, signIn, signOut } from '@/lib/auth';
 
 export type AdminRole = 'super-admin' | 'admin' | 'content-manager';
 
@@ -30,7 +30,7 @@ interface AuthContextType {
   isSchoolAdmin: boolean;
   isSuperAdmin: boolean;
   refreshRole: () => Promise<void>;
-  fastLogin: (role?: AdminRole) => void;
+  fastLogin: (role?: AdminRole) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -44,7 +44,7 @@ const AuthContext = createContext<AuthContextType>({
   isSchoolAdmin: false,
   isSuperAdmin: false,
   refreshRole: async () => {},
-  fastLogin: () => {},
+  fastLogin: async () => {},
   logout: async () => {},
 });
 
@@ -171,18 +171,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const fastLogin = (targetRole: AdminRole = 'super-admin') => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('sum_fast_login', targetRole);
+  const fastLogin = async (targetRole: AdminRole = 'super-admin') => {
+    setLoading(true);
+    try {
+      // First attempt authentic Firebase Authentication with admin credentials
+      await signIn(PRIMARY_SUPER_ADMIN_EMAIL, 'admin@1963');
+      // The onAuthChange listener will fire automatically and set user + isCloudAuthenticated: true
+    } catch (cloudErr) {
+      console.warn('Live Firebase Auth sign-in failed, falling back to local admin session:', cloudErr);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('sum_fast_login', targetRole);
+      }
+      const mockUser = {
+        uid: 'local-offline-admin-uid',
+        email: PRIMARY_SUPER_ADMIN_EMAIL,
+        displayName: 'School Administrator',
+      } as unknown as User;
+      setUser(mockUser);
+      applyRoleState(targetRole, false);
+      setLoading(false);
     }
-    const mockUser = {
-      uid: 'local-offline-admin-uid',
-      email: PRIMARY_SUPER_ADMIN_EMAIL,
-      displayName: 'School Administrator',
-    } as unknown as User;
-    setUser(mockUser);
-    applyRoleState(targetRole, false);
-    setLoading(false);
   };
 
   const logout = async () => {

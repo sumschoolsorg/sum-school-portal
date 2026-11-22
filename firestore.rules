@@ -17,7 +17,7 @@ service cloud.firestore {
     //    - socialMedia: map (optional)
     //
     // 2. homepageContent/{docId} (Single document 'default')
-    //    - hero, stats, principalMessage, admissionCta: map (optional)
+    //    - hero, stats, correspondentMessage, principalMessage, admissionCta: map (optional)
     //
     // 3. aboutContent/{docId} (Single document 'default')
     //    - introduction, history, vision, mission: string (optional, max 20000 chars)
@@ -322,6 +322,7 @@ service cloud.firestore {
     function isValidHomepageContent(data) {
       return isOptMap(data, 'hero')
         && isOptMap(data, 'stats')
+        && isOptMap(data, 'correspondentMessage')
         && isOptMap(data, 'principalMessage')
         && isOptMap(data, 'admissionCta');
     }

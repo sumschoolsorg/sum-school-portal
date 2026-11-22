@@ -9,8 +9,22 @@ import { ImageUpload } from '@/components/ui/ImageUpload';
 import { defaultHomepageContent } from '@/lib/defaultData';
 import { homepageRepository, getCurrentDataMode, isFirebaseConfigured } from '@/lib/repositories';
 import { HomepageContent } from '@/types';
-import { Save, Home, Loader2, Megaphone, UserCheck, BarChart3, Image as ImageIcon } from 'lucide-react';
+import { Save, Home, Loader2, Megaphone, UserCheck, ShieldCheck, BarChart3, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
+
+const defaultCorrespondent = {
+  name: 'Mr. M.S. Prabhakar, M.A.',
+  designation: 'MANAGER & CORRESPONDENT',
+  photoUrl: '/images/correspondent-photo.jpg',
+  message: '',
+  name_en: 'Mr. M.S. Prabhakar, M.A.',
+  name_ta: 'உயர்திரு. M.S. பிரபாகர், M.A.',
+  designation_en: 'MANAGER & CORRESPONDENT',
+  designation_ta: 'மேலாளர் மற்றும் தாளாளர்',
+  schoolTag: 'S.U.M. Higher Secondary & Primary School, Rayappanpatti',
+  schoolTag_ta: 'சவரியப்ப உடையார் நினைவு மேல்நிலை & தொடக்கப் பள்ளி, ராயப்பன்பட்டி',
+  ...(defaultHomepageContent.correspondentMessage || {}),
+};
 
 export default function HomepageAdminPage() {
   const [formData, setFormData] = useState<HomepageContent>(defaultHomepageContent);
@@ -27,6 +41,10 @@ export default function HomepageAdminPage() {
             ...data,
             hero: { ...defaultHomepageContent.hero, ...(data.hero || {}) },
             stats: { ...defaultHomepageContent.stats, ...(data.stats || {}) },
+            correspondentMessage: {
+              ...defaultCorrespondent,
+              ...(data.correspondentMessage || {}),
+            },
             principalMessage: { ...defaultHomepageContent.principalMessage, ...(data.principalMessage || {}) },
             admissionCta: { ...defaultHomepageContent.admissionCta, ...(data.admissionCta || {}) },
           });
@@ -51,6 +69,16 @@ export default function HomepageAdminPage() {
     setFormData({
       ...formData,
       stats: { ...formData.stats, [e.target.name]: e.target.value },
+    });
+  };
+
+  const handleCorrespondentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      correspondentMessage: {
+        ...(formData.correspondentMessage || defaultCorrespondent),
+        [e.target.name]: e.target.value,
+      },
     });
   };
 
@@ -229,6 +257,97 @@ export default function HomepageAdminPage() {
             value={formData.stats.achievements}
             onChange={handleStatsChange}
           />
+        </Card>
+
+        {/* Manager & Correspondent's Message */}
+        <Card className="p-6 sm:p-8 space-y-4">
+          <h3 className="text-lg font-bold font-heading text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-amber-500" />
+            Manager &amp; Correspondent Message (MR. M.S. PRABHAKAR, M.A.)
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Correspondent Name (English)"
+              name="name"
+              value={formData.correspondentMessage?.name || ''}
+              onChange={handleCorrespondentChange}
+              placeholder="MR. M.S. PRABHAKAR, M.A."
+            />
+            <Input
+              label="Correspondent Name (Tamil)"
+              name="name_ta"
+              value={formData.correspondentMessage?.name_ta || ''}
+              onChange={handleCorrespondentChange}
+              placeholder="உயர்திரு. M.S. பிரபாகர், M.A."
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Official Designation (English)"
+              name="designation"
+              value={formData.correspondentMessage?.designation || ''}
+              onChange={handleCorrespondentChange}
+              placeholder="MANAGER & CORRESPONDENT"
+            />
+            <Input
+              label="Designation (Tamil)"
+              name="designation_ta"
+              value={formData.correspondentMessage?.designation_ta || ''}
+              onChange={handleCorrespondentChange}
+              placeholder="மேலாளர் மற்றும் தாளாளர்"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="Institution Tag (English)"
+              name="schoolTag"
+              value={formData.correspondentMessage?.schoolTag || ''}
+              onChange={handleCorrespondentChange}
+              placeholder="S.U.M. Higher Secondary & Primary School, Rayappanpatti"
+            />
+            <Input
+              label="Institution Tag (Tamil)"
+              name="schoolTag_ta"
+              value={formData.correspondentMessage?.schoolTag_ta || ''}
+              onChange={handleCorrespondentChange}
+              placeholder="சவரியப்ப உடையார் நினைவு மேல்நிலை & தொடக்கப் பள்ளி, ராயப்பன்பட்டி"
+            />
+          </div>
+
+          <ImageUpload
+            label="Correspondent Photograph"
+            folder="correspondent"
+            value={formData.correspondentMessage?.photoUrl || ''}
+            onChange={(url) =>
+              setFormData({
+                ...formData,
+                correspondentMessage: {
+                  ...(formData.correspondentMessage || defaultCorrespondent),
+                  photoUrl: url,
+                },
+              })
+            }
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Textarea
+              label="Official Message Quote (English)"
+              name="message"
+              rows={6}
+              value={formData.correspondentMessage?.message || ''}
+              onChange={handleCorrespondentChange}
+            />
+            <Textarea
+              label="Official Message Quote (Tamil)"
+              name="message_ta"
+              rows={6}
+              value={formData.correspondentMessage?.message_ta || ''}
+              onChange={handleCorrespondentChange}
+            />
+          </div>
         </Card>
 
         {/* Headmaster's Message */}

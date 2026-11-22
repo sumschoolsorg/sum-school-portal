@@ -94,6 +94,20 @@ export interface HomepageContent extends FirestoreDoc {
     achievements_en?: string;
     achievements_ta?: string;
   };
+  correspondentMessage?: {
+    name: string;
+    designation: string;
+    photoUrl: string;
+    message: string;
+    name_en?: string;
+    name_ta?: string;
+    designation_en?: string;
+    designation_ta?: string;
+    message_en?: string;
+    message_ta?: string;
+    schoolTag?: string;
+    schoolTag_ta?: string;
+  };
   principalMessage: {
     name: string;
     designation: string;

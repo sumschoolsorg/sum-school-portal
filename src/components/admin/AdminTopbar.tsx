@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Menu, LogOut, Cloud, CloudOff } from 'lucide-react';
+import { Menu, LogOut, Cloud, CloudOff, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSyncStatus } from '@/contexts/SyncStatusContext';
 import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -42,6 +43,7 @@ const ROUTE_TITLES: Record<string, string> = {
 
 export function AdminTopbar({ onToggleSidebar, title }: AdminTopbarProps) {
   const { user, isSuperAdmin, isSchoolAdmin, isCloudAuthenticated, role, logout } = useAuth();
+  const { status, lastSyncTime, lastError } = useSyncStatus();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -82,30 +84,47 @@ export function AdminTopbar({ onToggleSidebar, title }: AdminTopbarProps) {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-        <span
-          className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-            isCloudAuthenticated
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
-              : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
-          }`}
-          title={
-            isCloudAuthenticated
-              ? 'Authenticated with Firebase Cloud — changes sync to Firestore & Storage'
-              : 'Not authenticated with Firebase Cloud — sign in with Firebase email & password to save to cloud'
+        {(() => {
+          let badgeClasses = 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300';
+          let badgeIcon = <Cloud className="w-3.5 h-3.5" />;
+          let badgeLabel = 'CONNECTING';
+
+          if (status === 'ONLINE' && isCloudAuthenticated) {
+            badgeClasses = 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800';
+            badgeIcon = <Cloud className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />;
+            badgeLabel = 'ONLINE';
+          } else if (status === 'SYNCING') {
+            badgeClasses = 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800 animate-pulse';
+            badgeIcon = <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600 dark:text-blue-400" />;
+            badgeLabel = 'SYNCING';
+          } else if (status === 'SYNC_ERROR') {
+            badgeClasses = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800';
+            badgeIcon = <AlertTriangle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />;
+            badgeLabel = 'SYNC ERROR';
+          } else if (status === 'CONNECTING') {
+            badgeClasses = 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800';
+            badgeIcon = <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-600 dark:text-amber-400" />;
+            badgeLabel = 'CONNECTING';
+          } else {
+            badgeClasses = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800';
+            badgeIcon = <CloudOff className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />;
+            badgeLabel = 'OFFLINE';
           }
-        >
-          {isCloudAuthenticated ? (
-            <>
-              <Cloud className="w-3.5 h-3.5" />
-              Firebase Cloud Sync
-            </>
-          ) : (
-            <>
-              <CloudOff className="w-3.5 h-3.5" />
-              Offline Only
-            </>
-          )}
-        </span>
+
+          const tooltip = lastSyncTime
+            ? `Status: ${badgeLabel} • Cloud Firestore synchronized at ${lastSyncTime.toLocaleTimeString()}`
+            : (lastError ? `Status: ${badgeLabel} • ${lastError}` : `Firebase Status: ${badgeLabel}`);
+
+          return (
+            <span
+              className={`hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${badgeClasses}`}
+              title={tooltip}
+            >
+              {badgeIcon}
+              <span>{badgeLabel}</span>
+            </span>
+          );
+        })()}
 
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">

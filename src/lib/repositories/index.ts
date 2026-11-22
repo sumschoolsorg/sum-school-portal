@@ -24,7 +24,8 @@ import {
   deleteDocument,
   whereEqual,
 } from '@/lib/firestore';
-import { isConfigured } from '@/lib/firebase';
+import { db, isConfigured } from '@/lib/firebase';
+import { doc, collection, query, where, onSnapshot } from 'firebase/firestore';
 
 import {
   SchoolSettings,
@@ -117,6 +118,10 @@ export class SingleDocRepository<T extends { id?: string }> {
           await putLocal<T>(this.storeName, doc).catch(() => {});
           return doc;
         }
+        // Document does not exist in Firestore yet: return fallback provider if present
+        if (this.fallbackProvider) {
+          return this.fallbackProvider();
+        }
       } catch (cloudErr) {
         console.warn(`Firestore read warning for ${this.firestoreCollection}/${this.defaultDocId}:`, cloudErr);
       }
@@ -145,6 +150,38 @@ export class SingleDocRepository<T extends { id?: string }> {
 
     return putLocal<T>(this.storeName, itemToSave);
   }
+
+  subscribe(callback: (data: T) => void): () => void {
+    const mode = getCurrentDataMode();
+    if (mode === 'firebase' && isFirebaseConfigured() && typeof window !== 'undefined') {
+      try {
+        const docRef = doc(db, this.firestoreCollection, this.defaultDocId);
+        const unsubscribe = onSnapshot(
+          docRef,
+          { includeMetadataChanges: true },
+          (snap) => {
+            if (snap.exists()) {
+              const data = { id: snap.id, ...snap.data() } as unknown as T;
+              putLocal<T>(this.storeName, data).catch(() => {});
+              callback(data);
+            } else if (this.fallbackProvider) {
+              callback(this.fallbackProvider());
+            }
+          },
+          (err) => {
+            console.warn(`Firestore onSnapshot error for ${this.firestoreCollection}:`, err);
+            this.get().then(callback).catch(() => {});
+          }
+        );
+        return unsubscribe;
+      } catch (err) {
+        console.warn(`Failed to set up Firestore onSnapshot for ${this.firestoreCollection}:`, err);
+      }
+    }
+
+    this.get().then(callback).catch(() => {});
+    return () => {};
+  }
 }
 
 // Generic Collection Repository (e.g. Faculty, Announcements, Events, Banners)
@@ -160,7 +197,7 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection);
-        if (Array.isArray(docs) && docs.length > 0) {
+        if (Array.isArray(docs)) {
           // Mirror cloud state into local cache so offline cache matches Firestore exactly
           try {
             await clearLocalStore(this.storeName);
@@ -172,7 +209,14 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
           } catch (syncErr) {
             console.warn(`Local sync cache update warning for ${this.firestoreCollection}:`, syncErr);
           }
-          return docs;
+          if (docs.length > 0) {
+            return docs;
+          }
+          if (this.defaultItems) {
+            const tombstones = getDeletedTombstones();
+            return this.defaultItems().filter((item) => !item.id || !tombstones.has(item.id));
+          }
+          return [];
         }
       } catch (cloudErr) {
         console.warn(`Firestore getAll warning for ${this.firestoreCollection}:`, cloudErr);
@@ -197,8 +241,17 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
     if (mode === 'firebase' && isFirebaseConfigured()) {
       try {
         const docs = await getDocuments<T>(this.firestoreCollection, [whereEqual('status', 'published')]);
-        if (Array.isArray(docs) && docs.length > 0) {
-          return docs;
+        if (Array.isArray(docs)) {
+          if (docs.length > 0) {
+            return docs;
+          }
+          if (this.defaultItems) {
+            const tombstones = getDeletedTombstones();
+            return this.defaultItems().filter(
+              (item) => (item.status ? item.status === 'published' : true) && (!item.id || !tombstones.has(item.id))
+            );
+          }
+          return [];
         }
       } catch (cloudErr) {
         console.warn(`Firestore getPublished warning for ${this.firestoreCollection}:`, cloudErr);
@@ -291,6 +344,55 @@ export class CollectionRepository<T extends { id?: string; status?: string; orde
         await this.delete(item.id);
       }
     }
+  }
+
+  subscribe(callback: (data: T[]) => void, publishedOnly: boolean = false): () => void {
+    const mode = getCurrentDataMode();
+    if (mode === 'firebase' && isFirebaseConfigured() && typeof window !== 'undefined') {
+      try {
+        const collectionRef = collection(db, this.firestoreCollection);
+        const q = publishedOnly
+          ? query(collectionRef, where('status', '==', 'published'))
+          : query(collectionRef);
+
+        const unsubscribe = onSnapshot(
+          q,
+          { includeMetadataChanges: true },
+          (snapshot) => {
+            const docs = snapshot.docs.map((d) => ({
+              id: d.id,
+              ...d.data(),
+            })) as unknown as T[];
+            if (docs.length > 0) {
+              for (const cloudDoc of docs) {
+                if (cloudDoc.id) {
+                  putLocal<T>(this.storeName, cloudDoc).catch(() => {});
+                }
+              }
+              callback(docs);
+            } else if (this.defaultItems) {
+              const tombstones = getDeletedTombstones();
+              const filtered = this.defaultItems().filter(
+                (item) => (!publishedOnly || item.status === 'published') && (!item.id || !tombstones.has(item.id))
+              );
+              callback(filtered);
+            } else {
+              callback([]);
+            }
+          },
+          (err) => {
+            console.warn(`Firestore onSnapshot error for ${this.firestoreCollection}:`, err);
+            (publishedOnly ? this.getPublished() : this.getAll()).then(callback).catch(() => {});
+          }
+        );
+        return unsubscribe;
+      } catch (err) {
+        console.warn(`Failed to set up onSnapshot for ${this.firestoreCollection}:`, err);
+      }
+    }
+
+    (publishedOnly ? this.getPublished() : this.getAll()).then(callback).catch(() => {});
+    return () => {};
   }
 }
 

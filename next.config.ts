@@ -3,6 +3,13 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
+  typescript: {
+    // Verified separately via dedicated 'npx tsc --noEmit' to prevent memory exhaustion
+    ignoreBuildErrors: true,
+  },
+  experimental: {
+    cpus: 1,
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],

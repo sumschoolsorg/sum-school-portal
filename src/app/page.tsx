@@ -6,6 +6,7 @@ import { Footer } from '@/components/layout/Footer';
 import { HeroSection } from '@/components/home/HeroSection';
 import { AboutSection } from '@/components/home/AboutSection';
 import { StatsSection } from '@/components/home/StatsSection';
+import { CorrespondentMessageSection } from '@/components/home/CorrespondentMessageSection';
 import { PrincipalMessageSection } from '@/components/home/PrincipalMessageSection';
 import { AcademicsPreviewSection } from '@/components/home/AcademicsPreviewSection';
 import { FacilitiesPreviewSection } from '@/components/home/FacilitiesPreviewSection';
@@ -122,6 +123,18 @@ export default function HomePage() {
     }
 
     loadData();
+
+    // Real-time synchronization for homepage updates
+    const unsubHomepage = homepageRepository.subscribe((latestHomepage) => {
+      if (latestHomepage) {
+        setData((prev) => ({
+          ...prev,
+          homepage: latestHomepage,
+        }));
+      }
+    });
+
+    return () => unsubHomepage();
   }, []);
 
   if (loading) {
@@ -152,6 +165,7 @@ export default function HomePage() {
         <HeroSection content={data.homepage} />
         <StatsSection stats={data.homepage.stats} />
         <AboutSection content={data.about} />
+        <CorrespondentMessageSection content={data.homepage.correspondentMessage} />
         <PrincipalMessageSection content={data.homepage.principalMessage} />
         <AcademicsPreviewSection content={data.academics} />
         {data.facilities.length > 0 && <FacilitiesPreviewSection facilities={data.facilities} />}

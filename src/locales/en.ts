@@ -143,6 +143,17 @@ export const en = {
       admissionsBtn: 'Explore Admissions 2025–26',
     },
 
+    correspondentMessage: {
+      badge: 'Message from the Manager & Correspondent',
+      name: 'MR. M.S. PRABHAKAR, M.A.',
+      role: 'MANAGER & CORRESPONDENT',
+      schoolTag: 'S.U.M. Higher Secondary & Primary School, Rayappanpatti',
+      quote:
+        'Welcome to Savariyappa Udaiyar Memorial Higher Secondary & Primary School, Rayappanpatti.\n\nEducation is the foundation of a successful future. At S.U.M. Schools, we are committed to providing quality education, developing strong moral values, and nurturing the talents and abilities of every student.\n\nOur vision is to create a positive learning environment where students grow with knowledge, discipline, confidence, and responsibility. We continuously strive to support academic excellence and the overall development of every child.\n\nTogether, let us build a brighter future for our students.',
+      readMoreBtn: 'Read Management & Trust Profile',
+      connectBtn: 'Connect With Leadership',
+    },
+
     principalMessage: {
       badge: 'Message from the Headmaster',
       name: 'S. THOMAS M.Sc., M.Ed.',

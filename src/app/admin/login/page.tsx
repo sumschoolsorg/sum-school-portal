@@ -155,11 +155,18 @@ export default function AdminLoginPage() {
               type="button"
               variant="outline"
               size="md"
-              onClick={() => {
+              onClick={async () => {
                 setIsLoading(true);
-                fastLogin('super-admin');
-                toast.success('Welcome to S.U.M. School Admin Portal!');
-                router.push('/admin');
+                try {
+                  await fastLogin('super-admin');
+                  toast.success('Signed in to Firebase Cloud Admin Portal!');
+                  router.push('/admin');
+                } catch {
+                  toast.info('Accessing Admin Portal in offline preview mode.');
+                  router.push('/admin');
+                } finally {
+                  setIsLoading(false);
+                }
               }}
               className="w-full border-blue-500/40 text-blue-300 hover:bg-blue-900/30 font-semibold"
             >

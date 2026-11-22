@@ -45,18 +45,16 @@ export function HeroSection(props?: {
   }, []);
 
   useEffect(() => {
-    const fetchBanners = async () => {
-      try {
-        const list = await heroBannerRepository.getPublished();
-        if (list && list.length > 0) {
-          list.sort((a, b) => (a.order || 0) - (b.order || 0));
-          setBanners(list);
-        }
-      } catch {
-        // use defaultHeroBanners
+    const unsubscribe = heroBannerRepository.subscribe((list) => {
+      if (list && list.length > 0) {
+        const sorted = [...list].sort((a, b) => (a.order || 0) - (b.order || 0));
+        setBanners(sorted);
+      } else {
+        setBanners([]);
       }
-    };
-    fetchBanners();
+    }, true);
+
+    return () => unsubscribe();
   }, []);
 
   const handleNext = useCallback(() => {
