@@ -26,34 +26,73 @@ export function Modal({
   const descId = description ? `modal-desc-${baseId}` : undefined;
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
+  const modalContainerRef = useRef<HTMLDivElement>(null);
+  const prevIsOpenRef = useRef(false);
+
+  // Keep latest onClose in a ref so effects never re-run due to inline function reference changes
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onCloseRef.current();
       }
     };
 
     if (isOpen) {
-      previousActiveElement.current = document.activeElement as HTMLElement | null;
-      document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
 
-      setTimeout(() => {
-        closeButtonRef.current?.focus();
-      }, 50);
+      // Focus transition ONLY occurs on initial opening transition (false -> true)
+      if (!prevIsOpenRef.current) {
+        previousActiveElement.current = document.activeElement as HTMLElement | null;
+
+        // Give DOM time to mount, but NEVER steal focus if user is already focused inside modal
+        const timer = setTimeout(() => {
+          if (
+            modalContainerRef.current &&
+            !modalContainerRef.current.contains(document.activeElement)
+          ) {
+            // Focus first interactive form field or close button
+            const focusable = modalContainerRef.current.querySelector<HTMLElement>(
+              'input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled]), [tabindex="0"]'
+            );
+            if (focusable) {
+              focusable.focus();
+            } else {
+              closeButtonRef.current?.focus();
+            }
+          }
+        }, 50);
+
+        return () => {
+          clearTimeout(timer);
+          window.removeEventListener('keydown', handleKeyDown);
+        };
+      }
     } else {
       document.body.style.overflow = 'unset';
-      if (previousActiveElement.current) {
+      if (prevIsOpenRef.current && previousActiveElement.current) {
         previousActiveElement.current.focus();
       }
     }
 
+    prevIsOpenRef.current = isOpen;
+
     return () => {
-      document.body.style.overflow = 'unset';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
+
+  // Clean up body overflow when unmounted
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
 
   if (!isOpen || typeof document === 'undefined') return null;
 
@@ -76,13 +115,14 @@ export function Modal({
     >
       {/* Backdrop */}
       <div
-        onClick={onClose}
+        onClick={() => onCloseRef.current()}
         className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
         aria-hidden="true"
       />
 
       {/* Dialog card */}
       <div
+        ref={modalContainerRef}
         className={`relative w-full ${sizeClasses[size]} my-4 sm:my-8 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-8 z-10 animate-scale-in max-h-[90vh] flex flex-col`}
       >
         <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
@@ -101,7 +141,7 @@ export function Modal({
           <button
             type="button"
             ref={closeButtonRef}
-            onClick={onClose}
+            onClick={() => onCloseRef.current()}
             className="min-w-[44px] min-h-[44px] rounded-full p-2.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 transition flex items-center justify-center cursor-pointer shrink-0"
             aria-label="Close dialog"
           >

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 
 export interface SelectOption {
   value: string;
@@ -14,13 +14,15 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, helperText, options, className = '', id, ...props }, ref) => {
-    const selectId = id || (label ? label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : undefined);
+    const generatedId = useId();
+    const slug = label ? label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
+    const selectId = id || slug || `select-${generatedId}`;
     const displayLabel = label ? label.replace(/\s*\*+$/, '') : '';
     const hasRequiredAsterisk = Boolean(props.required || (label && /\*/.test(label)));
     const describedById = error
-      ? (selectId ? `${selectId}-error` : undefined)
+      ? `${selectId}-error`
       : helperText
-      ? (selectId ? `${selectId}-helper` : undefined)
+      ? `${selectId}-helper`
       : undefined;
 
     return (

@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -10,13 +10,15 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, helperText, leftIcon, rightIcon, className = '', id, ...props }, ref) => {
-    const inputId = id || (label ? label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : undefined);
+    const generatedId = useId();
+    const slug = label ? label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
+    const inputId = id || slug || `input-${generatedId}`;
     const displayLabel = label ? label.replace(/\s*\*+$/, '') : '';
     const hasRequiredAsterisk = Boolean(props.required || (label && /\*/.test(label)));
     const describedById = error
-      ? (inputId ? `${inputId}-error` : undefined)
+      ? `${inputId}-error`
       : helperText
-      ? (inputId ? `${inputId}-helper` : undefined)
+      ? `${inputId}-helper`
       : undefined;
 
     return (

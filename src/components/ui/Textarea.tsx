@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
@@ -8,13 +8,15 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, helperText, className = '', id, rows = 4, ...props }, ref) => {
-    const textareaId = id || (label ? label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : undefined);
+    const generatedId = useId();
+    const slug = label ? label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
+    const textareaId = id || slug || `textarea-${generatedId}`;
     const displayLabel = label ? label.replace(/\s*\*+$/, '') : '';
     const hasRequiredAsterisk = Boolean(props.required || (label && /\*/.test(label)));
     const describedById = error
-      ? (textareaId ? `${textareaId}-error` : undefined)
+      ? `${textareaId}-error`
       : helperText
-      ? (textareaId ? `${textareaId}-helper` : undefined)
+      ? `${textareaId}-helper`
       : undefined;
 
     return (
